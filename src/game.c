@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "string.h"
 #include "raymath.h"
+#include "math.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -17,15 +18,13 @@ int main(void)
     SetTargetFPS(60);
 	// Main game loop
 
-    Mesh plane = GenMeshPlane(10.0f, 10.0f, 1, 1);
+    // Mesh plane = GenMeshPlane(10.0f, 10.0f, 1, 1);
 
-    Material material = LoadMaterialDefault();
-    SetMaterialTexture(&material, MATERIAL_MAP_DIFFUSE, LoadTexture("./resources/textures/debug.png"));
 
     // void SetMaterialTexture(Material *material, int mapType, Texture2D texture);
     // void DrawMesh(Mesh mesh, Material material, Matrix transform);  
 
-    Matrix matrix = {0};
+    // Matrix matrix = {0};
 
     // MatrixRotateXYZ((Vector3){ DEG2RAD*pitch, DEG2RAD*yaw, DEG2RAD*roll });
 
@@ -34,16 +33,33 @@ int main(void)
 
     while (!WindowShouldClose())
 	{
-		yaw += 1.0f;
-        pitch += 2.0f;
-        matrix = MatrixRotateXYZ((Vector3){ DEG2RAD*pitch, DEG2RAD*yaw, 0.0f });
+		yaw += 0.01f;
+        pitch += 0.02f;
 
-		drawText("empty window", 15, 40, 1, WHITE);
+		drawText("empty window", 15, 40, 100, WHITE);
 		Begin3DMode();
 
-        DrawMesh(plane, material, matrix);
+        // DrawMesh(plane, material, matrix);
         
-        //DrawCube((Vector3){ 0, 0, 0 }, 1.0f, 1.0f, 1.0f, RED);
+        plane("debug", 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+
+
+        plane("debug", 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+        plane("debug", -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+        plane("debug", 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+        plane("debug", 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+        plane("debug", 0.0f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+
+
+        plane("debug", 5.0f, 0.0f, 0.0f, 5.0f, 5.0f, 0.0f, PI / 2.0f, PI / 2.0f);
+        plane("debug", -5.0f, 0.0f, 0.0f, 5.0f, 5.0f, 0.0f, PI / 2.0f, -PI / 2.0f);
+
+
+
+
+
+
+
         //DrawCubeWires((Vector3){ 0, 0, 0 }, 1.0f, 1.0f, 1.0f, MAROON);
 
         End3DMode();

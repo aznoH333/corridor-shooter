@@ -5,6 +5,8 @@
 #include "stddef.h"
 #include "stdio.h"
 #include "raylib.h"
+#include "raymath.h"
+
 
 // -------------------------------------------------------------------------------------
 // ArrayHandle
@@ -79,7 +81,7 @@ void sprFRC(char* spriteName, float x, float y, bool flipX, bool flipY, float ro
 // -------------------------------------------------------------------------------------
 // 3D Rendering utils
 // -------------------------------------------------------------------------------------
-
+void plane(char* spriteName, float x, float y, float z, float width, float height, float yaw, float pitch, float roll);
 
 // -------------------------------------------------------------------------------------
 // Text
