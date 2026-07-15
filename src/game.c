@@ -39,6 +39,7 @@ int main(void)
         plane("debug_textures_0002", 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
         plane("debug_textures_0002", 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
         plane("debug", 0.0f, 0.5f, 0.0f, 1.0f, 1.0f, yaw, pitch, 0.0f);
+        billboard("debug_entities_0001", 0.0f, 0.5f, 0.0f, 1.0f);
 
 
         plane("debug_textures_0005", 5.0f, 0.0f, 0.0f, 5.0f, 5.0f, 0.0f, PI / 2.0f, PI / 2.0f);

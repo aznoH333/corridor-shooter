@@ -518,6 +518,11 @@ void plane(char* spriteName, float x, float y, float z, float width, float heigh
 }
 
 
+void billboard(char* spriteName, float x, float y, float z, float scale) {
+    DrawBillboard(camera3d, *getSprite(spriteName), (Vector3) {x, y, z}, scale, WHITE); // Draw a billboard texture
+}
+
+
 
 // -------------------------------------------------------------------------------------
 // Input
