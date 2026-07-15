@@ -57,6 +57,11 @@ float interpolate(float a, float b, float w);
 void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidth, int newWorldHeight, char* windowTitle);
 // Renders all the qued sprites to the screen
 void Render();
+// renders in 3d mode
+void Begin3DMode();
+void End3DMode();
+
+
 
 // Changes the current window resolution
 // If fullscreen is true changes to monitor resolution instead and switches fullscreen on
@@ -70,6 +75,10 @@ void UseShader(char* vertexPath, char* fragmentPath);
 void sprMain(char* spriteName, float x, float y, float width, float height, bool flipX, bool flipY, float rotation, Color color, int layer);
 void spr(char* spriteName, float x, float y, int layer);
 void sprFRC(char* spriteName, float x, float y, bool flipX, bool flipY, float rotation, Color color, int layer);
+
+// -------------------------------------------------------------------------------------
+// 3D Rendering utils
+// -------------------------------------------------------------------------------------
 
 
 // -------------------------------------------------------------------------------------

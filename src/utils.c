@@ -312,6 +312,7 @@ void drawText(char* text, float x, float y, float size, Color color){
 // -------------------------------------------------------------------------------------
 // Rendering
 // -------------------------------------------------------------------------------------
+Camera camera3d = {0};
 int worldWidth;
 int worldHeight;
 int windowWidth;
@@ -346,6 +347,12 @@ void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidt
 	worldHeight = newWorldHeight;
 	windowWidth = newWindowWidth;
 	windowHeight = newWindowHeight;
+
+    camera3d.position = (Vector3){ 10.0f, 10.0f, 10.0f }; // Camera position
+    camera3d.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
+    camera3d.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+    camera3d.fovy = 45.0f;                                // Camera field-of-view Y
+    camera3d.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 	
 	InitWindow(windowWidth, windowHeight, windowTitle);
 	InitAudioDevice();
@@ -361,12 +368,8 @@ void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidt
 }
 
 
-void Render() {
-	// render to texture
-	BeginTextureMode(renderTexture);
-	ClearBackground(BLACK);	
-	
-	// draw queued sprites
+void RenderQueued2D() {
+    // draw queued sprites
 	for (int layerIndex = 0; layerIndex < MAX_TEXTURE_LAYERS; layerIndex++) {
 		DrawArgumentArray* layer = &drawQueue[layerIndex];
 		for (unsigned int i = 0; i < layer->count; i++) {
@@ -387,14 +390,12 @@ void Render() {
 	}
 
 	textQueue.count = 0;
+}
 
 
-	EndTextureMode();
-
-	// render to screen
+void RenderToScreen() {
 	BeginDrawing();
-	
-	ClearBackground(BLACK);
+    ClearBackground(BLACK);
 	BeginShaderMode(shader);
 
 	DrawTexturePro(renderTexture.texture,
@@ -418,6 +419,38 @@ void Render() {
 		SetWindowSize(windowWidth, windowHeight);
 	}
 }
+
+// render in 2d mode
+void Render() {
+	// render to texture
+	BeginTextureMode(renderTexture);
+	ClearBackground(BLACK);	
+	
+	RenderQueued2D();
+	EndTextureMode();
+
+	// render to screen
+	RenderToScreen();
+	
+}
+
+void Begin3DMode() {
+	BeginTextureMode(renderTexture);
+	ClearBackground(BLACK);	
+
+    BeginMode3D(camera3d);
+}
+
+void End3DMode() {
+    EndMode3D();
+    // render2d objects (gui and text)
+	RenderQueued2D();
+
+	EndTextureMode();
+
+    RenderToScreen();
+}
+
 
 // changes the current window resolution
 // if fullscreen is true changes to monitor resolution instead and switches fullscreen on
