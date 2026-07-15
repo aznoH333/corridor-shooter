@@ -1,7 +1,6 @@
 #include "utils.h"
 #include "stdbool.h"
 #include "string.h"
-#include "stdio.h"
 
 // -------------------------------------------------------------------------------------
 // Hashmap
@@ -371,8 +370,6 @@ void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidt
     // load mesh
     planeMesh = GenMeshPlane(1.0f, 1.0f, 1, 1);
     planeMaterial = LoadMaterialDefault();
-    printf("got here1\n");
-    SetMaterialTexture(&planeMaterial, MATERIAL_MAP_DIFFUSE, LoadTexture("./resources/textures/debug.png"));
 
 	shader = LoadShader(0, 0);
 }
@@ -514,13 +511,8 @@ void plane(char* spriteName, float x, float y, float z, float width, float heigh
     matrix = MatrixMultiply(matrix, MatrixScale(width, 1.0f, height));
     matrix = MatrixMultiply(matrix, MatrixRotateXYZ((Vector3){pitch, yaw, roll}));
     matrix = MatrixMultiply(matrix, MatrixTranslate(x, y, z));
-    // printf("t %f, %f, %f \n", yaw, pitch, roll);
 
-    //MatrixTranslate(x, y, z);
-    //MatrixRotateXYZ(pitch, yaw, roll);
-    //MatrixScale(width, height, 1.0f);
-
-    //SetMaterialTexture(&planeMaterial, MATERIAL_MAP_DIFFUSE, *getSprite(spriteName));
+    SetMaterialTexture(&planeMaterial, MATERIAL_MAP_DIFFUSE, *getSprite(spriteName));
 
     DrawMesh(planeMesh, planeMaterial, matrix);
 }
