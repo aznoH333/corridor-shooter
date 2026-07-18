@@ -312,7 +312,7 @@ void drawText(char* text, float x, float y, float size, Color color){
 // -------------------------------------------------------------------------------------
 // Rendering
 // -------------------------------------------------------------------------------------
-Camera camera3d = {0};
+Camera3D camera3d = {0};
 int worldWidth;
 int worldHeight;
 int windowWidth;
@@ -520,6 +520,23 @@ void plane(char* spriteName, float x, float y, float z, float width, float heigh
 
 void billboard(char* spriteName, float x, float y, float z, float scale) {
     DrawBillboard(camera3d, *getSprite(spriteName), (Vector3) {x, y, z}, scale, WHITE); // Draw a billboard texture
+}
+
+
+void setCamera(float x, float y, float z, float rotationHorizontal, float rotationVertical) {
+    //set position
+    camera3d.position.x = x;
+    camera3d.position.y = y;
+    camera3d.position.z = z;
+
+    // set rotation
+    camera3d.target.x = x + cos(rotationHorizontal) * cos(rotationVertical);
+    camera3d.target.y = y + sin(rotationVertical);
+    camera3d.target.z = z + sin(rotationHorizontal) * cos(rotationVertical);
+
+
+
+
 }
 
 

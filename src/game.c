@@ -21,11 +21,56 @@ int main(void)
 
     float yaw = 0.0f;
     float pitch = 0.0f;
+    float x = 0.0f;
+    float y = 1.0f;
+    float z = 0.0f;
+
+    float HALF_PI = (PI / 2.0f) - 0.05f;
+
 
     while (!WindowShouldClose())
 	{
-		yaw += 0.01f;
-        pitch += 0.02f;
+
+        if (IsKeyDown(KEY_A)) {
+            yaw -= 0.02f;
+        }
+
+        if (IsKeyDown(KEY_D)) {
+            yaw += 0.02f;
+        }
+
+        if (IsKeyDown(KEY_S)) {
+            pitch -= 0.02f;
+        }
+
+        if (IsKeyDown(KEY_W)) {
+            pitch += 0.02f;
+        }
+
+
+        if (IsKeyDown(KEY_UP)) {
+            x += cos(yaw) * 0.1f;
+            z += sin(yaw) * 0.1f;
+        }
+
+        if (IsKeyDown(KEY_DOWN)) {
+            x -= cos(yaw) * 0.1f;
+            z -= sin(yaw) * 0.1f;
+        }
+
+        if (IsKeyDown(KEY_LEFT)) {
+            x -= sin(-yaw) * 0.1f;
+            z -= cos(-yaw) * 0.1f;
+        }
+
+        if (IsKeyDown(KEY_RIGHT)) {
+            x += sin(-yaw) * 0.1f;
+            z += cos(-yaw) * 0.1f;
+        }
+
+
+
+        pitch = Clamp(pitch, -HALF_PI, HALF_PI);
 
 		drawText("empty window", 15, 40, 100, WHITE);
 		Begin3DMode();
@@ -45,6 +90,7 @@ int main(void)
         plane("debug_textures_0005", 5.0f, 0.0f, 0.0f, 5.0f, 5.0f, 0.0f, PI / 2.0f, PI / 2.0f);
         plane("debug_textures_0005", -5.0f, 0.0f, 0.0f, 5.0f, 5.0f, 0.0f, PI / 2.0f, -PI / 2.0f);
 
+        setCamera(x, y, z, yaw, pitch);
 
 
         End3DMode();
