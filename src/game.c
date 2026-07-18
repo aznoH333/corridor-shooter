@@ -22,8 +22,11 @@ int main(void)
     float yaw = 0.0f;
     float pitch = 0.0f;
     float x = 0.0f;
-    float y = 1.0f;
+    float y = 2.0f;
     float z = 0.0f;
+
+    float CUBE_SIZE = 100.0f;
+    float SIDE_OFFSET = CUBE_SIZE / 2.0f;
 
     float HALF_PI = (PI / 2.0f) - 0.05f;
 
@@ -76,19 +79,22 @@ int main(void)
 		Begin3DMode();
 
         
-        plane("debug_textures_0002", 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+        plane("debug_textures_0002", 0.0f,  0.0f,        0.0f, CUBE_SIZE, CUBE_SIZE, 0.0f, 0.0f, 0.0f);
+        plane("debug_textures_0005", 0.0f,  CUBE_SIZE,   0.0f, CUBE_SIZE, CUBE_SIZE, 0.0f, PI, 0.0f);
 
 
-        plane("debug_textures_0002", 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
-        plane("debug_textures_0002", -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
-        plane("debug_textures_0002", 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
-        plane("debug_textures_0002", 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+
         plane("debug", 0.0f, 0.5f, 0.0f, 1.0f, 1.0f, yaw, pitch, 0.0f);
         billboard("debug_entities_0001", 0.0f, 0.5f, 0.0f, 1.0f);
 
 
-        plane("debug_textures_0005", 5.0f, 0.0f, 0.0f, 5.0f, 5.0f, 0.0f, PI / 2.0f, PI / 2.0f);
-        plane("debug_textures_0005", -5.0f, 0.0f, 0.0f, 5.0f, 5.0f, 0.0f, PI / 2.0f, -PI / 2.0f);
+        plane("debug_textures_0005", SIDE_OFFSET,   SIDE_OFFSET, 0.0f,          CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, PI / 2.0f);
+        plane("debug_textures_0005", -SIDE_OFFSET,  SIDE_OFFSET, 0.0f,          CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, -PI / 2.0f);
+
+        plane("debug_textures_0005", 0.0f,          SIDE_OFFSET, SIDE_OFFSET,   CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, -PI);
+        plane("debug_textures_0005", 0.0f,          SIDE_OFFSET, -SIDE_OFFSET,  CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, 0.0f);
+
+
 
         setCamera(x, y, z, yaw, pitch);
 
