@@ -71,6 +71,8 @@ void End3DMode();
 void SwitchResolution(int width, int height, bool fullscreen);
 // Loads a shader into memory and sets it as active. If you want to use the default shader just pass 0 instead of vertexPath or fragmentPath.
 void UseShader(char* vertexPath, char* fragmentPath);
+// Loads a shader to use only for the 3d world rendering
+void Use3DShader(char* vertexPath, char* fragmentPath);
 
 // -------------------------------------------------------------------------------------
 // Texture drawing

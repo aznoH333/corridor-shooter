@@ -323,6 +323,7 @@ float scaleFactor;
 float renderWidth;
 float renderHeight;
 Shader shader;
+Shader shader3d;
 float gutterXWidth;
 float gutterYHeight;
 Mesh planeMesh;
@@ -372,6 +373,7 @@ void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidt
     planeMaterial = LoadMaterialDefault();
 
 	shader = LoadShader(0, 0);
+    shader3d = LoadShader(0, 0);
 }
 
 
@@ -443,13 +445,18 @@ void Render() {
 
 void Begin3DMode() {
 	BeginTextureMode(renderTexture);
-	ClearBackground(BLACK);	
+    ClearBackground(BLACK);	
+
+    BeginShaderMode(shader3d);
 
     BeginMode3D(camera3d);
 }
 
 void End3DMode() {
+
     EndMode3D();
+    EndShaderMode();
+
     // render2d objects (gui and text)
 	RenderQueued2D();
 
@@ -501,6 +508,15 @@ void UseShader(char* vertexPath, char* fragmentPath){
 	shader = LoadShader(vertexPath, fragmentPath);
 
 }
+
+void Use3DShader(char* vertexPath, char* fragmentPath){
+
+    printf("Using 3d shader [vertex : %s] [fragment : %s]\n", vertexPath, fragmentPath);
+
+    shader3d = LoadShader(vertexPath, fragmentPath);
+    planeMaterial.shader = shader3d;
+}
+
 
 // -------------------------------------------------------------------------------------
 // 3D Rendering utils

@@ -15,6 +15,7 @@ int main(void)
 
 	InitTextureWindow(screenWidth, screenHeight, 1920, 1080, "empty project");	
 	UseShader("./resources/shaders/shaderVert.vs", "./resources/shaders/shaderFrag.fs");
+    Use3DShader("./resources/shaders/shader3DVert.vs", "./resources/shaders/shader3DFrag.fs");
     SetTargetFPS(60);
 	// Main game loop
 
