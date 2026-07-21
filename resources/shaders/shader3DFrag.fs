@@ -2,6 +2,7 @@
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
+in vec3 vLighting;
 
 uniform sampler2D texture0; // raylib default texture uniform name
 
@@ -12,9 +13,8 @@ void main()
     
 	
 	vec4 tex = texture(texture0, fragTexCoord);
-    tex.r = 1.0;
     
 	
-	finalColor = tex * fragColor;
+	finalColor = tex * fragColor * vec4(vLighting, 1.0);
 }
 
