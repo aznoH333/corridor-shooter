@@ -21,7 +21,6 @@ out vec3 vLighting;
 vec3 calculateLighting() {
     vec3 ambient = vec3(0.1, 0.1, 0.1);
 
-
     // spot lighting
     vec3 lightPosition = vec3(0.0, 0.5, 0.0); // TODO : set lights as uniforms
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
@@ -35,13 +34,11 @@ vec3 calculateLighting() {
       vLighting = ambientLight + (directionalLightColor * directional);
     */
 
-    vec4 transformedNormal = mvp * vec4(vertexNormal, 1.0);
+    vec4 transformedNormal = vec4( vertexNormal, 1.0 ) * vec4( vertexPosition, 1.0 );
 
     float directional = max(dot(transformedNormal.xyz, lightDirection), 0.0);
 
-
-
-    return ambient + (lightColor * directional);
+    return ambient + transformedNormal.xyz;//+ (lightColor * directional);
 }
 
 
