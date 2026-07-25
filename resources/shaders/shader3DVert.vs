@@ -8,7 +8,7 @@ in vec4 vertexColor;
 
 // Input uniform values
 uniform mat4 mvp;
-uniform mat3 matNormal;
+uniform mat4 matNormal;
 
 // Output vertex attributes (to fragment shader)
 out vec2 fragTexCoord;
@@ -19,26 +19,19 @@ out vec3 vLighting;
 
 
 vec3 calculateLighting() {
-    vec3 ambient = vec3(0.1, 0.1, 0.1);
+    vec3 ambient = vec3(0.3, 0.3, 0.3);
 
-    // spot lighting
-    vec3 lightPosition = vec3(0.0, 0.5, 0.0); // TODO : set lights as uniforms
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
 
-    vec3 lightDirection = normalize(vertexPosition - lightPosition);
+    // Equivalent to reference directionalVector
+    vec3 lightDirection = normalize(vec3(0.85, 0.8, 0.75));
 
-    /*
-        highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
+    // Equivalent to reference: transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
+    // But since raylib gives mat3, do mat3 * vec3
+    vec3 transformedNormal = (matNormal * vec4(vertexNormal, 0.0)).xyz;
 
-      highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
-      vLighting = ambientLight + (directionalLightColor * directional);
-    */
-
-    vec4 transformedNormal = vec4( vertexNormal, 1.0 ) * vec4( vertexPosition, 1.0 );
-
-    float directional = max(dot(transformedNormal.xyz, lightDirection), 0.0);
-
-    return ambient + transformedNormal.xyz;//+ (lightColor * directional);
+    float directional = max(dot(transformedNormal, lightDirection), 0.0);
+    return ambient + (lightColor * directional);
 }
 
 

@@ -7,6 +7,22 @@
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
+
+
+
+void cube(char* texture, float x, float y, float z, float size) {
+
+    float sideOffset = size / 2.0f;
+
+    plane(texture, x,               y - sideOffset,         z,          size, size, 0.0f, PI, 0.0f);
+    plane(texture, x,               y + sideOffset,         z,          size, size, 0.0f, 0.0f, 0.0f);
+    plane(texture, x + sideOffset,  y,         z,          size, size, 0.0f, PI / 2.0f, -PI / 2.0f);
+    plane(texture, x - sideOffset,  y,         z,          size, size, 0.0f, PI / 2.0f, PI / 2.0f);
+    plane(texture, x,               y,         z + sideOffset,   size, size, 0.0f, -PI / 2.0f, -PI);
+    plane(texture, x,               y,         z - sideOffset,  size, size, 0.0f, -PI / 2.0f, 0.0f);
+
+}
+
 int main(void)
 {
 	SetTraceLogLevel(LOG_WARNING); 
@@ -94,7 +110,8 @@ int main(void)
 
         plane("debug_textures_0005", 0.0f,          SIDE_OFFSET, SIDE_OFFSET,   CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, -PI);
         plane("debug_textures_0005", 0.0f,          SIDE_OFFSET, -SIDE_OFFSET,  CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, 0.0f);
-
+        
+        cube("picus", 2.0f, 0.75f, 0.0f, 1.0f);
 
 
         setCamera(x, y, z, yaw, pitch);
