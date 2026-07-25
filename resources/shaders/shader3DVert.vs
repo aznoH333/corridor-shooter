@@ -9,12 +9,19 @@ in vec4 vertexColor;
 // Input uniform values
 uniform mat4 mvp;
 uniform mat4 matNormal;
+uniform mat4 matModel;
 
 // Output vertex attributes (to fragment shader)
 out vec2 fragTexCoord;
 out vec4 fragColor;
 out vec3 vLighting;
 
+
+out LightData {
+	vec3 normal;
+	vec3 eye;
+	vec3 lightDir;
+} LightDataOut;
 
 
 
@@ -35,6 +42,15 @@ vec3 calculateLighting() {
 }
 
 
+void applyPointLight() {
+    vec4 pos = matModel * vec4(vertexPosition, 1.0);
+    vec4 lPos = vec4(1.0, 4.0, 0.0, 1.0);
+
+	LightDataOut.normal = normalize(matNormal * vec4(vertexNormal, 1.0)).xyz;
+	LightDataOut.lightDir = vec3(lPos - pos);
+	LightDataOut.eye = vec3(-pos);
+}
+
 
 void main()
 {
@@ -47,7 +63,7 @@ void main()
     vLighting = calculateLighting();
 
 
-
+    applyPointLight();
     // Calculate final vertex position
     gl_Position = mvp*vec4(vertexPosition, 1.0);
 }

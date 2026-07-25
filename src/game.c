@@ -42,7 +42,7 @@ int main(void)
     float y = 2.0f;
     float z = 0.0f;
 
-    float CUBE_SIZE = 100.0f;
+    float CUBE_SIZE = 500.0f;
     float SIDE_OFFSET = CUBE_SIZE / 2.0f;
 
     float HALF_PI = (PI / 2.0f) - 0.05f;
