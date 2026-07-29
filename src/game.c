@@ -37,48 +37,31 @@ int main(void)
     SetTargetFPS(60);
 
     // setup world
-    World world = {
-        .planes = {
-            (Plane) {
-                .texture = "debug_textures_0002",
-                .x = 0,
-                .y = 0,
-                .z = 0,
-                .width = 2000.0f,
-                .height = 2000.0f,
-                .yaw = 0.0f,
-                .pitch = 0.0f,
-                .roll = 0.0f
-            }
-        },
-        .planeCount = 1,
+    World world = initializeEmptyWorld();
+
+    pushPlane(&world, (Plane) {
+        .texture = "debug_textures_0002",
+        .x = 0,
+        .y = 0,
+        .z = 0,
+        .yaw = 0,
+        .pitch = 0,
+        .roll = 0,
+        .width = 20.0f,
+        .height = 20.0f
+    });
+
+    pushBillboard(&world, (Billboard){
+        .texture = "debug_entities_0001",
+        .x = 0,
+        .y = 0.5f,
+        .z = 0,
+        .size = 1.0f
+    });
 
 
-        .billboards = {
-            (Billboard) {
-                .texture = "debug_entities_0001",
-                .x = 0.0f,
-                .y = 0.5f,
-                .z = 0.0f,
-                .size = 1.0f
-            }
-        },
-        .billboardCount = 1,
-
-        .lights = {},
-        .lightCount = 0,
-
-        .camera = {
-            .x = -5.0f,
-            .y = 2.0f,
-            .z = 0.0f,
-            .rotationHorizontal = 0.0f,
-            .rotationVertical = -0.2f
-        }
-    };
-
-
-
+    world.camera.x = -5.0f;
+    world.camera.y = 1.0f;
 
 
 	// Main game loop

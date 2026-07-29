@@ -42,14 +42,19 @@ typedef struct {
     float b;
 } Light;
 
+
+#define MAX_PLANES 100
+#define MAX_BILLBOARDS 100
+#define MAX_LIGHTS 10
+
 typedef struct {
-    Plane planes[100];
+    Plane planes[MAX_PLANES];
     int planeCount;
 
-    Billboard billboards[100];
+    Billboard billboards[MAX_BILLBOARDS];
     int billboardCount;
     
-    Light lights[10];
+    Light lights[MAX_LIGHTS];
     int lightCount;
     
     WorldCamera camera;
@@ -57,5 +62,12 @@ typedef struct {
 
 
 void renderWorld(World* world);
+World initializeEmptyWorld();
+
+
+void pushPlane(World* world, Plane plane);
+void pushBillboard(World* world, Billboard billboard);
+void pushLight(World* world, Light light);
+
 
 #endif
