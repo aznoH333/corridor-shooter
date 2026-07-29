@@ -47,10 +47,10 @@ int main(void)
 
     float HALF_PI = (PI / 2.0f) - 0.05f;
 
-
+    int t = 0;
     while (!WindowShouldClose())
 	{
-
+        t++;
         if (IsKeyDown(KEY_A)) {
             yaw -= 0.02f;
         }
@@ -102,7 +102,11 @@ int main(void)
 
 
         plane("debug", 0.0f, 0.5f, 0.0f, 1.0f, 1.0f, yaw, pitch, 0.0f);
-        billboard("debug_entities_0001", 0.0f, 0.5f, 0.0f, 1.0f);
+        
+        float billboardX = cos(t / 20.0f) * 2.0f;
+        float billboardZ = sin(t / 20.0f) * 2.0f;
+        
+        billboard("debug_entities_0001", billboardX, 2.5f, billboardZ, 5.0f);
 
 
         plane("debug_textures_0005", SIDE_OFFSET,   SIDE_OFFSET, 0.0f,          CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, PI / 2.0f);

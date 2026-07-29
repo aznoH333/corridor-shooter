@@ -5,11 +5,14 @@ in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec3 vertexNormal;
 in vec4 vertexColor;
+in float isBillboard;
+
 
 // Input uniform values
 uniform mat4 mvp;
 uniform mat4 matNormal;
 uniform mat4 matModel;
+
 
 // Output vertex attributes (to fragment shader)
 out vec2 fragTexCoord;
@@ -44,11 +47,22 @@ vec3 calculateLighting() {
 
 void applyPointLight() {
     vec4 pos = matModel * vec4(vertexPosition, 1.0);
-    vec4 lPos = vec4(1.0, 4.0, 0.0, 1.0);
+    vec4 lPos = vec4(0.0, isBillboard, 0.0, 1.0);
 
-	LightDataOut.normal = normalize(matNormal * vec4(vertexNormal, 1.0)).xyz;
-	LightDataOut.lightDir = vec3(lPos - pos);
-	LightDataOut.eye = vec3(-pos);
+    if (isBillboard > 0.9) {
+        LightDataOut.normal = vec3(1.0, 1.0, 1.0);
+        LightDataOut.lightDir = vec3(1.0, 1.0, 1.0);
+        LightDataOut.eye = vec3(1.0, 1.0, 1.0);
+    } else {
+        LightDataOut.normal = normalize(matNormal * vec4(vertexNormal, 1.0)).xyz;
+        LightDataOut.lightDir = vec3(lPos - pos);
+        LightDataOut.eye = vec3(-pos);
+    }
+    
+
+
+
+
 }
 
 

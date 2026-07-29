@@ -324,6 +324,7 @@ float renderWidth;
 float renderHeight;
 Shader shader;
 Shader shader3d;
+int isBillboardLocation;
 float gutterXWidth;
 float gutterYHeight;
 Mesh planeMesh;
@@ -512,8 +513,9 @@ void UseShader(char* vertexPath, char* fragmentPath){
 void Use3DShader(char* vertexPath, char* fragmentPath){
 
     printf("Using 3d shader [vertex : %s] [fragment : %s]\n", vertexPath, fragmentPath);
-
     shader3d = LoadShader(vertexPath, fragmentPath);
+    isBillboardLocation = GetShaderLocationAttrib(shader3d, "isBillboard");
+    printf("is billboar loc : %d \n", isBillboardLocation);
     planeMaterial.shader = shader3d;
 }
 
@@ -521,7 +523,13 @@ void Use3DShader(char* vertexPath, char* fragmentPath){
 // -------------------------------------------------------------------------------------
 // 3D Rendering utils
 // -------------------------------------------------------------------------------------
+float shaderFalse = 0.0f;
+float shaderTrue = 1.0f;
+
 void plane(char* spriteName, float x, float y, float z, float width, float height, float yaw, float pitch, float roll) {
+    SetShaderValue(shader3d, isBillboardLocation, &shaderFalse, SHADER_ATTRIB_FLOAT);
+    
+    
     Matrix matrix = MatrixIdentity();
 
     matrix = MatrixMultiply(matrix, MatrixScale(width, 1.0f, height));
@@ -533,8 +541,8 @@ void plane(char* spriteName, float x, float y, float z, float width, float heigh
     DrawMesh(planeMesh, planeMaterial, matrix);
 }
 
-
 void billboard(char* spriteName, float x, float y, float z, float scale) {
+    SetShaderValue(shader3d, isBillboardLocation, &shaderFalse, SHADER_ATTRIB_FLOAT);
     DrawBillboard(camera3d, *getSprite(spriteName), (Vector3) {x, y, z}, scale, WHITE); // Draw a billboard texture
 }
 
