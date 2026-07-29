@@ -23,10 +23,9 @@ out vec4 finalColor;
 
 void main()
 {
-    
 
     vec4 diffuse = vec4(1.0, 1.0, 1.0, 1.0);
-	vec4 ambient = vec4(0.1, 0.0, 0.0, 1.0);
+	vec4 ambient = vec4(0.3, 0.3, 0.3, 1.0);
 	vec4 specular = vec4(0.2, 0.2, 0.2, 1.0);
 	float shininess = 1.0;
 
@@ -50,7 +49,7 @@ void main()
     
 
     float distance = length(LightDataIn.lightDir);
-    float radius = 100.0;
+    float radius = 100000.0;
 
     float fade = clamp(1.0 - distance / radius, 0.0, 1.0);
     float attenuation = fade * fade;

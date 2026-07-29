@@ -3,6 +3,7 @@
 #include "string.h"
 #include "raymath.h"
 #include "math.h"
+#include "world.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -25,7 +26,8 @@ void cube(char* texture, float x, float y, float z, float size) {
 
 int main(void)
 {
-	SetTraceLogLevel(LOG_WARNING); 
+	// setup window
+    SetTraceLogLevel(LOG_WARNING); 
     const int screenWidth = 800;
     const int screenHeight = 400;
 
@@ -33,93 +35,59 @@ int main(void)
 	UseShader("./resources/shaders/shaderVert.vs", "./resources/shaders/shaderFrag.fs");
     Use3DShader("./resources/shaders/shader3DVert.vs", "./resources/shaders/shader3DFrag.fs");
     SetTargetFPS(60);
+
+    // setup world
+    World world = {
+        .planes = {
+            (Plane) {
+                .texture = "debug_textures_0002",
+                .x = 0,
+                .y = 0,
+                .z = 0,
+                .width = 2000.0f,
+                .height = 2000.0f,
+                .yaw = 0.0f,
+                .pitch = 0.0f,
+                .roll = 0.0f
+            }
+        },
+        .planeCount = 1,
+
+
+        .billboards = {
+            (Billboard) {
+                .texture = "debug_entities_0001",
+                .x = 0.0f,
+                .y = 0.5f,
+                .z = 0.0f,
+                .size = 1.0f
+            }
+        },
+        .billboardCount = 1,
+
+        .lights = {},
+        .lightCount = 0,
+
+        .camera = {
+            .x = -5.0f,
+            .y = 2.0f,
+            .z = 0.0f,
+            .rotationHorizontal = 0.0f,
+            .rotationVertical = -0.2f
+        }
+    };
+
+
+
+
+
 	// Main game loop
-
-
-    float yaw = 0.0f;
-    float pitch = 0.0f;
-    float x = 0.0f;
-    float y = 2.0f;
-    float z = 0.0f;
-
-    float CUBE_SIZE = 500.0f;
-    float SIDE_OFFSET = CUBE_SIZE / 2.0f;
-
-    float HALF_PI = (PI / 2.0f) - 0.05f;
-
-    int t = 0;
     while (!WindowShouldClose())
 	{
-        t++;
-        if (IsKeyDown(KEY_A)) {
-            yaw -= 0.02f;
-        }
 
-        if (IsKeyDown(KEY_D)) {
-            yaw += 0.02f;
-        }
-
-        if (IsKeyDown(KEY_S)) {
-            pitch -= 0.02f;
-        }
-
-        if (IsKeyDown(KEY_W)) {
-            pitch += 0.02f;
-        }
-
-
-        if (IsKeyDown(KEY_UP)) {
-            x += cos(yaw) * 0.1f;
-            z += sin(yaw) * 0.1f;
-        }
-
-        if (IsKeyDown(KEY_DOWN)) {
-            x -= cos(yaw) * 0.1f;
-            z -= sin(yaw) * 0.1f;
-        }
-
-        if (IsKeyDown(KEY_LEFT)) {
-            x -= sin(-yaw) * 0.1f;
-            z -= cos(-yaw) * 0.1f;
-        }
-
-        if (IsKeyDown(KEY_RIGHT)) {
-            x += sin(-yaw) * 0.1f;
-            z += cos(-yaw) * 0.1f;
-        }
-
-
-
-        pitch = Clamp(pitch, -HALF_PI, HALF_PI);
-
-		drawText("empty window", 15, 40, 100, WHITE);
 		Begin3DMode();
-
         
-        plane("debug_textures_0002", 0.0f,  0.0f,        0.0f, CUBE_SIZE, CUBE_SIZE, 0.0f, 0.0f, 0.0f);
-        plane("debug_textures_0005", 0.0f,  CUBE_SIZE,   0.0f, CUBE_SIZE, CUBE_SIZE, 0.0f, PI, 0.0f);
-
-
-
-        plane("debug", 0.0f, 0.5f, 0.0f, 1.0f, 1.0f, yaw, pitch, 0.0f);
-        
-        float billboardX = cos(t / 20.0f) * 2.0f;
-        float billboardZ = sin(t / 20.0f) * 2.0f;
-        
-        billboard("debug_entities_0001", billboardX, 2.5f, billboardZ, 5.0f);
-
-
-        plane("debug_textures_0005", SIDE_OFFSET,   SIDE_OFFSET, 0.0f,          CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, PI / 2.0f);
-        plane("debug_textures_0005", -SIDE_OFFSET,  SIDE_OFFSET, 0.0f,          CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, -PI / 2.0f);
-
-        plane("debug_textures_0005", 0.0f,          SIDE_OFFSET, SIDE_OFFSET,   CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, -PI);
-        plane("debug_textures_0005", 0.0f,          SIDE_OFFSET, -SIDE_OFFSET,  CUBE_SIZE, CUBE_SIZE, 0.0f, PI / 2.0f, 0.0f);
-        
-        cube("picus", 2.0f, 0.75f, 0.0f, 1.0f);
-
-
-        setCamera(x, y, z, yaw, pitch);
-
+        renderWorld(&world);
 
         End3DMode();
     }
