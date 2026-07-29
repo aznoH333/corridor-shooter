@@ -8,6 +8,12 @@
 #include "raymath.h"
 
 
+// usefull constants
+#define QUARTER_ROTATION PI / 2.0f
+#define HALF_ROTATION PI
+#define THREE_QUARTER_ROTATION PI + QUARTER_ROTATION
+#define FULL_ROTATION PI * 2.0f
+
 // -------------------------------------------------------------------------------------
 // ArrayHandle
 // -------------------------------------------------------------------------------------

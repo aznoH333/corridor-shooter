@@ -4,6 +4,7 @@
 #include "raymath.h"
 #include "math.h"
 #include "world.h"
+#include "gamesim.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -37,40 +38,21 @@ int main(void)
     SetTargetFPS(60);
 
     // setup world
-    World world = initializeEmptyWorld();
-
-    pushPlane(&world, (Plane) {
-        .texture = "debug_textures_0002",
-        .x = 0,
-        .y = 0,
-        .z = 0,
-        .yaw = 0,
-        .pitch = 0,
-        .roll = 0,
-        .width = 20.0f,
-        .height = 20.0f
-    });
-
-    pushBillboard(&world, (Billboard){
-        .texture = "debug_entities_0001",
-        .x = 0,
-        .y = 0.5f,
-        .z = 0,
-        .size = 1.0f
-    });
-
-
-    world.camera.x = -5.0f;
-    world.camera.y = 1.0f;
+    
+    GameState state = initEmptyGame();
 
 
 	// Main game loop
     while (!WindowShouldClose())
 	{
 
+        GameState nextFrame = createNextFrame(&state);
+        World renderedWorld = convertToWorld(&nextFrame);
+        state = nextFrame;
+
 		Begin3DMode();
         
-        renderWorld(&world);
+        renderWorld(&renderedWorld);
 
         End3DMode();
     }
