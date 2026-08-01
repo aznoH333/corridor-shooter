@@ -6,24 +6,23 @@
 #include "world.h"
 #include "gamesim.h"
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
 
+typedef struct {
+    int dir;
+} Foo;
 
+void foo(struct Entity* entity, struct GameState* state) {
+    Foo* data = (Foo*)&entity->data;
 
-void cube(char* texture, float x, float y, float z, float size) {
+    if (entity->z - (entity->depth * 0.5f) < -state->map.width * 0.5f) {
+        data->dir = 1;
+    } else if (entity->z + (entity->depth * 0.5f) > state->map.width * 0.5f) {
+        data->dir = -1;
+    }
 
-    float sideOffset = size / 2.0f;
-
-    plane(texture, x,               y - sideOffset,         z,          size, size, 0.0f, PI, 0.0f);
-    plane(texture, x,               y + sideOffset,         z,          size, size, 0.0f, 0.0f, 0.0f);
-    plane(texture, x + sideOffset,  y,         z,          size, size, 0.0f, PI / 2.0f, -PI / 2.0f);
-    plane(texture, x - sideOffset,  y,         z,          size, size, 0.0f, PI / 2.0f, PI / 2.0f);
-    plane(texture, x,               y,         z + sideOffset,   size, size, 0.0f, -PI / 2.0f, -PI);
-    plane(texture, x,               y,         z - sideOffset,  size, size, 0.0f, -PI / 2.0f, 0.0f);
-
+    entity->z += 0.01f * data->dir;
 }
+
 
 int main(void)
 {
@@ -38,8 +37,19 @@ int main(void)
     SetTargetFPS(60);
 
     // setup world
-    
     GameState state = initEmptyGame();
+    addEntity(&state, (Entity) {
+        .texture = "debug_entities_0001",
+        .x = 0.0f,
+        .y = 0.5f,
+        .z = 0.5f,
+        .width = 1.0f,
+        .height = 1.0f,
+        .depth = 1.0f,
+        .size = 1.0f,
+        .update = &foo,
+    }, &(Foo){.dir = -1}, sizeof(Foo));
+
 
 
 	// Main game loop
