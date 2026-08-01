@@ -144,7 +144,7 @@ GameState initEmptyGame() {
     return (GameState) {
         .map = (GameMap) {
             .length = 30.0f,
-            .width = 10.0f,
+            .width = 5.0f,
             .ceilingHeight = 5.0f
         },
 
