@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "stdio.h"
 #include "string.h"
+#include "stdbool.h"
 
 void pushEntity(GameState* state, Entity* entity);
 
@@ -20,7 +21,7 @@ World convertToWorld(GameState* state) {
             // floor
             pushPlane(&world, (Plane) {
                 .texture = "debug_textures_0002",
-                .x = i * map->width,
+                .x = i * map->width + map->width * 0.5,
                 .y = 0,
                 .z = 0,
                 .yaw = 0,
@@ -33,7 +34,7 @@ World convertToWorld(GameState* state) {
             // ceiling
             pushPlane(&world, (Plane) {
                 .texture = "debug_textures_0002",
-                .x = i * map->width,
+                .x = i * map->width + map->width * 0.5,
                 .y = map->ceilingHeight,
                 .z = 0,
                 .yaw = 0,
@@ -46,7 +47,7 @@ World convertToWorld(GameState* state) {
             // walls
             pushPlane(&world, (Plane) {
                 .texture = "debug_textures_0005",
-                .x = i * map->width,
+                .x = i * map->width + map->width * 0.5,
                 .y = map->width / 2.0f,
                 .z = map->width / 2.0f,
                 .yaw = HALF_ROTATION,
@@ -58,7 +59,7 @@ World convertToWorld(GameState* state) {
 
             pushPlane(&world, (Plane) {
                 .texture = "debug_textures_0005",
-                .x = i * map->width,
+                .x = i * map->width + map->width * 0.5,
                 .y = map->width / 2.0f,
                 .z = -map->width / 2.0f,
                 .yaw = 0,
@@ -72,7 +73,7 @@ World convertToWorld(GameState* state) {
         // draw backwall
         pushPlane(&world, (Plane) {
             .texture = "debug_textures_0005",
-            .x = map->length - map->width / 2.0f,
+            .x = map->length,
             .y = map->width / 2.0f,
             .z = 0,
             .yaw = 0,
@@ -101,8 +102,9 @@ World convertToWorld(GameState* state) {
 
 
 
-    world.camera.x = -5.0f;
-    world.camera.y = 1.0f;
+    world.camera.y = state->map.width * 0.33;
+    world.camera.rotationVertical = -0.2f;
+    world.camera.x = state->camera.distance;
 
     return world;
 }
@@ -113,16 +115,25 @@ GameState createNextFrame(GameState* currentState) {
     
     // todo update here
     nextFrame.map = currentState->map;
-    nextFrame.camera = currentState->camera;
-
-    // todo entity culling
-    for (int i = 0; i < currentState->entities.count; ++i) {
-        Entity* entity = &currentState->entities.values[i];
-        entity->update(entity, currentState);
 
 
-        pushEntity(&nextFrame, entity);
+    
+
+    { // update entities
+        for (int i = 0; i < currentState->entities.count; ++i) {
+            Entity* entity = &currentState->entities.values[i];
+            bool result = entity->update(entity, currentState);
+
+            if (result) {
+                pushEntity(&nextFrame, entity);
+            }
+        }
     }
+
+    { // update camera
+        nextFrame.camera = currentState->camera;
+    }
+
 
     return nextFrame;
 }
@@ -132,8 +143,8 @@ GameState createNextFrame(GameState* currentState) {
 GameState initEmptyGame() {
     return (GameState) {
         .map = (GameMap) {
-            .length = 60.0f,
-            .width = 5.0f,
+            .length = 30.0f,
+            .width = 10.0f,
             .ceilingHeight = 5.0f
         },
 

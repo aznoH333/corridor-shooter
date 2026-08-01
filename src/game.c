@@ -5,23 +5,9 @@
 #include "math.h"
 #include "world.h"
 #include "gamesim.h"
+#include "entities.h"
 
 
-typedef struct {
-    int dir;
-} Foo;
-
-void foo(struct Entity* entity, struct GameState* state) {
-    Foo* data = (Foo*)&entity->data;
-
-    if (entity->z - (entity->depth * 0.5f) < -state->map.width * 0.5f) {
-        data->dir = 1;
-    } else if (entity->z + (entity->depth * 0.5f) > state->map.width * 0.5f) {
-        data->dir = -1;
-    }
-
-    entity->z += 0.01f * data->dir;
-}
 
 
 int main(void)
@@ -38,17 +24,7 @@ int main(void)
 
     // setup world
     GameState state = initEmptyGame();
-    addEntity(&state, (Entity) {
-        .texture = "debug_entities_0001",
-        .x = 0.0f,
-        .y = 0.5f,
-        .z = 0.5f,
-        .width = 1.0f,
-        .height = 1.0f,
-        .depth = 1.0f,
-        .size = 1.0f,
-        .update = &foo,
-    }, &(Foo){.dir = -1}, sizeof(Foo));
+    player(&state, 0, 0, 0);
 
 
 

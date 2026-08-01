@@ -102,7 +102,10 @@ float interpolate(float a, float b, float w){
 	float distance = mx - mn;
 
 	return distance * w + mn;
+}
 
+float sign(float a){
+	return (a >= 0) + (a > 0) - 1;
 }
 
 //------------------------------------------------------------------------------------

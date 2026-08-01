@@ -56,6 +56,7 @@ float boolToSign(bool input);
 float randomFloat(float min, float max);
 bool randomChance(float chance);
 float interpolate(float a, float b, float w);
+float sign(float a);
 
 
 // -------------------------------------------------------------------------------------

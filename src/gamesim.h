@@ -2,6 +2,7 @@
 #define GAMESIM
 
 #include "world.h"
+#include "stdbool.h"
 
 typedef struct Entity Entity;
 typedef struct GameState GameState;
@@ -16,12 +17,11 @@ struct Entity{
     float z;
     float width;
     float height;
-    float depth;
     float size;
 
     // entity specific
     char data[ENTITY_DATA_SIZE];
-    void(*update)(Entity*, GameState*);
+    bool(*update)(Entity*, GameState*);
 };
 
 
