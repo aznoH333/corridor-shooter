@@ -88,14 +88,20 @@ World convertToWorld(GameState* state) {
     {
         for (int i = 0; i < state->entities.count; ++i) {
             Entity* entity = &state->entities.values[i];
-
-            pushBillboard(&world, (Billboard){
-                .texture = entity->texture,
-                .x = entity->x,
-                .y = entity->y,
-                .z = entity->z,
-                .size = entity->size
-            });
+            pushPlane(
+                &world,
+                (Plane) {
+                    .texture = entity->texture,
+                    .x = entity->x,
+                    .y = entity->y,
+                    .z = entity->z,
+                    .yaw = 0,
+                    .pitch = QUARTER_ROTATION,
+                    .roll = QUARTER_ROTATION,
+                    .width = entity->size,
+                    .height = entity->size
+                }
+            );
         }
     }
 
@@ -143,13 +149,13 @@ GameState createNextFrame(GameState* currentState) {
 GameState initEmptyGame() {
     return (GameState) {
         .map = (GameMap) {
-            .length = 30.0f,
+            .length = 90.0f,
             .width = 5.0f,
             .ceilingHeight = 5.0f
         },
 
         .camera = (GameCamera) {
-            .distance = 0.0f
+            .distance = -9999.0f
         },
         .entities = (GameEntities){
             .values = {0},
