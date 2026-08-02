@@ -14,12 +14,12 @@ win not supported yet :(
 # todo:
 ## shader
 - [X] pass lights to the shader
-- [ ] multicolor light support
+- [X] multicolor light support
 - [X] change the shader to use a simpler distance based lighting model
-- [ ] change the lights to be calculated in the fragment shader
+- [X] change the lights to be calculated in the fragment shader
 
 ## entities
-- [ ] player collisions
+- [X] player collisions
 - [ ] normalize player movement vector
 - [X] change entities to use planes instead of billboards
 - [ ] support multi part entities

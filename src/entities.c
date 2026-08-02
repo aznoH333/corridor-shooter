@@ -120,3 +120,35 @@ void player(GameState* state, float x, float y, float z){
         .speed = 0.05f
     }, sizeof(PlayerData));
 }
+
+
+
+typedef struct {
+
+} DummyData;
+
+bool dummyUpdate(Entity* this, GameState* state){
+    return true;
+}
+
+void dummy(GameCamera* state, float x, float y, float z){
+    addEntity(state, (Entity){
+        .texture = "debug_entities_0001",
+        .x = x,
+        .y = y + 0.5f,
+        .z = z,
+        .width = 1.0f,
+        .height = 1.0f,
+        .size = 1.0f,
+        .update = &dummyUpdate,
+        .light = (EntityLight){
+            .isLight = true,
+            .radius = 10,
+            .r = 1,
+            .g = 0,
+            .b = 0
+        },
+    }, &(DummyData){},
+        sizeof(DummyData)
+    );
+}

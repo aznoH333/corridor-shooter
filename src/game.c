@@ -28,6 +28,7 @@ int main(void)
     WorldRenderingData renderingData = prepareWorldRenderingData();
     GameState state = initEmptyGame();
     player(&state, 0, 0, 0);
+    dummy(&state, 10, 0, 0);
 
 
 

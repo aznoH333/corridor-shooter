@@ -60,6 +60,9 @@ void main()
 	vec4 tex = texture(texture0, fragTexCoord);
     vec3 color = applyPointLight();
     
+    if (tex.a == 0) {
+        discard;
+    }
 
     finalColor = tex * fragColor * vec4(color, 1);
 
