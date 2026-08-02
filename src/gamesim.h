@@ -25,7 +25,8 @@ struct Entity{
     float z;
     float width;
     float height;
-    float size;
+    float textureWidth;
+    float textureHeight;
     EntityLight light;
 
     // entity specific

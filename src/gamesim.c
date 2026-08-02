@@ -8,6 +8,9 @@
 void pushEntity(GameState* state, Entity* entity);
 
 
+// when you multiply a number by this constant you convert from texture coordinates (pixels) to game coordinates
+const float TEX_SIZE_TO_GAME = 0.03125f;
+
 
 World convertToWorld(GameState* state) {
     World world = initializeEmptyWorld();
@@ -20,7 +23,7 @@ World convertToWorld(GameState* state) {
         for (int i = 0; i < (int)ceil(map->length / map->width); ++i ) {
             // floor
             pushPlane(&world, (Plane) {
-                .texture = "debug_textures_0002",
+                .texture = "ground",
                 .x = i * map->width + map->width * 0.5,
                 .y = 0,
                 .z = 0,
@@ -33,7 +36,7 @@ World convertToWorld(GameState* state) {
 
             // ceiling
             pushPlane(&world, (Plane) {
-                .texture = "debug_textures_0002",
+                .texture = "ground",
                 .x = i * map->width + map->width * 0.5,
                 .y = map->ceilingHeight,
                 .z = 0,
@@ -46,7 +49,7 @@ World convertToWorld(GameState* state) {
 
             // walls
             pushPlane(&world, (Plane) {
-                .texture = "debug_textures_0005",
+                .texture = "wall",
                 .x = i * map->width + map->width * 0.5,
                 .y = map->width / 2.0f,
                 .z = map->width / 2.0f,
@@ -58,7 +61,7 @@ World convertToWorld(GameState* state) {
             });
 
             pushPlane(&world, (Plane) {
-                .texture = "debug_textures_0005",
+                .texture = "wall",
                 .x = i * map->width + map->width * 0.5,
                 .y = map->width / 2.0f,
                 .z = -map->width / 2.0f,
@@ -72,7 +75,7 @@ World convertToWorld(GameState* state) {
         
         // draw backwall
         pushPlane(&world, (Plane) {
-            .texture = "debug_textures_0005",
+            .texture = "wall",
             .x = map->length,
             .y = map->width / 2.0f,
             .z = 0,
@@ -98,8 +101,9 @@ World convertToWorld(GameState* state) {
                     .yaw = 0,
                     .pitch = QUARTER_ROTATION,
                     .roll = QUARTER_ROTATION,
-                    .width = entity->size,
-                    .height = entity->size
+                    // convert from texturesize to gamesize
+                    .width = entity->textureWidth * TEX_SIZE_TO_GAME,
+                    .height = entity->textureHeight * TEX_SIZE_TO_GAME
                 }
             );
 
@@ -168,8 +172,8 @@ GameState initEmptyGame() {
     return (GameState) {
         .map = (GameMap) {
             .length = 90.0f,
-            .width = 5.0f,
-            .ceilingHeight = 5.0f
+            .width = 7.5f,
+            .ceilingHeight = 4.5f
         },
 
         .camera = (GameCamera) {

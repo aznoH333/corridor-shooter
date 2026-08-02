@@ -100,17 +100,18 @@ bool playerUpdate(Entity* this, GameState* state) {
 
 void player(GameState* state, float x, float y, float z){
     addEntity(state, (Entity) {
-        .texture = "debug_entities_0001",
+        .texture = "player_alt",
         .x = x,
         .y = y + 0.5f,
         .z = z,
         .width = 1.0f,
         .height = 1.0f,
-        .size = 1.0f,
+        .textureWidth = 18.0f,
+        .textureHeight = 24.0f,
         .update = &playerUpdate,
         .light = (EntityLight){
             .isLight = true,
-            .radius = 10,
+            .radius = 20,
             .r = 1,
             .g = 1,
             .b = 1
@@ -139,11 +140,12 @@ void dummy(GameCamera* state, float x, float y, float z){
         .z = z,
         .width = 1.0f,
         .height = 1.0f,
-        .size = 1.0f,
+        .textureWidth = 32.0f,
+        .textureHeight = 32.0f,
         .update = &dummyUpdate,
         .light = (EntityLight){
             .isLight = true,
-            .radius = 10,
+            .radius = 5,
             .r = 1,
             .g = 0,
             .b = 0

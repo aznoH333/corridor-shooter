@@ -28,8 +28,8 @@ int main(void)
     WorldRenderingData renderingData = prepareWorldRenderingData();
     GameState state = initEmptyGame();
     player(&state, 0, 0, 0);
-    dummy(&state, 10, 0, 0);
-
+    dummy(&state, 20, 0, 0);
+    SwitchResolution(0, 0, true);
 
 
 	// Main game loop
