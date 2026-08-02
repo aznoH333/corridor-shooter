@@ -13,9 +13,10 @@ win not supported yet :(
 
 # todo:
 ## shader
-- [ ] pass lights to the shader
+- [X] pass lights to the shader
 - [ ] multicolor light support
 - [X] change the shader to use a simpler distance based lighting model
+- [ ] change the lights to be calculated in the fragment shader
 
 ## entities
 - [ ] player collisions
