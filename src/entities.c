@@ -108,6 +108,13 @@ void player(GameState* state, float x, float y, float z){
         .height = 1.0f,
         .size = 1.0f,
         .update = &playerUpdate,
+        .light = (EntityLight){
+            .isLight = true,
+            .radius = 10,
+            .r = 1,
+            .g = 1,
+            .b = 1
+        },
     }, &(PlayerData){
         .direction = (Vector2) {0, 0},
         .speed = 0.05f

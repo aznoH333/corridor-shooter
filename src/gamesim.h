@@ -9,6 +9,14 @@ typedef struct GameState GameState;
 
 #define ENTITY_DATA_SIZE 1024
 
+typedef struct {
+    bool isLight;
+    float radius;
+    float r;
+    float g;
+    float b;
+} EntityLight;
+
 struct Entity{
     // generic data
     char* texture;
@@ -18,6 +26,7 @@ struct Entity{
     float width;
     float height;
     float size;
+    EntityLight light;
 
     // entity specific
     char data[ENTITY_DATA_SIZE];
@@ -55,6 +64,7 @@ struct GameState {
 World convertToWorld(GameState* state);
 GameState createNextFrame(GameState* currentState);
 GameState initEmptyGame();
+EntityLight emptyLight();
 void addEntity(GameState* state, Entity entity, void* data, int dataSize);
 
 

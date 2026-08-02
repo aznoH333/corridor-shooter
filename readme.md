@@ -15,7 +15,7 @@ win not supported yet :(
 ## shader
 - [ ] pass lights to the shader
 - [ ] multicolor light support
-- [ ] change the shader to use a simpler distance based lighting model
+- [X] change the shader to use a simpler distance based lighting model
 
 ## entities
 - [ ] player collisions
@@ -27,6 +27,7 @@ win not supported yet :(
 - [ ] enemies
 - [ ] enemy spawning
 - [ ] fix camera origin being messed up
+- [ ] rotate the world by 90 deg 🗿
 
 ## assets
 - [ ] get better textures

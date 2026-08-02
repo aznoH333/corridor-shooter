@@ -102,9 +102,27 @@ World convertToWorld(GameState* state) {
                     .height = entity->size
                 }
             );
+
+
+            // light
+            if (entity->light.isLight) {
+                pushLight(
+                    &world,
+                    (Light) {
+                        .x = entity->x,
+                        .y = entity->y,
+                        .z = entity->z,
+                        .radius = entity->light.radius,
+                        .r = entity->light.r,
+                        .g = entity->light.g,
+                        .b = entity->light.b
+                    }
+                );
+            }
         }
     }
 
+    
 
 
 
@@ -187,3 +205,12 @@ void addEntity(GameState* state, Entity entity, void* data, int dataSize){
 
 }
 
+EntityLight emptyLight(){
+    return (EntityLight) {
+        .isLight = false,
+        .radius = 0,
+        .r = 0,
+        .g = 0,
+        .b = 0
+    };
+}

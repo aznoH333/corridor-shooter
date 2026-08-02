@@ -81,6 +81,10 @@ void UseShader(char* vertexPath, char* fragmentPath);
 // Loads a shader to use only for the 3d world rendering
 void Use3DShader(char* vertexPath, char* fragmentPath);
 
+
+Shader* GetShader();
+Shader* Get3DShader();
+
 // -------------------------------------------------------------------------------------
 // Texture drawing
 // -------------------------------------------------------------------------------------

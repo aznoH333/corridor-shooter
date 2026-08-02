@@ -23,6 +23,7 @@ int main(void)
     SetTargetFPS(60);
 
     // setup world
+    WorldRenderingData renderingData = prepareWorldRenderingData();
     GameState state = initEmptyGame();
     player(&state, 0, 0, 0);
 
@@ -38,7 +39,7 @@ int main(void)
 
 		Begin3DMode();
         
-        renderWorld(&renderedWorld);
+        renderWorld(&renderedWorld, &renderingData);
 
         End3DMode();
     }

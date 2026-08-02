@@ -520,6 +520,14 @@ void Use3DShader(char* vertexPath, char* fragmentPath){
 }
 
 
+Shader* GetShader(){
+	return &shader;
+}
+Shader* Get3DShader(){
+	return &shader3d;
+}
+
+
 // -------------------------------------------------------------------------------------
 // 3D Rendering utils
 // -------------------------------------------------------------------------------------

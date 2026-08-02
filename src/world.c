@@ -1,8 +1,24 @@
 #include "world.h"
 #include "utils.h"
+#include "raylib.h"
+
+// setup data
+WorldRenderingData prepareWorldRenderingData() {
+    Shader* shader = Get3DShader();
+    int usedLightsLoc = GetShaderLocation(*shader, "usedLights");
+    int lightsLoc = GetShaderLocation(*shader, "lights[0].position");
+   
+
+    return (WorldRenderingData) {
+        .lightShader = shader,
+        .usedLightsLoc = usedLightsLoc,
+        .lightsLoc = lightsLoc
+    };
+}
+
 
 // main render function
-void renderWorld(World* world){
+void renderWorld(World* world, WorldRenderingData* renderingData){
 
     // apply camera
     setCamera(
@@ -14,7 +30,25 @@ void renderWorld(World* world){
     );
 
     // apply lights
-    // TODO this
+    {
+	    SetShaderValue(*renderingData->lightShader,  renderingData->usedLightsLoc, &world->lightCount, SHADER_UNIFORM_INT);
+
+
+        for (int i = 0; i < world->lightCount;++i) {
+            int startingIndex = renderingData->lightsLoc + i * 3;
+            
+            Light* light = &world->lights[i];
+            
+            float position[3] = {light->x, light->y, light->z};
+            float color[3] = {light->r, light->g, light->b};
+            float radius = light->radius;
+            
+            SetShaderValue(*renderingData->lightShader, startingIndex, &position, SHADER_UNIFORM_VEC3);
+            SetShaderValue(*renderingData->lightShader, startingIndex + 1, &radius, SHADER_UNIFORM_FLOAT);
+            SetShaderValue(*renderingData->lightShader, startingIndex + 2, &color, SHADER_UNIFORM_VEC3);
+        }
+
+    }
 
     // render planes
     for (int i = 0; i < world->planeCount; i++) {
@@ -45,17 +79,12 @@ void renderWorld(World* world){
         );
 
     }
-
-    
-
-    
-
-
 }
 
 
 
 World initializeEmptyWorld() {
+    
     return (World) {
         .planes = {0},
         .planeCount = 0,
@@ -71,6 +100,8 @@ World initializeEmptyWorld() {
             .rotationVertical = 0.0f
         }
     };
+
+    
 }
 
 // manipulation functions

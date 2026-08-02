@@ -13,23 +13,49 @@ uniform mat4 matNormal;
 uniform mat4 matModel;
 
 
+struct Light {
+    vec3 position;
+    float radius;
+    vec3 color;
+};
+
+const int LIGHT_COUNT = 10;
+uniform Light lights[LIGHT_COUNT];
+uniform int usedLights;
+
 // Output vertex attributes (to fragment shader)
 out vec2 fragTexCoord;
 out vec4 fragColor;
 
 
 out LightData {
-	vec3 lightDir;
+    vec3 color;
 } LightDataOut;
 
 
 void applyPointLight() {
-    vec4 pos = matModel * vec4(vertexPosition, 1.0);
-    vec4 lPos = vec4(0.0, 2.0, 0.0, 1.0);
+    vec3 pos = vec3(matModel * vec4(vertexPosition, 1.0));
 
-    LightDataOut.normal = normalize(matNormal * vec4(vertexNormal, 1.0)).xyz;
-    LightDataOut.lightDir = vec3(lPos - pos);
-    LightDataOut.eye = vec3(-pos);
+
+    vec3 outputColor = vec3(0, 0, 0);
+    for (int i = 0; i < LIGHT_COUNT; ++i ) {
+
+        if (i < usedLights) {
+            Light light = lights[i];
+
+            // calculate attenuation
+            float distance = length(light.position - pos);
+            float radius = light.radius;
+            float fade = clamp(1.0 - distance / radius, 0.0, 1.0);
+            float attenuation = fade * fade;
+
+            outputColor += light.color * attenuation;
+        }
+
+    }
+
+
+    LightDataOut.color = min(outputColor, vec3(1, 1, 1));
 
 }
 

@@ -1,7 +1,7 @@
 #ifndef WORLD
 #define WORLD
 
-
+#include "raylib.h"
 
 typedef struct {
     char* texture;
@@ -60,8 +60,15 @@ typedef struct {
     WorldCamera camera;
 } World;
 
+typedef struct {
+    Shader* lightShader;
+    int usedLightsLoc;
+    int lightsLoc;
+} WorldRenderingData;
 
-void renderWorld(World* world);
+
+WorldRenderingData prepareWorldRenderingData();
+void renderWorld(World* world, WorldRenderingData* renderingData);
 World initializeEmptyWorld();
 
 
