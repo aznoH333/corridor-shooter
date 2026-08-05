@@ -20,7 +20,7 @@ win not supported yet :(
 
 ## entities
 - [X] player collisions
-- [ ] normalize player movement vector
+- [X] normalize player movement vector
 - [X] change entities to use planes instead of billboards
 - [ ] support multi part entities
 - [ ] add entity rotation support

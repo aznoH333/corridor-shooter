@@ -3,93 +3,88 @@
 #include "utils.h"
 
 typedef struct {
-    Vector2 direction;
+    Vector2 velocity;
     float speed;
 } PlayerData;
+
+static float approachNumber(float value, float target, float amount) {
+    if (value < target) {
+        return min(value + amount, target);
+    }
+
+    if (value > target) {
+        return max(value - amount, target);
+    }
+
+    return value;
+}
+
+static Vector2 getPlayerInput(void) {
+    Vector2 input = (Vector2){
+        .x = IsKeyDown(KEY_D) - IsKeyDown(KEY_A),
+        .y = IsKeyDown(KEY_W) - IsKeyDown(KEY_S),
+    };
+
+    if (input.x != 0 || input.y != 0) {
+        input = Vector2Normalize(input);
+    }
+
+    return input;
+}
 
 bool playerUpdate(Entity* this, GameState* state) {
     PlayerData* data = (PlayerData*) &this->data;
 
-
     // movement
     {
         float movementAcceleration = 0.1f;
+        Vector2 input = getPlayerInput();
+        float sprintVelocity = 0.65f + ((float)IsKeyDown(KEY_LEFT_SHIFT) * 0.35f);
 
-        // acceleration
-        if (IsKeyDown(KEY_A)) {
-            if (data->direction.x > -1) {
-                data->direction.x -= movementAcceleration;
-            } else {
-                data->direction.x = -1;
-            }
+        Vector2 next = {
+            .x = this->x + data->velocity.y * data->speed,
+            .y = this->z + data->velocity.x * data->speed
+        };
+
+        float totalSpeed = Vector2Length(next);
+        if (totalSpeed > data->speed * 0.75f) {
+            movementAcceleration = 0.025f;//movementAcceleration / max(totalSpeed - data->speed * 0.5f, 0.1f);
         }
 
-        if (IsKeyDown(KEY_D)) {
-            if (data->direction.x < 1) {
-                data->direction.x += movementAcceleration;
-            } else {
-                data->direction.x = 1;
-            }
-        }
 
-        if (IsKeyDown(KEY_W)) {
-            if (data->direction.y > 1) {
-                data->direction.y += movementAcceleration;
-            } else {
-                data->direction.y = 1;
-            }
-        }
-
-        if (IsKeyDown(KEY_S)) {
-            if (data->direction.y < -1) {
-                data->direction.y -= movementAcceleration;
-            } else {
-                data->direction.y = -1;
-            }
-        }
-
-        // deceleration
-        if (!IsKeyDown(KEY_W) && !IsKeyDown(KEY_S) && data->direction.y != 0) {
-            data->direction.y -= sign(data->direction.y) * movementAcceleration;
-
-            if (fabs(data->direction.y) < movementAcceleration) {
-                data->direction.y = 0;
-            }
-        }
-
-        if (!IsKeyDown(KEY_A) && !IsKeyDown(KEY_D) && data->direction.x != 0) {
-            data->direction.x -= sign(data->direction.x) * movementAcceleration;
-
-            if (fabs(data->direction.x) < movementAcceleration) {
-                data->direction.x = 0;
-            }
-        }
-
-        
+        data->velocity.x = approachNumber(data->velocity.x, input.x * sprintVelocity, movementAcceleration);
+        data->velocity.y = approachNumber(data->velocity.y, input.y * sprintVelocity, movementAcceleration);
 
 
         // wall collisions
-        if (fabs(this->z + data->direction.x * data->speed) + this->width * 0.5 > state->map.width * 0.5) {
-            data->direction.x = 0;
+        if (fabs(next.y) + this->width * 0.5f > state->map.width * 0.5f) {
+            if (fabs(data->velocity.x) > 0.75f) { // add a little bounce when the player collides with a wall above certain speeds
+                data->velocity.x *= -0.25f;
+            }else {
+                data->velocity.x = 0;
+            }
+            
+        } else {
+            this->z = next.y;
         }
 
-        if (this->x + data->direction.y + this->width * 0.5 > state->map.length) {
-            data->direction.y = 0;
+        if (next.x + this->width * 0.5f > state->map.length) {
+            if (fabs(data->velocity.y) > 0.75f) {
+                data->velocity.y *= -0.25f;
+            }else {
+                data->velocity.y = 0;
+            }
+            data->velocity.y = 0;
+        } else {
+            this->x = next.x;
         }
-
-        // update value
-        this->x += data->direction.y * data->speed;
-        this->z += data->direction.x * data->speed;
     }
 
 
     // move camera
     {
-        float playerCamValue = this->x - state->map.width * 0.66;
-        
-        if (playerCamValue > state->camera.distance) {
-            state->camera.distance = playerCamValue;
-        }
+        float playerCamValue = this->x - state->map.width * 0.66f;
+        state->camera.distance = max(state->camera.distance, playerCamValue);
     }
 
 
@@ -117,8 +112,8 @@ void player(GameState* state, float x, float y, float z){
             .b = 1
         },
     }, &(PlayerData){
-        .direction = (Vector2) {0, 0},
-        .speed = 0.05f
+        .velocity = (Vector2) {0, 0},
+        .speed = 0.1f
     }, sizeof(PlayerData));
 }
 
