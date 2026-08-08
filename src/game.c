@@ -29,7 +29,7 @@ int main(void)
     GameState state = initEmptyGame();
     player(&state, 0, 0, 0);
     dummy(&state, 20, 0, 0);
-    SwitchResolution(0, 0, true);
+    //SwitchResolution(0, 0, true);
 
 
 	// Main game loop

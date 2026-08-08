@@ -2,13 +2,12 @@
 #include "raylib.h"
 #include "utils.h"
 
-static Vector2 checkWorldCollision(float x, float y, float z, float width, GameMap* map) {
-    (void)y;
+static Vector3 checkWorldCollision(float x, float y, float z, float width, float height, GameMap* map) {
 
-    Vector2 collisionDirection = (Vector2){0};
+    Vector3 collisionDirection = (Vector3){0};
     float halfWidth = width * 0.5f;
     float halfMapWidth = map->width * 0.5f;
-    float mapLength = map->length;
+    float halfHeight = height * 0.5;
 
     if (x - halfWidth < -10) {
         collisionDirection.x = -1;
@@ -17,16 +16,23 @@ static Vector2 checkWorldCollision(float x, float y, float z, float width, GameM
     }
 
     if (z - halfWidth < -halfMapWidth) {
-        collisionDirection.y = -1;
+        collisionDirection.z = -1;
     } else if (z + halfWidth > halfMapWidth) {
+        collisionDirection.z = 1;
+    }
+
+    // check height
+    if (y + halfHeight > map->ceilingHeight) {
         collisionDirection.y = 1;
+    } else if (y - halfHeight < 0) {
+        collisionDirection.y = -1;
     }
 
     return collisionDirection;
 }
 
 typedef struct {
-    Vector2 velocity;
+    Vector3 velocity;
     float speed;
 } PlayerData;
 
@@ -42,14 +48,15 @@ static float approachNumber(float value, float target, float amount) {
     return value;
 }
 
-static Vector2 getPlayerInput(void) {
-    Vector2 input = (Vector2){
-        .x = IsKeyDown(KEY_D) - IsKeyDown(KEY_A),
-        .y = IsKeyDown(KEY_W) - IsKeyDown(KEY_S),
+static Vector3 getPlayerInput(void) {
+    Vector3 input = (Vector3){
+        .x = IsKeyDown(KEY_W) - IsKeyDown(KEY_S),
+        .y = 0,
+        .z = IsKeyDown(KEY_D) - IsKeyDown(KEY_A)
     };
 
-    if (input.x != 0 || input.y != 0) {
-        input = Vector2Normalize(input);
+    if (input.x != 0 || input.z != 0) {
+        input = Vector3Normalize(input);
     }
 
     return input;
@@ -61,43 +68,44 @@ bool playerUpdate(Entity* this, GameState* state) {
     // movement
     {
         float movementAcceleration = 0.1f;
-        Vector2 input = getPlayerInput();
+        Vector3 input = getPlayerInput();
         float sprintVelocity = 0.65f + ((float)IsKeyDown(KEY_LEFT_SHIFT) * 0.35f);
 
-        Vector2 next = {
-            .x = this->x + data->velocity.y * data->speed,
-            .y = this->z + data->velocity.x * data->speed
+        Vector3 next = {
+            .x = this->x + data->velocity.x * data->speed,
+            .y = 0,
+            .z = this->z + data->velocity.z * data->speed
         };
 
-        float velocityLength = Vector2Length(data->velocity);
+        float velocityLength = Vector2Length((Vector2){data->velocity.x, data->velocity.z});
         if (velocityLength > 0.75f) {
             movementAcceleration = 0.025f;//movementAcceleration / max(totalSpeed - data->speed * 0.5f, 0.1f);
         }
 
 
         data->velocity.x = approachNumber(data->velocity.x, input.x * sprintVelocity, movementAcceleration);
-        data->velocity.y = approachNumber(data->velocity.y, input.y * sprintVelocity, movementAcceleration);
+        data->velocity.z = approachNumber(data->velocity.z, input.z * sprintVelocity, movementAcceleration);
 
-        Vector2 collisionDirection = checkWorldCollision(next.x, this->y, next.y, this->width, &state->map);
+        Vector3 collisionDirection = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
 
         // wall collisions
-        if (collisionDirection.y != 0) {
-            if (fabs(data->velocity.x) > 0.75f) { // add a little bounce when the player collides with a wall above certain speeds
+        if (collisionDirection.z != 0) {
+            if (fabs(data->velocity.z) > 0.75f) { // add a little bounce when the player collides with a wall above certain speeds
+                data->velocity.z *= -0.45f;
+            }else {
+                data->velocity.z = 0;
+            }
+        } else {
+            this->z = next.z;
+        }
+
+        if (collisionDirection.x != 0) {
+            if (fabs(data->velocity.x) > 0.75f) {
                 data->velocity.x *= -0.45f;
             }else {
                 data->velocity.x = 0;
             }
-        } else {
-            this->z = next.y;
-        }
-
-        if (collisionDirection.x != 0) {
-            if (fabs(data->velocity.y) > 0.75f) {
-                data->velocity.y *= -0.45f;
-            }else {
-                data->velocity.y = 0;
-            }
-            data->velocity.y = 0;
+            data->velocity.x = 0;
         } else {
             this->x = next.x;
         }
@@ -140,7 +148,7 @@ void player(GameState* state, float x, float y, float z){
             .b = 1
         },
     }, &(PlayerData){
-        .velocity = (Vector2) {0, 0},
+        .velocity = (Vector3) {0, 0, 0},
         .speed = 0.1f
     }, sizeof(PlayerData));
 }
@@ -148,10 +156,34 @@ void player(GameState* state, float x, float y, float z){
 
 
 typedef struct {
-
+    Vector3 direction;
 } DummyData;
 
 bool dummyUpdate(Entity* this, GameState* state){
+    DummyData* data = (DummyData*) &this->data;
+    
+
+    Vector3 next = (Vector3) {
+        .x = this->x + data->direction.x * 0.2,
+        .y = this->y + data->direction.y * 0.2,
+        .z = this->z + data->direction.z * 0.2
+    };
+
+    Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
+
+
+    data->direction.x += -collisions.x;
+    data->direction.y += -collisions.y;
+    data->direction.z += -collisions.z;
+
+
+
+    this->x = next.x;
+    this->y = next.y;
+    this->z = next.z;
+
+
+    
     return true;
 }
 
@@ -175,7 +207,9 @@ void dummy(GameCamera* state, float x, float y, float z){
             .g = 0,
             .b = 0
         },
-    }, &(DummyData){},
+    }, &(DummyData){
+        .direction = (Vector3) {.x = 1, .y = 1, .z = 1}
+    },
         sizeof(DummyData)
     );
 }
