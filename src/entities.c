@@ -2,6 +2,29 @@
 #include "raylib.h"
 #include "utils.h"
 
+static Vector2 checkWorldCollision(float x, float y, float z, float width, GameMap* map) {
+    (void)y;
+
+    Vector2 collisionDirection = (Vector2){0};
+    float halfWidth = width * 0.5f;
+    float halfMapWidth = map->width * 0.5f;
+    float mapLength = map->length;
+
+    if (x - halfWidth < -10) {
+        collisionDirection.x = -1;
+    } else if (x + halfWidth > map->length) {
+        collisionDirection.x = 1;
+    }
+
+    if (z - halfWidth < -halfMapWidth) {
+        collisionDirection.y = -1;
+    } else if (z + halfWidth > halfMapWidth) {
+        collisionDirection.y = 1;
+    }
+
+    return collisionDirection;
+}
+
 typedef struct {
     Vector2 velocity;
     float speed;
@@ -46,8 +69,8 @@ bool playerUpdate(Entity* this, GameState* state) {
             .y = this->z + data->velocity.x * data->speed
         };
 
-        float totalSpeed = Vector2Length(next);
-        if (totalSpeed > data->speed * 0.75f) {
+        float velocityLength = Vector2Length(data->velocity);
+        if (velocityLength > 0.75f) {
             movementAcceleration = 0.025f;//movementAcceleration / max(totalSpeed - data->speed * 0.5f, 0.1f);
         }
 
@@ -55,22 +78,22 @@ bool playerUpdate(Entity* this, GameState* state) {
         data->velocity.x = approachNumber(data->velocity.x, input.x * sprintVelocity, movementAcceleration);
         data->velocity.y = approachNumber(data->velocity.y, input.y * sprintVelocity, movementAcceleration);
 
+        Vector2 collisionDirection = checkWorldCollision(next.x, this->y, next.y, this->width, &state->map);
 
         // wall collisions
-        if (fabs(next.y) + this->width * 0.5f > state->map.width * 0.5f) {
+        if (collisionDirection.y != 0) {
             if (fabs(data->velocity.x) > 0.75f) { // add a little bounce when the player collides with a wall above certain speeds
-                data->velocity.x *= -0.25f;
+                data->velocity.x *= -0.45f;
             }else {
                 data->velocity.x = 0;
             }
-            
         } else {
             this->z = next.y;
         }
 
-        if (next.x + this->width * 0.5f > state->map.length) {
+        if (collisionDirection.x != 0) {
             if (fabs(data->velocity.y) > 0.75f) {
-                data->velocity.y *= -0.25f;
+                data->velocity.y *= -0.45f;
             }else {
                 data->velocity.y = 0;
             }
@@ -78,6 +101,9 @@ bool playerUpdate(Entity* this, GameState* state) {
         } else {
             this->x = next.x;
         }
+
+        // movement animation
+        this->textureOffsetY = fabs(sin((float)state->internalTimer * 0.15f)) * velocityLength * 0.11f;
     }
 
 
@@ -103,6 +129,8 @@ void player(GameState* state, float x, float y, float z){
         .height = 1.0f,
         .textureWidth = 18.0f,
         .textureHeight = 24.0f,
+        .textureOffsetX = 0,
+        .textureOffsetY = 0,
         .update = &playerUpdate,
         .light = (EntityLight){
             .isLight = true,
@@ -137,6 +165,8 @@ void dummy(GameCamera* state, float x, float y, float z){
         .height = 1.0f,
         .textureWidth = 32.0f,
         .textureHeight = 32.0f,
+        .textureOffsetX = 0,
+        .textureOffsetY = 0,
         .update = &dummyUpdate,
         .light = (EntityLight){
             .isLight = true,

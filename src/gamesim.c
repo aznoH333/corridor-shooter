@@ -96,8 +96,8 @@ World convertToWorld(GameState* state) {
                 (Plane) {
                     .texture = entity->texture,
                     .x = entity->x,
-                    .y = entity->y,
-                    .z = entity->z,
+                    .y = entity->y + entity->textureOffsetY,
+                    .z = entity->z + entity->textureOffsetX,
                     .yaw = 0,
                     .pitch = QUARTER_ROTATION,
                     .roll = QUARTER_ROTATION,
@@ -162,6 +162,10 @@ GameState createNextFrame(GameState* currentState) {
         nextFrame.camera = currentState->camera;
     }
 
+    { // update time
+        nextFrame.internalTimer = currentState->internalTimer + 1;
+    }
+
 
     return nextFrame;
 }
@@ -182,7 +186,8 @@ GameState initEmptyGame() {
         .entities = (GameEntities){
             .values = {0},
             .count = 0
-        }
+        },
+        .internalTimer = 0
     };
 }
 

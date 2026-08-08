@@ -27,6 +27,8 @@ struct Entity{
     float height;
     float textureWidth;
     float textureHeight;
+    float textureOffsetX;
+    float textureOffsetY;
     EntityLight light;
 
     // entity specific
@@ -57,6 +59,7 @@ struct GameState {
     GameMap map;
     GameCamera camera;
     GameEntities entities;
+    int internalTimer;
 };
 
 
