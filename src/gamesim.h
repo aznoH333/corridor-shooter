@@ -17,6 +17,13 @@ typedef struct {
     float b;
 } EntityLight;
 
+typedef enum {
+    ENTITY_PLAYER,
+    ENTITY_ENEMY,
+    ENTITY_BULLET,
+    ENTITY_UNSET,
+} EntityType;
+
 struct Entity{
     // generic data
     char* texture;
@@ -30,6 +37,7 @@ struct Entity{
     float textureOffsetX;
     float textureOffsetY;
     EntityLight light;
+    EntityType type;
 
     // entity specific
     char data[ENTITY_DATA_SIZE];

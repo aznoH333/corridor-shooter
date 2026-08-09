@@ -53,6 +53,48 @@ static float approachNumber(float value, float target, float amount) {
     return value;
 }
 
+
+
+static bool isBetween(float value, float minValue, float maxValue) {
+    const float MOUSE_HIT_EPSILON = 0.0001f;
+    return value >= minValue - MOUSE_HIT_EPSILON && value <= maxValue + MOUSE_HIT_EPSILON;
+}
+
+static BoundingBox getEntityBoundingBox(Entity* entity) {
+    float halfWidth = entity->width * 0.5f;
+    float halfHeight = entity->height * 0.5f;
+
+    return (BoundingBox) {
+        .min = (Vector3) {entity->x - halfWidth, entity->y - halfHeight, entity->z - halfWidth},
+        .max = (Vector3) {entity->x + halfWidth, entity->y + halfHeight, entity->z + halfWidth}
+    };
+}
+
+static Entity* getCollidingEntityByType(GameState* state, Entity* source, EntityType type) {
+    BoundingBox sourceBox = getEntityBoundingBox(source);
+
+    for (int i = 0; i < state->entities.count; ++i) {
+        Entity* entity = &state->entities.values[i];
+
+        if (entity == source || entity->type != type) {
+            continue;
+        }
+
+        if (CheckCollisionBoxes(sourceBox, getEntityBoundingBox(entity))) {
+            return entity;
+        }
+    }
+
+    return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Mouse aim#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static const float MOUSE_HIT_MAX_DISTANCE = 30.0f;
 
 static void recordClosestHit(float distance, Vector3 position, float* closestDistance, Vector3* closestHit) {
@@ -64,10 +106,6 @@ static void recordClosestHit(float distance, Vector3 position, float* closestDis
     *closestHit = position;
 }
 
-static bool isBetween(float value, float minValue, float maxValue) {
-    const float MOUSE_HIT_EPSILON = 0.0001f;
-    return value >= minValue - MOUSE_HIT_EPSILON && value <= maxValue + MOUSE_HIT_EPSILON;
-}
 
 static void checkMapXPlane(Ray ray, float planeX, float minY, float maxY, float minZ, float maxZ, float* closestDistance, Vector3* closestHit) {
     const float MOUSE_HIT_EPSILON = 0.0001f;
@@ -138,13 +176,7 @@ static Vector3 getMouseHit(GameState* state) {
 
     for (int i = 0; i < state->entities.count; ++i) {
         Entity* entity = &state->entities.values[i];
-        float halfWidth = entity->width * 0.5f;
-        float halfHeight = entity->height * 0.5f;
-        BoundingBox entityBox = (BoundingBox) {
-            .min = (Vector3) {entity->x - halfWidth, entity->y - halfHeight, entity->z - halfWidth},
-            .max = (Vector3) {entity->x + halfWidth, entity->y + halfHeight, entity->z + halfWidth}
-        };
-        RayCollision collision = GetRayCollisionBox(mouseRay, entityBox);
+        RayCollision collision = GetRayCollisionBox(mouseRay, getEntityBoundingBox(entity));
 
         if (collision.hit) {
             recordClosestHit(collision.distance, collision.point, &closestDistance, &closestHit);
@@ -223,6 +255,7 @@ void bullet(GameState* state, float x, float y, float z, float velocity, Vector3
             .g = 0.7,
             .b = 0
         },
+        .type = ENTITY_BULLET,
     }, &(BulletData){
         .velocity = velocity,
         .distanceTraveled = 0,
@@ -354,13 +387,57 @@ void player(GameState* state, float x, float y, float z){
             .g = 1,
             .b = 1
         },
+        .type = ENTITY_PLAYER,
+
     }, &(PlayerData){
         .velocity = (Vector3) {0, 0, 0},
         .speed = 0.1f
     }, sizeof(PlayerData));
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Enemy#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct {
 
+} EnemyData;
+
+bool enemyUpdate(Entity* this, GameState* state) {
+    EnemyData* data = (EnemyData*) &this->data;
+
+
+    Entity* collidedBullet = getCollidingEntityByType(state, this, ENTITY_BULLET);
+
+    if (collidedBullet != NULL) {
+        return false;
+    }
+
+    return true;
+}
+
+void enemy(GameState* state, float x, float y, float z) {
+    addEntity(state, (Entity){
+        .texture = "debug_entities_0001",
+        .x = x,
+        .y = y + 1,
+        .z = z,
+        .width = 2.0f,
+        .height = 2.0f,
+        .textureWidth = 64.0f,
+        .textureHeight = 64.0f,
+        .textureOffsetX = 0,
+        .textureOffsetY = 0,
+        .update = &enemyUpdate,
+        .light = emptyLight,
+        .type = ENTITY_ENEMY,
+
+    }, &(EnemyData){
+    },
+        sizeof(EnemyData)
+    );
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -419,6 +496,8 @@ void dummy(GameCamera* state, float x, float y, float z){
             .g = 0,
             .b = 0
         },
+        .type = ENTITY_UNSET,
+
     }, &(DummyData){
         .direction = (Vector3) {.x = 1, .y = 1, .z = 1}
     },
