@@ -1,5 +1,4 @@
 #include "entities.h"
-#include "float.h"
 #include "math.h"
 #include "raylib.h"
 #include "utils.h"
@@ -54,6 +53,7 @@ static float approachNumber(float value, float target, float amount) {
     return value;
 }
 
+static const float MOUSE_HIT_MAX_DISTANCE = 30.0f;
 
 static void recordClosestHit(float distance, Vector3 position, float* closestDistance, Vector3* closestHit) {
     if (distance < 0 || distance >= *closestDistance) {
@@ -118,8 +118,8 @@ static Vector3 getMouseHit(GameState* state) {
     Ray mouseRay = getMouseRaycast();
     mouseRay.direction = Vector3Normalize(mouseRay.direction);
 
-    float closestDistance = FLT_MAX;
-    Vector3 closestHit = Vector3Add(mouseRay.position, Vector3Scale(mouseRay.direction, 1000.0f));
+    float closestDistance = MOUSE_HIT_MAX_DISTANCE;
+    Vector3 closestHit = Vector3Add(mouseRay.position, Vector3Scale(mouseRay.direction, MOUSE_HIT_MAX_DISTANCE));
 
     float minX = -10.0f;
     float maxX = state->map.length;
