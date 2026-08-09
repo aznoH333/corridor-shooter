@@ -41,13 +41,13 @@ static Vector3 checkWorldCollision(float x, float y, float z, float width, float
 
 
 
-static float approachNumber(float value, float target, float amount) {
+static float approachNumber(float value, float target, float step) {
     if (value < target) {
-        return min(value + amount, target);
+        return min(value + step, target);
     }
 
     if (value > target) {
-        return max(value - amount, target);
+        return max(value - step, target);
     }
 
     return value;
@@ -400,21 +400,89 @@ void player(GameState* state, float x, float y, float z){
 //#Enemy#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef struct {
+typedef enum {
+    ENEMY_AI_GRID_APPROACH,
+    ENEMY_AI_SHIELD_APPROACH,
+    ENEMY_AI_RANGER
+} EnemyAI;
 
+typedef struct {
+    int actionTimer;
+    int actionTimerMax;
+    Vector3 movementDirection;
+    float movementSpeed;
+    float movementVelocity;
+    float health;
+    EnemyAI ai;
 } EnemyData;
+
+
+void moveEnemyInDirection(EnemyData* data, Vector3 direction, float velocity) {
+    data->movementDirection = Vector3Normalize(direction);
+    data->movementVelocity = velocity;
+}
+
+void enemyShootInDirection(EnemyData* data, Vector3 direction) {
+    // This is intentionaly empty
+}
+
+void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
+    // todo ai logic here
+    moveEnemyInDirection(data, (Vector3){0, 0, GetRandomValue(-1, 1)}, data->movementSpeed);
+
+}
+
+void enemyTakeDamage(EnemyData* data, float damage) {
+    data->health -= damage;
+}
 
 bool enemyUpdate(Entity* this, GameState* state) {
     EnemyData* data = (EnemyData*) &this->data;
 
 
-    Entity* collidedBullet = getCollidingEntityByType(state, this, ENTITY_BULLET);
+    // taking damage
+    {
+        Entity* collidedBullet = getCollidingEntityByType(state, this, ENTITY_BULLET);
 
-    if (collidedBullet != NULL) {
-        return false;
+        if (collidedBullet != NULL) {
+            enemyTakeDamage(data, 1);
+        }
     }
 
-    return true;
+    // actions
+    {
+        data->actionTimer--;
+
+        if (data->actionTimer == 0) {
+            data->actionTimer = data->actionTimerMax;
+            enemyAiDecision(this, data, state);
+        }
+    }
+
+    // moving
+    {
+        Vector3 next = Vector3Add((Vector3){.x = this->x, .y = this->y, .z = this->z}, Vector3Scale(data->movementDirection, data->movementVelocity));
+        data->movementVelocity = approachNumber(data->movementVelocity, 0, 0.01);
+
+        Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
+
+
+        if (collisions.x != 0) {
+            next.x = this->x;
+        }
+
+        if (collisions.z != 0) {
+            next.z = this->z;
+        }
+
+        this->x = next.x;
+        this->y = next.y;
+        this->z = next.z;
+
+    }
+
+
+    return data->health > 0;
 }
 
 void enemy(GameState* state, float x, float y, float z) {
@@ -432,8 +500,14 @@ void enemy(GameState* state, float x, float y, float z) {
         .update = &enemyUpdate,
         .light = emptyLight,
         .type = ENTITY_ENEMY,
-
     }, &(EnemyData){
+        .actionTimer = 60,
+        .actionTimerMax = 60,
+        .movementDirection = (Vector3) {0},
+        .movementSpeed = 0.2f,
+        .movementVelocity = 0,
+        .health = 20,
+        .ai = ENEMY_AI_GRID_APPROACH,
     },
         sizeof(EnemyData)
     );
