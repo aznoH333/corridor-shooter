@@ -98,6 +98,7 @@ void sprFRC(char* spriteName, float x, float y, bool flipX, bool flipY, float ro
 void plane(char* spriteName, float x, float y, float z, float width, float height, float yaw, float pitch, float roll);
 void billboard(char* spriteName, float x, float y, float z, float scale, Color color);
 void setCamera(float x, float y, float z, float rotationHorizontal, float rotationVertical);
+Ray getMouseRaycast();
 
 // -------------------------------------------------------------------------------------
 // Text

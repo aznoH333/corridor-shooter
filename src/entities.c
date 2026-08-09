@@ -1,6 +1,15 @@
 #include "entities.h"
+#include "float.h"
+#include "math.h"
 #include "raylib.h"
 #include "utils.h"
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Utils#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static Vector3 checkWorldCollision(float x, float y, float z, float width, float height, GameMap* map) {
 
@@ -31,10 +40,7 @@ static Vector3 checkWorldCollision(float x, float y, float z, float width, float
     return collisionDirection;
 }
 
-typedef struct {
-    Vector3 velocity;
-    float speed;
-} PlayerData;
+
 
 static float approachNumber(float value, float target, float amount) {
     if (value < target) {
@@ -47,6 +53,197 @@ static float approachNumber(float value, float target, float amount) {
 
     return value;
 }
+
+
+static void recordClosestHit(float distance, Vector3 position, float* closestDistance, Vector3* closestHit) {
+    if (distance < 0 || distance >= *closestDistance) {
+        return;
+    }
+
+    *closestDistance = distance;
+    *closestHit = position;
+}
+
+static bool isBetween(float value, float minValue, float maxValue) {
+    const float MOUSE_HIT_EPSILON = 0.0001f;
+    return value >= minValue - MOUSE_HIT_EPSILON && value <= maxValue + MOUSE_HIT_EPSILON;
+}
+
+static void checkMapXPlane(Ray ray, float planeX, float minY, float maxY, float minZ, float maxZ, float* closestDistance, Vector3* closestHit) {
+    const float MOUSE_HIT_EPSILON = 0.0001f;
+
+    if (fabsf(ray.direction.x) < MOUSE_HIT_EPSILON) {
+        return;
+    }
+
+    float distance = (planeX - ray.position.x) / ray.direction.x;
+    Vector3 hit = Vector3Add(ray.position, Vector3Scale(ray.direction, distance));
+
+    if (isBetween(hit.y, minY, maxY) && isBetween(hit.z, minZ, maxZ)) {
+        recordClosestHit(distance, hit, closestDistance, closestHit);
+    }
+}
+
+static void checkMapYPlane(Ray ray, float planeY, float minX, float maxX, float minZ, float maxZ, float* closestDistance, Vector3* closestHit) {
+    const float MOUSE_HIT_EPSILON = 0.0001f;
+
+    if (fabsf(ray.direction.y) < MOUSE_HIT_EPSILON) {
+        return;
+    }
+
+    float distance = (planeY - ray.position.y) / ray.direction.y;
+    Vector3 hit = Vector3Add(ray.position, Vector3Scale(ray.direction, distance));
+
+    if (isBetween(hit.x, minX, maxX) && isBetween(hit.z, minZ, maxZ)) {
+        recordClosestHit(distance, hit, closestDistance, closestHit);
+    }
+}
+
+static void checkMapZPlane(Ray ray, float planeZ, float minX, float maxX, float minY, float maxY, float* closestDistance, Vector3* closestHit) {
+    const float MOUSE_HIT_EPSILON = 0.0001f;
+
+    if (fabsf(ray.direction.z) < MOUSE_HIT_EPSILON) {
+        return;
+    }
+
+    float distance = (planeZ - ray.position.z) / ray.direction.z;
+    Vector3 hit = Vector3Add(ray.position, Vector3Scale(ray.direction, distance));
+
+    if (isBetween(hit.x, minX, maxX) && isBetween(hit.y, minY, maxY)) {
+        recordClosestHit(distance, hit, closestDistance, closestHit);
+    }
+}
+
+static Vector3 getMouseHit(GameState* state) {
+    Ray mouseRay = getMouseRaycast();
+    mouseRay.direction = Vector3Normalize(mouseRay.direction);
+
+    float closestDistance = FLT_MAX;
+    Vector3 closestHit = Vector3Add(mouseRay.position, Vector3Scale(mouseRay.direction, 1000.0f));
+
+    float minX = -10.0f;
+    float maxX = state->map.length;
+    float minY = 0.0f;
+    float maxY = state->map.ceilingHeight;
+    float halfMapWidth = state->map.width * 0.5f;
+    float minZ = -halfMapWidth;
+    float maxZ = halfMapWidth;
+
+    checkMapXPlane(mouseRay, minX, minY, maxY, minZ, maxZ, &closestDistance, &closestHit);
+    checkMapXPlane(mouseRay, maxX, minY, maxY, minZ, maxZ, &closestDistance, &closestHit);
+    checkMapYPlane(mouseRay, minY, minX, maxX, minZ, maxZ, &closestDistance, &closestHit);
+    checkMapYPlane(mouseRay, maxY, minX, maxX, minZ, maxZ, &closestDistance, &closestHit);
+    checkMapZPlane(mouseRay, minZ, minX, maxX, minY, maxY, &closestDistance, &closestHit);
+    checkMapZPlane(mouseRay, maxZ, minX, maxX, minY, maxY, &closestDistance, &closestHit);
+
+    for (int i = 0; i < state->entities.count; ++i) {
+        Entity* entity = &state->entities.values[i];
+        float halfWidth = entity->width * 0.5f;
+        float halfHeight = entity->height * 0.5f;
+        BoundingBox entityBox = (BoundingBox) {
+            .min = (Vector3) {entity->x - halfWidth, entity->y - halfHeight, entity->z - halfWidth},
+            .max = (Vector3) {entity->x + halfWidth, entity->y + halfHeight, entity->z + halfWidth}
+        };
+        RayCollision collision = GetRayCollisionBox(mouseRay, entityBox);
+
+        if (collision.hit) {
+            recordClosestHit(collision.distance, collision.point, &closestDistance, &closestHit);
+        }
+    }
+
+    return closestHit;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Bullet#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    float velocity;
+    float distanceTraveled;
+    float maxDistanceTraveled;
+    Vector3 direction;
+    float lightRadius;
+
+} BulletData;
+
+bool bulletUpdate(Entity* this, GameState* state) {
+    BulletData* data = (BulletData*) &this->data;
+
+    Vector3 direction = Vector3Normalize(data->direction);
+
+
+    Vector3 next = (Vector3) {this->x + direction.x * data->velocity, this->y + direction.y * data->velocity, this->z + direction.z * data->velocity};
+
+
+
+    // wall collisions
+    Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
+
+    if (Vector3Length(collisions) > 0.1f) {
+        return false;
+    }
+
+    // distance
+    data->distanceTraveled += direction.x * data->velocity + direction.y * data->velocity + direction.z * data->velocity;
+
+    if (data->distanceTraveled > data->maxDistanceTraveled) {
+        return false;
+    }
+    this->light.radius = data->lightRadius * (1 - (data->distanceTraveled / data->maxDistanceTraveled));
+
+
+    // update
+    this->x = next.x;
+    this->y = next.y;
+    this->z = next.z;
+
+    return true;
+}
+
+
+void bullet(GameState* state, float x, float y, float z, float velocity, Vector3 direction) {
+    addEntity(state, (Entity) {
+        .texture = "debug_entities_0001",
+        .x = x,
+        .y = y,
+        .z = z,
+        .width = 0.1f,
+        .height = 0.1f,
+        .textureWidth = 32.0f,
+        .textureHeight = 32.0f,
+        .textureOffsetX = 0,
+        .textureOffsetY = 0,
+        .update = &bulletUpdate,
+        .light = (EntityLight){
+            .isLight = true,
+            .radius = 5,
+            .r = 0.9,
+            .g = 0.7,
+            .b = 0
+        },
+    }, &(BulletData){
+        .velocity = velocity,
+        .distanceTraveled = 0,
+        .direction = direction,
+        .maxDistanceTraveled = 20,
+        .lightRadius = 5,
+    }, sizeof(BulletData));
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Player#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+typedef struct {
+    Vector3 velocity;
+    float speed;
+} PlayerData;
 
 static Vector3 getPlayerInput(void) {
     Vector3 input = (Vector3){
@@ -121,6 +318,16 @@ bool playerUpdate(Entity* this, GameState* state) {
         state->camera.distance = max(state->camera.distance, playerCamValue);
     }
 
+    // shooting
+    {
+        if (IsKeyPressed(KEY_SPACE)) {
+            
+            Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
+            
+            bullet(state, this->x, this->y, this->z, 0.7f, direction);
+        }
+    }
+
 
 
     return true;
@@ -155,6 +362,11 @@ void player(GameState* state, float x, float y, float z){
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Dummy#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef struct {
     Vector3 direction;
 } DummyData;

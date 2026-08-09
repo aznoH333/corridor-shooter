@@ -2,6 +2,7 @@
 #include "stdbool.h"
 #include "string.h"
 
+
 // -------------------------------------------------------------------------------------
 // Hashmap
 // -------------------------------------------------------------------------------------
@@ -567,6 +568,11 @@ void setCamera(float x, float y, float z, float rotationHorizontal, float rotati
 
 }
 
+Ray getMouseRaycast(){
+	Vector2 mousePosition = getMousePosition();
+	Ray mouseRay = GetScreenToWorldRayEx(mousePosition, camera3d, worldWidth, worldHeight);
+	return mouseRay;
+}
 
 
 // -------------------------------------------------------------------------------------
@@ -579,4 +585,3 @@ Vector2 getMousePosition() {
 
 	return (Vector2){(x - gutterXWidth) / scaleFactor, (y - gutterYHeight) / scaleFactor};	
 }
-
