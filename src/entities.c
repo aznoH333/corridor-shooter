@@ -88,6 +88,19 @@ static Entity* getCollidingEntityByType(GameState* state, Entity* source, Entity
     return NULL;
 }
 
+static Entity* findEntityByType(GameState* state, Entity* source, EntityType type) {
+    for (int i = 0; i < state->entities.count; ++i) {
+        Entity* entity = &state->entities.values[i];
+
+        if (entity == source || entity->type != type) {
+            continue;
+        }
+
+        return entity;
+    }
+
+    return NULL;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -412,6 +425,7 @@ typedef struct {
     Vector3 movementDirection;
     float movementSpeed;
     float movementVelocity;
+    float deceleration;
     float health;
     EnemyAI ai;
 } EnemyData;
@@ -427,8 +441,124 @@ void enemyShootInDirection(EnemyData* data, Vector3 direction) {
 }
 
 void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
-    // todo ai logic here
-    moveEnemyInDirection(data, (Vector3){0, 0, GetRandomValue(-1, 1)}, data->movementSpeed);
+    // this entire function is just ai slop :(
+    
+    Entity* player = findEntityByType(state, this, ENTITY_PLAYER);
+
+    if (player == NULL) {
+        moveEnemyInDirection(data, (Vector3){0, 0, 0}, 0);
+        return;
+    }
+
+    const float APPROACH_DISTANCE = 3.0f;
+    const float RANGER_DISTANCE = 7.0f;
+    const float Z_MARGIN = 0.35f;
+    const float WALL_MARGIN = 1.0f;
+    const float MIN_MOVE_DISTANCE = 0.01f;
+    float playerDistance = this->x - player->x;
+    float zDifference = player->z - this->z;
+    float halfMapWidth = state->map.width * 0.5f;
+    float halfEnemyWidth = this->width * 0.5f;
+    bool canMoveLeft = this->z - halfEnemyWidth - WALL_MARGIN > -halfMapWidth;
+    bool canMoveRight = this->z + halfEnemyWidth + WALL_MARGIN < halfMapWidth;
+    float zDirection = zDifference > 0 ? 1.0f : -1.0f;
+    Vector3 direction = {0};
+    float movementVelocity = data->movementSpeed;
+    float maxMoveDistance = data->movementSpeed;
+    float desiredMoveDistance = data->movementSpeed;
+    bool shouldLimitMoveDistance = false;
+
+    if (data->deceleration > 0) {
+        float stepCount = ceilf(data->movementSpeed / data->deceleration);
+        maxMoveDistance = stepCount * data->movementSpeed - data->deceleration * stepCount * (stepCount - 1.0f) * 0.5f;
+        desiredMoveDistance = maxMoveDistance;
+    }
+
+    if (fabsf(zDifference) <= Z_MARGIN) {
+        zDirection = canMoveLeft && (!canMoveRight || GetRandomValue(0, 1) == 0) ? -1.0f : 1.0f;
+    }
+
+    if (zDirection < 0 && !canMoveLeft) {
+        zDirection = canMoveRight ? 1.0f : 0.0f;
+    } else if (zDirection > 0 && !canMoveRight) {
+        zDirection = canMoveLeft ? -1.0f : 0.0f;
+    }
+
+    switch (data->ai) {
+        case ENEMY_AI_GRID_APPROACH:
+            if (playerDistance > APPROACH_DISTANCE) {
+                if (GetRandomValue(1, 100) <= 80) {
+                    direction = (Vector3){-1, 0, 0};
+                    desiredMoveDistance = playerDistance - APPROACH_DISTANCE;
+                    shouldLimitMoveDistance = true;
+                } else {
+                    direction = (Vector3){0, 0, zDirection};
+                }
+            } else {
+                if (fabsf(zDifference) > Z_MARGIN) {
+                    direction = (Vector3){0, 0, zDirection};
+                    desiredMoveDistance = fabsf(zDifference);
+                    shouldLimitMoveDistance = true;
+                }
+            }
+            break;
+
+        case ENEMY_AI_SHIELD_APPROACH:
+            if (playerDistance > APPROACH_DISTANCE && fabsf(zDifference) <= Z_MARGIN) {
+                direction = (Vector3){-1, 0, 0};
+                desiredMoveDistance = playerDistance - APPROACH_DISTANCE;
+                shouldLimitMoveDistance = true;
+            } else {
+                if (fabsf(zDifference) > Z_MARGIN) {
+                    direction = (Vector3){0, 0, zDirection};
+                    desiredMoveDistance = fabsf(zDifference);
+                    shouldLimitMoveDistance = true;
+                }
+            }
+            break;
+
+        case ENEMY_AI_RANGER:
+            if (playerDistance > RANGER_DISTANCE + Z_MARGIN) {
+                direction = (Vector3){-1, 0, 0};
+                desiredMoveDistance = playerDistance - RANGER_DISTANCE;
+                shouldLimitMoveDistance = true;
+            } else if (playerDistance < RANGER_DISTANCE - Z_MARGIN) {
+                direction = (Vector3){1, 0, 0};
+                desiredMoveDistance = RANGER_DISTANCE - playerDistance;
+                shouldLimitMoveDistance = true;
+            } else {
+                direction = (Vector3){0, 0, zDirection};
+            }
+            break;
+    }
+
+    if (shouldLimitMoveDistance) {
+        if (desiredMoveDistance <= MIN_MOVE_DISTANCE) {
+            direction = (Vector3){0};
+            movementVelocity = 0;
+        } else if (desiredMoveDistance < maxMoveDistance && data->deceleration > 0) {
+            float lowVelocity = 0;
+            float highVelocity = data->movementSpeed;
+
+            for (int i = 0; i < 12; ++i) {
+                float testVelocity = (lowVelocity + highVelocity) * 0.5f;
+                float stepCount = ceilf(testVelocity / data->deceleration);
+                float moveDistance = stepCount * testVelocity - data->deceleration * stepCount * (stepCount - 1.0f) * 0.5f;
+
+                if (moveDistance > desiredMoveDistance) {
+                    highVelocity = testVelocity;
+                } else {
+                    lowVelocity = testVelocity;
+                }
+            }
+
+            movementVelocity = lowVelocity;
+        } else if (data->deceleration <= 0) {
+            movementVelocity = min(data->movementSpeed, desiredMoveDistance);
+        }
+    }
+
+    moveEnemyInDirection(data, direction, movementVelocity);
 
 }
 
@@ -462,7 +592,7 @@ bool enemyUpdate(Entity* this, GameState* state) {
     // moving
     {
         Vector3 next = Vector3Add((Vector3){.x = this->x, .y = this->y, .z = this->z}, Vector3Scale(data->movementDirection, data->movementVelocity));
-        data->movementVelocity = approachNumber(data->movementVelocity, 0, 0.01);
+        data->movementVelocity = approachNumber(data->movementVelocity, 0, data->deceleration);
 
         Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
 
@@ -506,8 +636,9 @@ void enemy(GameState* state, float x, float y, float z) {
         .movementDirection = (Vector3) {0},
         .movementSpeed = 0.2f,
         .movementVelocity = 0,
+        .deceleration = 0.01,
         .health = 20,
-        .ai = ENEMY_AI_GRID_APPROACH,
+        .ai = ENEMY_AI_SHIELD_APPROACH,
     },
         sizeof(EnemyData)
     );
