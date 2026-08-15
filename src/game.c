@@ -6,7 +6,7 @@
 #include "world.h"
 #include "gamesim.h"
 #include "entities.h"
-
+#include "enemies.h"
 
 
 
@@ -30,8 +30,8 @@ int main(void)
     player(&state, 0, 0, 0);
     //dummy(&state, 20, 0, 0);
     //SwitchResolution(0, 0, true);
-    enemy(&state, 20, 0, 0);
 
+    spawnEnemy(&state, (Vector3){20, 0, 0}, 0);
 
 	// Main game loop
     while (!WindowShouldClose())
