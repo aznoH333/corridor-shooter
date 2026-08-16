@@ -62,7 +62,8 @@ void renderWorld(World* world, WorldRenderingData* renderingData){
             planeInstance->height, 
             planeInstance->yaw, 
             planeInstance->pitch, 
-            planeInstance->roll
+            planeInstance->roll,
+            planeInstance->color
         );
     }
 

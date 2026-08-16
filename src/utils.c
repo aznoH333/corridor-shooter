@@ -330,8 +330,7 @@ Shader shader;
 Shader shader3d;
 float gutterXWidth;
 float gutterYHeight;
-Mesh planeMesh;
-Material planeMaterial;
+Model planeModel;
 
 
 void recalculateRenderingValues() {
@@ -372,9 +371,8 @@ void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidt
 	// load assets
 	loadAssets();
 
-    // load mesh
-    planeMesh = GenMeshPlane(1.0f, 1.0f, 1, 1);
-    planeMaterial = LoadMaterialDefault();
+    // load plane model
+    planeModel = LoadModelFromMesh(GenMeshPlane(1.0f, 1.0f, 1, 1));
 
 	shader = LoadShader(0, 0);
     shader3d = LoadShader(0, 0);
@@ -517,7 +515,7 @@ void Use3DShader(char* vertexPath, char* fragmentPath){
 
     printf("Using 3d shader [vertex : %s] [fragment : %s]\n", vertexPath, fragmentPath);
     shader3d = LoadShader(vertexPath, fragmentPath);
-    planeMaterial.shader = shader3d;
+    planeModel.materials[0].shader = shader3d;
 }
 
 
@@ -533,18 +531,18 @@ Shader* Get3DShader(){
 // 3D Rendering utils
 // -------------------------------------------------------------------------------------
 
-void plane(char* spriteName, float x, float y, float z, float width, float height, float yaw, float pitch, float roll) {
+void plane(char* spriteName, float x, float y, float z, float width, float height, float yaw, float pitch, float roll, Color color) {
     
     
     Matrix matrix = MatrixIdentity();
 
     matrix = MatrixMultiply(matrix, MatrixScale(width, 1.0f, height));
     matrix = MatrixMultiply(matrix, MatrixRotateXYZ((Vector3){pitch, yaw, roll}));
-    matrix = MatrixMultiply(matrix, MatrixTranslate(x, y, z));
 
-    SetMaterialTexture(&planeMaterial, MATERIAL_MAP_DIFFUSE, *getSprite(spriteName));
+    planeModel.transform = matrix;
+    SetMaterialTexture(&planeModel.materials[0], MATERIAL_MAP_DIFFUSE, *getSprite(spriteName));
 
-    DrawMesh(planeMesh, planeMaterial, matrix);
+    DrawModel(planeModel, (Vector3){x, y, z}, 1.0f, color);
 }
 
 void billboard(char* spriteName, float x, float y, float z, float scale, Color color) {

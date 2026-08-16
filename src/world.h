@@ -22,6 +22,7 @@ typedef struct {
     float roll;
     float width;
     float height;
+    Color color;
 } Plane;
 
 typedef struct {

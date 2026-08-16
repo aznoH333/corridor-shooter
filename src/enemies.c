@@ -232,6 +232,8 @@ void genericGuy(GameState* state, Vector3 position) {
         .update = &enemyUpdate,
         .light = emptyLight,
         .type = ENTITY_ENEMY,
+        .color = WHITE,
+
     }, &(EnemyData){
         .actionTimer = 60,
         .actionTimerMax = 60,

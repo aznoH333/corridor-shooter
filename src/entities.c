@@ -3,7 +3,7 @@
 #include "math.h"
 #include "raylib.h"
 #include "utils.h"
-
+#include "particles.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +75,8 @@ void bullet(GameState* state, float x, float y, float z, float velocity, Vector3
             .b = 0
         },
         .type = ENTITY_BULLET,
+        .color = WHITE,
+
     }, &(BulletData){
         .velocity = velocity,
         .distanceTraveled = 0,
@@ -177,6 +179,8 @@ bool playerUpdate(Entity* this, GameState* state) {
             Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
             
             bullet(state, this->x, this->y, this->z, 0.7f, direction);
+
+            blood(state, (Vector3){this->x, this->y, this->z}, direction, 0.1f);
         }
     }
 
@@ -207,13 +211,13 @@ void player(GameState* state, float x, float y, float z){
             .b = 1
         },
         .type = ENTITY_PLAYER,
+        .color = WHITE,
 
     }, &(PlayerData){
         .velocity = (Vector3) {0, 0, 0},
         .speed = 0.1f
     }, sizeof(PlayerData));
 }
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -274,6 +278,7 @@ void dummy(GameCamera* state, float x, float y, float z){
             .b = 0
         },
         .type = ENTITY_UNSET,
+        .color = WHITE,
 
     }, &(DummyData){
         .direction = (Vector3) {.x = 1, .y = 1, .z = 1}

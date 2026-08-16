@@ -31,7 +31,8 @@ World convertToWorld(GameState* state) {
                 .pitch = 0,
                 .roll = 0,
                 .width = map->width,
-                .height = map->width
+                .height = map->width,
+                .color = WHITE,
             });
 
             // ceiling
@@ -44,7 +45,8 @@ World convertToWorld(GameState* state) {
                 .pitch = HALF_ROTATION,
                 .roll = 0,
                 .width = map->width,
-                .height = map->width
+                .height = map->width,
+                .color = WHITE,
             });
 
             // walls
@@ -57,7 +59,9 @@ World convertToWorld(GameState* state) {
                 .pitch = -QUARTER_ROTATION,
                 .roll = 0,
                 .width = map->width,
-                .height = map->width
+                .height = map->width,
+                .color = WHITE,
+
             });
 
             pushPlane(&world, (Plane) {
@@ -69,7 +73,8 @@ World convertToWorld(GameState* state) {
                 .pitch = QUARTER_ROTATION,
                 .roll = 0,
                 .width = map->width,
-                .height = map->width
+                .height = map->width,
+                .color = WHITE,
             });
         }
         
@@ -83,7 +88,8 @@ World convertToWorld(GameState* state) {
             .pitch = QUARTER_ROTATION,
             .roll = QUARTER_ROTATION,
             .width = map->width,
-            .height = map->width
+            .height = map->width,
+            .color = WHITE,
         });
     }
     
@@ -103,7 +109,8 @@ World convertToWorld(GameState* state) {
                     .roll = QUARTER_ROTATION,
                     // convert from texturesize to gamesize
                     .width = entity->textureWidth * TEX_SIZE_TO_GAME,
-                    .height = entity->textureHeight * TEX_SIZE_TO_GAME
+                    .height = entity->textureHeight * TEX_SIZE_TO_GAME,
+                    .color = entity->color,
                 }
             );
 

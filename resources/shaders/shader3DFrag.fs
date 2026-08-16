@@ -14,6 +14,7 @@ struct Light {
 const int LIGHT_COUNT = 10;
 uniform Light lights[LIGHT_COUNT];
 uniform int usedLights;
+uniform vec4 colDiffuse;
 
 
 
@@ -64,6 +65,6 @@ void main()
         discard;
     }
 
-    finalColor = tex * fragColor * vec4(color, 1);
+    finalColor = tex * fragColor * colDiffuse * vec4(color, 1);
 
 }
