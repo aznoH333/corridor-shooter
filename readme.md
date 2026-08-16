@@ -24,12 +24,15 @@ win not supported yet :(
 - [X] change entities to use planes instead of billboards
 - [ ] support multi part entities
 - [ ] add entity rotation support
-- [ ] shooting
-- [ ] enemies
+- [X] shooting
+- [X] enemies
 - [ ] enemy spawning
-- [ ] fix camera origin being messed up
-- [ ] rotate the world by 90 deg 🗿
+- [-] fix camera origin being messed up
+- [-] rotate the world by 90 deg 🗿
+- [ ] gore
+- [ ] wall blood
 
 ## assets
-- [ ] get better textures
+- [X] get better textures
 - [ ] walksound
+- [ ] try digitizing some real images 🤔
