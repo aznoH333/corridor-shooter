@@ -3,6 +3,7 @@
 #include "entityUtils.h"
 #include "math.h"
 #include "raymath.h"
+#include "utils.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,6 +56,9 @@ bool particleUpdate(Entity* this, GameState* state) {
         // gravity
         data->direction.y -= data->gravity;
         data->direction = Vector3Normalize(data->direction);
+
+        // speed decay
+        data->speed = max(data->speed - data->speedDecay, 0);
     }
 
     // fade
@@ -133,21 +137,50 @@ void particle(
 //#Variation functions#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const char* BLOOD_SPRITES[] = {"debug_textures_0002", "debug_textures_0005", "debug_entities_0001"};
+const int BLOOD_SPRITE_COUNT = 3;
 void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
+    int sprite = GetRandomValue(0, BLOOD_SPRITE_COUNT - 1);
+    
     particle(
         state,
         position,
         direction,
         speed,
-        0.1f,           // speed decay
-        0.025f,         // gravity
+        0,              // speed decay
+        0.05f,         // gravity
 
         // frames
-        (char*[]){"debug_textures_0002", "debug_textures_0005"}, 
-        2,              // used frames
+        (char*[]){BLOOD_SPRITES[sprite]}, 
+        1,              // used frames
         10,             // frame duration 
         
-        10,             // lifetime
+        50,             // lifetime
         false           // fade away
     );
+}
+
+
+void bloodSplash(GameState* state, Vector3 origin, float amount){
+    int count = (int)min(pow(amount, 2), 30) + GetRandomValue(0, 5);
+    float speedMin = amount * 0.005;
+    float speedMax = (amount + 30) * 0.005;
+
+
+    for (int i = 0; i < count; ++i) {
+        float horizontalRotation = randomFloat(0, PI * 2);
+        float verticalSpeed = randomFloat(-0.3f, 1);
+
+        Vector3 direction = Vector3Normalize((Vector3){cos(horizontalRotation), verticalSpeed, sin(horizontalRotation)});
+
+        float speed = randomFloat(speedMin, speedMax);
+
+        blood(
+            state,
+            origin,
+            direction,
+            speed
+        );
+    }
 }

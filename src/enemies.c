@@ -2,6 +2,7 @@
 #include "entityUtils.h"
 #include "raymath.h"
 #include "utils.h"
+#include "particles.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,8 +158,14 @@ void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
 
 }
 
-void enemyTakeDamage(EnemyData* data, float damage) {
+void enemyTakeDamage(Entity* this, EnemyData* data, GameState* state, Vector3 point, float damage) {
     data->health -= damage;
+
+    bloodSplash(
+        state,
+        (Vector3) {this->x, this->y, this->z},
+        damage
+    );
 }
 
 bool enemyUpdate(Entity* this, GameState* state) {
@@ -170,7 +177,7 @@ bool enemyUpdate(Entity* this, GameState* state) {
         Entity* collidedBullet = getCollidingEntityByType(state, this, ENTITY_BULLET);
 
         if (collidedBullet != NULL) {
-            enemyTakeDamage(data, 1);
+            enemyTakeDamage(this, data, state, (Vector3) {collidedBullet->x, collidedBullet->y, collidedBullet->z} , 1);
         }
     }
 

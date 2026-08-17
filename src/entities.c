@@ -179,8 +179,6 @@ bool playerUpdate(Entity* this, GameState* state) {
             Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
             
             bullet(state, this->x, this->y, this->z, 0.7f, direction);
-
-            blood(state, (Vector3){this->x, this->y, this->z}, direction, 0.1f);
         }
     }
 
