@@ -37,8 +37,20 @@ bool bulletUpdate(Entity* this, GameState* state) {
         return false;
     }
 
+
+    // enemy collisions
+    Entity* collidedEnemy = getCollidingEntityByType(state, this, ENTITY_ENEMY);
+
+    if (collidedEnemy != NULL) {
+        return false;
+    }
+
+
     // distance
-    data->distanceTraveled += direction.x * data->velocity + direction.y * data->velocity + direction.z * data->velocity;
+    data->distanceTraveled += 
+        fabs(direction.x) * data->velocity + 
+        fabs(direction.y) * data->velocity + 
+        fabs(direction.z) * data->velocity;
 
     if (data->distanceTraveled > data->maxDistanceTraveled) {
         return false;

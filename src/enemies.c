@@ -214,7 +214,18 @@ bool enemyUpdate(Entity* this, GameState* state) {
     }
 
 
-    return data->health > 0;
+    // dying
+    if (data->health <= 0) {
+        bloodSplash(
+            state,
+            (Vector3) {this->x, this->y, this->z},
+            40
+        );
+        
+        return false;
+    }
+
+    return true;
 }
 
 

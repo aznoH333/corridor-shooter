@@ -140,8 +140,13 @@ void particle(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const char* BLOOD_SPRITES[] = {"debug_textures_0002", "debug_textures_0005", "debug_entities_0001"};
-const int BLOOD_SPRITE_COUNT = 3;
+const char* BLOOD_SPRITES[] = {
+    "blood_0001", 
+    "blood_0002", 
+    "blood_0003",
+    "blood_0004"
+};
+const int BLOOD_SPRITE_COUNT = 4;
 void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
     int sprite = GetRandomValue(0, BLOOD_SPRITE_COUNT - 1);
     
@@ -151,12 +156,12 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
         direction,
         speed,
         0,              // speed decay
-        0.05f,          // gravity
+        0.1f,          // gravity
 
         // frames
         (char*[]){BLOOD_SPRITES[sprite]}, 
-        32,             // texture width
-        32,             // texture height
+        16,             // texture width
+        16,             // texture height
         1,              // used frames
         10,             // frame duration 
         
@@ -167,9 +172,12 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
 
 
 void bloodSplash(GameState* state, Vector3 origin, float amount){
-    int count = (int)min(pow(amount, 2), 30) + GetRandomValue(0, 5);
-    float speedMin = amount * 0.005;
-    float speedMax = (amount + 30) * 0.005;
+    int count = ((int)min(pow(amount, 2), 50) + GetRandomValue(0, 5));
+    
+    
+    float cappedSpeed = fmin(sqrt(amount), 20);
+    float speedMin = 0.05;
+    float speedMax = 0.15;
 
 
     for (int i = 0; i < count; ++i) {
@@ -178,6 +186,9 @@ void bloodSplash(GameState* state, Vector3 origin, float amount){
 
         Vector3 direction = Vector3Normalize((Vector3){cos(horizontalRotation), verticalSpeed, sin(horizontalRotation)});
 
+
+        // 0.05 -> very small splash
+        // 0.1 -> covers width of level
         float speed = randomFloat(speedMin, speedMax);
 
         blood(

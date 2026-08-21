@@ -37,6 +37,10 @@ int main(void)
     while (!WindowShouldClose())
 	{
 
+        // temporary fullscreen hack
+        if (IsKeyPressed(KEY_P)) {
+            SwitchResolution(0, 0, true);
+        }
         GameState nextFrame = createNextFrame(&state);
         World renderedWorld = convertToWorld(&state);
         state = nextFrame;
