@@ -141,6 +141,10 @@ void bullet(GameState* state, float x, float y, float z, float velocity, Vector3
 typedef struct {
     Vector3 velocity;
     float speed;
+
+    // gun data
+    int gunCooldown;
+    int totalGunCooldown;
 } PlayerData;
 
 static Vector3 getPlayerInput(void) {
@@ -218,13 +222,22 @@ bool playerUpdate(Entity* this, GameState* state) {
 
     // shooting
     {
-        if (IsKeyPressed(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && data->gunCooldown == 0) {
             
+
+
             Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
             
             //bullet(state, this->x, this->y, this->z, 0.7f, direction);
             bullet(state, this->x, this->y, this->z, 0.7f, direction);
+            data->gunCooldown = data->totalGunCooldown;
+            addScreenShake(state, 1);
 
+        }
+
+
+        if (data->gunCooldown > 0) {
+            data->gunCooldown--;
         }
     }
 
@@ -260,7 +273,11 @@ void player(GameState* state, float x, float y, float z){
 
     }, &(PlayerData){
         .velocity = (Vector3) {0, 0, 0},
-        .speed = 0.1f
+        .speed = 0.1f,
+
+        // gun stuff
+        .gunCooldown = 0,
+        .totalGunCooldown = 8,
     }, sizeof(PlayerData));
 }
 

@@ -55,6 +55,7 @@ typedef struct {
 
 typedef struct {
     float distance;
+    int screenShake;
 } GameCamera;
 
 #define MAX_ENTITIES 100
@@ -86,10 +87,13 @@ World convertToWorld(GameState* state);
 GameState createNextFrame(GameState* currentState);
 GameState initEmptyGame();
 EntityLight emptyLight();
+// world manipulation functions
 void addEntity(GameState* state, Entity entity, void* data, int dataSize);
 void addPlane(GameState* state, Plane plane);
 void addEntityPlane(GameState* state, Vector3 position, char* texture, float textureWidth, float textureHeight, Color color);
 
+// camera functions
+void addScreenShake(GameState* state, int ammount);
 
 
 #endif

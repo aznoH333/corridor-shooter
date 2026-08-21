@@ -5,11 +5,26 @@
 #include "string.h"
 #include "stdbool.h"
 
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Rendering logic#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 void pushEntity(GameState* state, Entity* entity);
 
 
 // when you multiply a number by this constant you convert from texture coordinates (pixels) to game coordinates
 const float TEX_SIZE_TO_GAME = 0.03125f;
+
+
+const char* groundTexture = "ground_0002";
+const char* wallTexture = "wall_0002";
 
 
 World convertToWorld(GameState* state) {
@@ -23,7 +38,7 @@ World convertToWorld(GameState* state) {
         for (int i = 0; i < (int)ceil(map->length / map->width); ++i ) {
             // floor
             pushPlane(&world, (Plane) {
-                .texture = "ground",
+                .texture = groundTexture,
                 .x = i * map->width + map->width * 0.5,
                 .y = 0,
                 .z = 0,
@@ -37,7 +52,7 @@ World convertToWorld(GameState* state) {
 
             // ceiling
             pushPlane(&world, (Plane) {
-                .texture = "ground",
+                .texture = groundTexture,
                 .x = i * map->width + map->width * 0.5,
                 .y = map->ceilingHeight,
                 .z = 0,
@@ -51,7 +66,7 @@ World convertToWorld(GameState* state) {
 
             // walls
             pushPlane(&world, (Plane) {
-                .texture = "wall",
+                .texture = wallTexture,
                 .x = i * map->width + map->width * 0.5,
                 .y = map->width / 2.0f,
                 .z = map->width / 2.0f,
@@ -65,7 +80,7 @@ World convertToWorld(GameState* state) {
             });
 
             pushPlane(&world, (Plane) {
-                .texture = "wall",
+                .texture = wallTexture,
                 .x = i * map->width + map->width * 0.5,
                 .y = map->width / 2.0f,
                 .z = -map->width / 2.0f,
@@ -80,7 +95,7 @@ World convertToWorld(GameState* state) {
         
         // draw backwall
         pushPlane(&world, (Plane) {
-            .texture = "wall",
+            .texture = wallTexture,
             .x = map->length,
             .y = map->width / 2.0f,
             .z = 0,
@@ -146,11 +161,22 @@ World convertToWorld(GameState* state) {
     
     
 
+    // camera 
+    {
+    
+        // screen shake
+        float screenShakeValue = sqrt((float) state->camera.screenShake) * 0.02;
+        float screenShakeXOffset = cos(state->internalTimer * 0.5) * screenShakeValue;
+        float screenShakeYOffset = sin(state->internalTimer * 0.5) * screenShakeValue;
 
+        // set position
+        world.camera.y = state->map.width * 0.33 + screenShakeYOffset;
+        world.camera.rotationVertical = -0.2f;
+        world.camera.x = state->camera.distance;
+        world.camera.z = screenShakeXOffset;
+    }
 
-    world.camera.y = state->map.width * 0.33;
-    world.camera.rotationVertical = -0.2f;
-    world.camera.x = state->camera.distance;
+    
 
     return world;
 }
@@ -178,6 +204,7 @@ GameState createNextFrame(GameState* currentState) {
 
     { // update camera
         nextFrame.camera = currentState->camera;
+        nextFrame.camera.screenShake = max(nextFrame.camera.screenShake - 1, 0);
     }
 
     { // update time
@@ -199,7 +226,8 @@ GameState initEmptyGame() {
         },
 
         .camera = (GameCamera) {
-            .distance = -9999.0f
+            .distance = -9999.0f,
+            .screenShake = 0
         },
         .entities = (GameEntities){
             .values = {0},
@@ -281,4 +309,15 @@ EntityLight emptyLight(){
         .g = 0,
         .b = 0
     };
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Camera manipulation#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void addScreenShake(GameState* state, int ammount) {
+    state->camera.screenShake = min(state->camera.screenShake + ammount, 30);
 }

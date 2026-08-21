@@ -221,6 +221,9 @@ bool enemyUpdate(Entity* this, GameState* state) {
             (Vector3) {this->x, this->y, this->z},
             40
         );
+
+        addScreenShake(state, 8);
+
         
         return false;
     }
