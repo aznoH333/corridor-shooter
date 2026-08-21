@@ -16,6 +16,7 @@ typedef struct {
     float maxDistanceTraveled;
     Vector3 direction;
     float lightRadius;
+    int internalTimer;
 
 } BulletData;
 
@@ -45,10 +46,38 @@ bool bulletUpdate(Entity* this, GameState* state) {
     this->light.radius = data->lightRadius * (1 - (data->distanceTraveled / data->maxDistanceTraveled));
 
 
+    // spawn fade particles
+    Vector3 particlePosition = {this->x, this->y, this->z};
+    
+    for (int i = 1; i < 5; ++i) {
+        
+
+        addEntityPlane(state, 
+            particlePosition, 
+            this->texture, 
+            this->textureWidth, 
+            this->textureHeight, 
+            WHITE
+        );
+
+
+        particlePosition.x -= data->direction.x * (i * 0.05f);
+        particlePosition.y -= data->direction.y * (i * 0.05f);
+        particlePosition.z -= data->direction.z * (i * 0.05f);
+
+    }
+    
+    
+
     // update
     this->x = next.x;
     this->y = next.y;
     this->z = next.z;
+    data->internalTimer++;
+
+
+
+    
 
     return true;
 }
@@ -56,14 +85,14 @@ bool bulletUpdate(Entity* this, GameState* state) {
 
 void bullet(GameState* state, float x, float y, float z, float velocity, Vector3 direction) {
     addEntity(state, (Entity) {
-        .texture = "debug_entities_0001",
+        .texture = "bullet_2",
         .x = x,
         .y = y,
         .z = z,
         .width = 0.1f,
         .height = 0.1f,
-        .textureWidth = 32.0f,
-        .textureHeight = 32.0f,
+        .textureWidth = 2.0f,
+        .textureHeight = 2.0f,
         .textureOffsetX = 0,
         .textureOffsetY = 0,
         .update = &bulletUpdate,
@@ -83,6 +112,7 @@ void bullet(GameState* state, float x, float y, float z, float velocity, Vector3
         .direction = direction,
         .maxDistanceTraveled = 20,
         .lightRadius = 5,
+        .internalTimer = 0,
     }, sizeof(BulletData));
 }
 
@@ -174,13 +204,16 @@ bool playerUpdate(Entity* this, GameState* state) {
 
     // shooting
     {
-        if (IsKeyPressed(KEY_SPACE)) {
+        if (IsKeyPressed(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             
             Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
             
+            //bullet(state, this->x, this->y, this->z, 0.7f, direction);
             bullet(state, this->x, this->y, this->z, 0.7f, direction);
+
         }
     }
+
 
 
 

@@ -133,6 +133,16 @@ World convertToWorld(GameState* state) {
         }
     }
 
+    // additional planes
+    {
+        for (int i = 0; i < state->additionalPlanes.count; ++i) {
+            pushPlane(
+                &world,
+                state->additionalPlanes.values[i]
+            );
+        }
+    }
+
     
     
 
@@ -195,6 +205,10 @@ GameState initEmptyGame() {
             .values = {0},
             .count = 0
         },
+        .additionalPlanes = (AdditionalPlanes) {
+            .values = {0},
+            .count = 0
+        },
         .internalTimer = 0
     };
 }
@@ -221,6 +235,43 @@ void addEntity(GameState* state, Entity entity, void* data, int dataSize){
     pushEntity(state, &entity);
 
 }
+
+
+void addPlane(GameState* state, Plane plane) {
+    if (state->additionalPlanes.count > MAX_ADDITIONAL_PLANES) {
+        return;
+    }
+
+    state->additionalPlanes.values[state->additionalPlanes.count] = plane;
+    state->additionalPlanes.count++;
+}
+
+
+void addEntityPlane(
+    GameState* state, 
+    Vector3 position, 
+    char* texture, 
+    float textureWidth, 
+    float textureHeight, 
+    Color color) {
+        addPlane(
+            state,
+            (Plane) {
+                .texture = texture,
+                .x = position.x,
+                .y = position.y,
+                .z = position.z,
+                .yaw = 0,
+                .pitch = QUARTER_ROTATION,
+                .roll = QUARTER_ROTATION,
+                // convert from texturesize to gamesize
+                .width = textureWidth * TEX_SIZE_TO_GAME,
+                .height = textureHeight * TEX_SIZE_TO_GAME,
+                .color = color,
+            }
+        );
+}
+
 
 EntityLight emptyLight(){
     return (EntityLight) {

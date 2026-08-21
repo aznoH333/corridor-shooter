@@ -38,7 +38,7 @@ int main(void)
 	{
 
         GameState nextFrame = createNextFrame(&state);
-        World renderedWorld = convertToWorld(&nextFrame);
+        World renderedWorld = convertToWorld(&state);
         state = nextFrame;
 
 		Begin3DMode();

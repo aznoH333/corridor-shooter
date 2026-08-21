@@ -64,10 +64,18 @@ typedef struct {
 } GameEntities;
 
 
+#define MAX_ADDITIONAL_PLANES 100
+typedef struct {
+    Plane values[MAX_ADDITIONAL_PLANES];
+    int count;
+} AdditionalPlanes;
+
+
 struct GameState {
     GameMap map;
     GameCamera camera;
     GameEntities entities;
+    AdditionalPlanes additionalPlanes;
     int internalTimer;
 };
 
@@ -79,7 +87,8 @@ GameState createNextFrame(GameState* currentState);
 GameState initEmptyGame();
 EntityLight emptyLight();
 void addEntity(GameState* state, Entity entity, void* data, int dataSize);
-
+void addPlane(GameState* state, Plane plane);
+void addEntityPlane(GameState* state, Vector3 position, char* texture, float textureWidth, float textureHeight, Color color);
 
 
 

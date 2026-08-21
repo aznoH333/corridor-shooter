@@ -84,6 +84,8 @@ void particle(
     
     // animation
     char* frames[8], 
+    float textureWidth,
+    float textureHeight,
     int usedFrames,
     int frameDuration,
     
@@ -118,8 +120,8 @@ void particle(
         .z = position.z,
         .width = 1.0f,
         .height = 1.0f,
-        .textureWidth = 32.0f,
-        .textureHeight = 32.0f,
+        .textureWidth = textureWidth,
+        .textureHeight = textureHeight,
         .textureOffsetX = 0,
         .textureOffsetY = 0,
         .update = &particleUpdate,
@@ -149,10 +151,12 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
         direction,
         speed,
         0,              // speed decay
-        0.05f,         // gravity
+        0.05f,          // gravity
 
         // frames
         (char*[]){BLOOD_SPRITES[sprite]}, 
+        32,             // texture width
+        32,             // texture height
         1,              // used frames
         10,             // frame duration 
         
@@ -183,4 +187,25 @@ void bloodSplash(GameState* state, Vector3 origin, float amount){
             speed
         );
     }
+}
+
+
+void fadeParticle(GameState* state, Vector3 position, char* texture, float textureWidth, float textureHeight, int fadeTime) {
+    particle(
+        state,              // gamestate
+        position,           // position
+        (Vector3){0,0,0},   // direction
+        0,                  // speed
+        0,                  // speed decay
+        0,                  // gravity
+
+        (char*[]){texture}, // frames
+        textureWidth,       // texture width
+        textureHeight,      // texture height
+        1,                  // used frames
+        10,                 // frame duration 
+        
+        fadeTime,           // lifetime
+        true                // fade away
+    );
 }
