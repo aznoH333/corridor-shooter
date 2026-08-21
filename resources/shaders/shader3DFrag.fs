@@ -11,7 +11,7 @@ struct Light {
     vec3 color;
 };
 
-const int LIGHT_COUNT = 10;
+const int LIGHT_COUNT = 50;
 uniform Light lights[LIGHT_COUNT];
 uniform int usedLights;
 uniform vec4 colDiffuse;

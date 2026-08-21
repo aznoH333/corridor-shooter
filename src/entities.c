@@ -47,25 +47,27 @@ bool bulletUpdate(Entity* this, GameState* state) {
 
 
     // spawn fade particles
-    Vector3 particlePosition = {this->x, this->y, this->z};
     
-    for (int i = 1; i < 5; ++i) {
-        
+    if (data->internalTimer > 2) {
+        Vector3 particlePosition = {this->x, this->y, this->z};
+    
+        for (int i = 1; i < 5; ++i) {
+            addEntityPlane(state, 
+                particlePosition, 
+                this->texture, 
+                this->textureWidth, 
+                this->textureHeight, 
+                WHITE
+            );
 
-        addEntityPlane(state, 
-            particlePosition, 
-            this->texture, 
-            this->textureWidth, 
-            this->textureHeight, 
-            WHITE
-        );
+            particlePosition.x -= data->direction.x * (i * 0.05f);
+            particlePosition.y -= data->direction.y * (i * 0.05f);
+            particlePosition.z -= data->direction.z * (i * 0.05f);
 
-
-        particlePosition.x -= data->direction.x * (i * 0.05f);
-        particlePosition.y -= data->direction.y * (i * 0.05f);
-        particlePosition.z -= data->direction.z * (i * 0.05f);
-
+        }
     }
+    
+    
     
     
 

@@ -44,9 +44,9 @@ typedef struct {
 } Light;
 
 
-#define MAX_PLANES 100
+#define MAX_PLANES 200
 #define MAX_BILLBOARDS 100
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 50
 
 typedef struct {
     Plane planes[MAX_PLANES];

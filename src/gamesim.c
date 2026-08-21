@@ -238,7 +238,7 @@ void addEntity(GameState* state, Entity entity, void* data, int dataSize){
 
 
 void addPlane(GameState* state, Plane plane) {
-    if (state->additionalPlanes.count > MAX_ADDITIONAL_PLANES) {
+    if (state->additionalPlanes.count >= MAX_ADDITIONAL_PLANES) {
         return;
     }
 

@@ -177,8 +177,14 @@ Vector3 getMouseHit(GameState* state) {
     checkMapZPlane(mouseRay, minZ, minX, maxX, minY, maxY, &closestDistance, &closestHit);
     checkMapZPlane(mouseRay, maxZ, minX, maxX, minY, maxY, &closestDistance, &closestHit);
 
+    
     for (int i = 0; i < state->entities.count; ++i) {
         Entity* entity = &state->entities.values[i];
+
+        if (entity->type != ENTITY_ENEMY) {
+            continue;
+        }
+
         RayCollision collision = GetRayCollisionBox(mouseRay, getEntityBoundingBox(entity));
 
         if (collision.hit) {
