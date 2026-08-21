@@ -262,8 +262,8 @@ void genericGuy(GameState* state, Vector3 position) {
         .movementSpeed = 0.2f,
         .movementVelocity = 0,
         .deceleration = 0.01,
-        .health = 20,
-        .ai = ENEMY_AI_SHIELD_APPROACH,
+        .health = 10,
+        .ai = ENEMY_AI_GRID_APPROACH,
     },
         sizeof(EnemyData)
     );

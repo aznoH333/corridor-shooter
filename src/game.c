@@ -32,6 +32,9 @@ int main(void)
     //SwitchResolution(0, 0, true);
 
     spawnEnemy(&state, (Vector3){20, 0, 0}, 0);
+    spawnEnemy(&state, (Vector3){20, 0, 1}, 0);
+    spawnEnemy(&state, (Vector3){20, 0, -1}, 0);
+
 
 	// Main game loop
     while (!WindowShouldClose())

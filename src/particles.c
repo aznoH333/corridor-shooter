@@ -175,7 +175,6 @@ void bloodSplash(GameState* state, Vector3 origin, float amount){
     int count = ((int)min(pow(amount, 2), 50) + GetRandomValue(0, 5));
     
     
-    float cappedSpeed = fmin(sqrt(amount), 20);
     float speedMin = 0.05;
     float speedMax = 0.15;
 
