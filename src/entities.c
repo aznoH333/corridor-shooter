@@ -59,8 +59,7 @@ bool bulletUpdate(Entity* this, GameState* state) {
 
 
     // spawn fade particles
-    
-    if (data->internalTimer > 2) {
+    if (data->internalTimer > 0) {
         Vector3 particlePosition = {this->x, this->y, this->z};
     
         for (int i = 1; i < 5; ++i) {
@@ -110,15 +109,10 @@ void bullet(GameState* state, float x, float y, float z, float velocity, Vector3
         .textureOffsetX = 0,
         .textureOffsetY = 0,
         .update = &bulletUpdate,
-        .light = (EntityLight){
-            .isLight = true,
-            .radius = 5,
-            .r = 0.9,
-            .g = 0.7,
-            .b = 0
-        },
+        .light = emptyLight(),
         .type = ENTITY_BULLET,
         .color = WHITE,
+        .textureRotation = 0,
 
     }, &(BulletData){
         .velocity = velocity,
@@ -229,10 +223,15 @@ bool playerUpdate(Entity* this, GameState* state) {
             Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
             
             //bullet(state, this->x, this->y, this->z, 0.7f, direction);
-            bullet(state, this->x, this->y, this->z, 0.7f, direction);
+            bullet(state, this->x, this->y, this->z, 1.0f, direction);
             data->gunCooldown = data->totalGunCooldown;
-            addScreenShake(state, 1);
-
+            addScreenShake(state, 3);
+            playSound("cg1", 1, 1);
+            
+            muzzleFlash(
+                state, 
+                Vector3Add((Vector3){this->x, this->y, this->z}, Vector3Scale(direction, 0.2))
+            );
         }
 
 
@@ -270,6 +269,7 @@ void player(GameState* state, float x, float y, float z){
         },
         .type = ENTITY_PLAYER,
         .color = WHITE,
+        .textureRotation = 0,
 
     }, &(PlayerData){
         .velocity = (Vector3) {0, 0, 0},
@@ -277,7 +277,7 @@ void player(GameState* state, float x, float y, float z){
 
         // gun stuff
         .gunCooldown = 0,
-        .totalGunCooldown = 8,
+        .totalGunCooldown = 4,
     }, sizeof(PlayerData));
 }
 
@@ -341,6 +341,7 @@ void dummy(GameCamera* state, float x, float y, float z){
         },
         .type = ENTITY_UNSET,
         .color = WHITE,
+        .textureRotation = 0,
 
     }, &(DummyData){
         .direction = (Vector3) {.x = 1, .y = 1, .z = 1}

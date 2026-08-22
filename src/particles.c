@@ -66,6 +66,8 @@ bool particleUpdate(Entity* this, GameState* state) {
         float percentage = 1 - ((float)data->internalTimer / data-> lifetime);
 
         this->color.a = percentage * 255;
+
+        this->light.radius = percentage * 255;
     }
 
 
@@ -86,12 +88,16 @@ void particle(
     char* frames[8], 
     float textureWidth,
     float textureHeight,
+    float textureRotation,
     int usedFrames,
     int frameDuration,
     
     // lifetime
     int lifetime,
-    bool fadeAway
+    bool fadeAway,
+
+    // light
+    EntityLight light
 ) {
     
     ParticleData data = {
@@ -125,9 +131,10 @@ void particle(
         .textureOffsetX = 0,
         .textureOffsetY = 0,
         .update = &particleUpdate,
-        .light = emptyLight(),
+        .light = light,
         .type = ENTITY_UNSET,
         .color = WHITE,
+        .textureRotation = textureRotation,
     }, &data,
         sizeof(ParticleData)
     );
@@ -150,6 +157,8 @@ const int BLOOD_SPRITE_COUNT = 4;
 void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
     int sprite = GetRandomValue(0, BLOOD_SPRITE_COUNT - 1);
     
+    float rotation = randomFloat(0, PI * 2);
+
     particle(
         state,
         position,
@@ -162,11 +171,14 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
         (char*[]){BLOOD_SPRITES[sprite]}, 
         16,             // texture width
         16,             // texture height
+        rotation,       // texture rotation
         1,              // used frames
         10,             // frame duration 
         
         50,             // lifetime
-        false           // fade away
+        false,          // fade away
+
+        emptyLight()    // particle light
     );
 }
 
@@ -200,7 +212,16 @@ void bloodSplash(GameState* state, Vector3 origin, float amount){
 }
 
 
-void fadeParticle(GameState* state, Vector3 position, char* texture, float textureWidth, float textureHeight, int fadeTime) {
+void fadeParticle(
+    GameState* state, 
+    Vector3 position, 
+    char* texture, 
+    float textureWidth, 
+    float textureHeight, 
+    float textureRotation,
+    int fadeTime, 
+    EntityLight light
+) {
     particle(
         state,              // gamestate
         position,           // position
@@ -212,10 +233,35 @@ void fadeParticle(GameState* state, Vector3 position, char* texture, float textu
         (char*[]){texture}, // frames
         textureWidth,       // texture width
         textureHeight,      // texture height
+        textureRotation,    // texture rotation
         1,                  // used frames
         10,                 // frame duration 
         
         fadeTime,           // lifetime
-        true                // fade away
+        true,               // fade away
+
+        light               // particle light
+
+    );
+}
+
+
+
+void muzzleFlash(GameState* state, Vector3 position) {
+    fadeParticle(
+        state, 
+        position,
+        "muzzle_flash",
+        21,
+        21,
+        randomFloat(0, PI * 2),
+        2,
+        (EntityLight){
+            .isLight = true,
+            .radius = 15,
+            .r = 0.9,
+            .g = 0.7,
+            .b = 0
+        }
     );
 }

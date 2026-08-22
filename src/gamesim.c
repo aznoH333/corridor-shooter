@@ -120,7 +120,7 @@ World convertToWorld(GameState* state) {
                     .y = entity->y + entity->textureOffsetY,
                     .z = entity->z + entity->textureOffsetX,
                     .yaw = 0,
-                    .pitch = QUARTER_ROTATION,
+                    .pitch = QUARTER_ROTATION + entity->textureRotation,
                     .roll = QUARTER_ROTATION,
                     // convert from texturesize to gamesize
                     .width = entity->textureWidth * TEX_SIZE_TO_GAME,
@@ -204,7 +204,7 @@ GameState createNextFrame(GameState* currentState) {
 
     { // update camera
         nextFrame.camera = currentState->camera;
-        nextFrame.camera.screenShake = max(nextFrame.camera.screenShake - 1, 0);
+        nextFrame.camera.screenShake = max(nextFrame.camera.screenShake * 0.5 , 0);
     }
 
     { // update time

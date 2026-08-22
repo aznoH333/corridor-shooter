@@ -36,6 +36,7 @@ struct Entity{
     float textureHeight;
     float textureOffsetX;
     float textureOffsetY;
+    float textureRotation;
     Color color;
     EntityLight light;
     EntityType type;
