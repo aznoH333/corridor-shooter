@@ -34,6 +34,9 @@ bool bulletUpdate(Entity* this, GameState* state) {
     Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
 
     if (Vector3Length(collisions) > 0.1f) {
+        smokePuff(state, (Vector3){this->x, this->y, this->z});
+        playSound("impact_stone", 2, 0.3);
+        
         return false;
     }
 
@@ -42,6 +45,9 @@ bool bulletUpdate(Entity* this, GameState* state) {
     Entity* collidedEnemy = getCollidingEntityByType(state, this, ENTITY_ENEMY);
 
     if (collidedEnemy != NULL) {
+        bloodPuff(state, (Vector3){this->x, this->y, this->z});
+        playSound("flesh_impact_fast", 0.3, 0.3);
+
         return false;
     }
 
@@ -139,6 +145,12 @@ typedef struct {
     // gun data
     int gunCooldown;
     int totalGunCooldown;
+    
+    float minGunSpread;
+    int gunSpreadAccumulator;
+    float gunSpreadMultiplier;
+    float recoilMultiplier;
+
 } PlayerData;
 
 static Vector3 getPlayerInput(void) {
@@ -203,8 +215,15 @@ bool playerUpdate(Entity* this, GameState* state) {
             this->x = next.x;
         }
 
+
+        float walkTimer = fabs(sin((float)state->internalTimer * 0.15f)) * velocityLength * 0.11f;
         // movement animation
-        this->textureOffsetY = fabs(sin((float)state->internalTimer * 0.15f)) * velocityLength * 0.11f;
+        this->textureOffsetY = walkTimer;
+
+        // footstep noise
+        if (walkTimer < 0.01 && velocityLength > 0.1) {
+            playSound("footstep", 1, 1);
+        }
     }
 
 
@@ -218,15 +237,36 @@ bool playerUpdate(Entity* this, GameState* state) {
     {
         if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && data->gunCooldown == 0) {
             
-
-
-            Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
             
-            //bullet(state, this->x, this->y, this->z, 0.7f, direction);
+            // base bullet direction
+            Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
+
+            // calculate spread
+            Vector3 spreadVector = Vector3Normalize((Vector3) {
+                .x = randomFloat(-1, 1),
+                .y = randomFloat(-1, 1),
+                .z = randomFloat(-1, 1)
+            });
+            float spreadMultiplier = data->minGunSpread + (data->gunSpreadAccumulator * data->gunSpreadMultiplier);
+
+            direction = Vector3Add(direction, Vector3Scale(spreadVector, spreadMultiplier));
+
+            // calculate recoil
+            Vector3 recoilVector = (Vector3) {
+                .x = 0,
+                .y = data->gunSpreadAccumulator * data->recoilMultiplier,
+                .z = 0
+            };
+
+            direction = Vector3Normalize(Vector3Add(direction, recoilVector));
+
+
+            // fire bullet
             bullet(state, this->x, this->y, this->z, 1.0f, direction);
             data->gunCooldown = data->totalGunCooldown;
             addScreenShake(state, 3);
-            playSound("cg1", 1, 1);
+            playSound("machine_gun_1", 1, 1);
+            data->gunSpreadAccumulator++;
             
             muzzleFlash(
                 state, 
@@ -235,9 +275,20 @@ bool playerUpdate(Entity* this, GameState* state) {
         }
 
 
+
+        if (data->gunCooldown == 0 && data->gunSpreadAccumulator > 0) {
+            data->gunSpreadAccumulator--;
+        }
+        data->gunSpreadAccumulator = min(data->gunSpreadAccumulator, 10);
+
+
+
         if (data->gunCooldown > 0) {
             data->gunCooldown--;
         }
+
+        
+
     }
 
 
@@ -278,6 +329,11 @@ void player(GameState* state, float x, float y, float z){
         // gun stuff
         .gunCooldown = 0,
         .totalGunCooldown = 4,
+        .minGunSpread = 0.02,
+        .gunSpreadAccumulator = 0,
+        .gunSpreadMultiplier = 0.002,
+        .recoilMultiplier = 0.01,
+        
     }, sizeof(PlayerData));
 }
 

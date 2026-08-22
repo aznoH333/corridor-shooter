@@ -265,3 +265,31 @@ void muzzleFlash(GameState* state, Vector3 position) {
         }
     );
 }
+
+
+void smokePuff(GameState* state, Vector3 position){
+    fadeParticle(
+        state, 
+        position,
+        "smoke_puff_0001",
+        7,
+        7,
+        randomFloat(0, PI * 2),
+        30,
+        emptyLight()
+    );
+}
+
+
+void bloodPuff(GameState* state, Vector3 position){
+    fadeParticle(
+        state, 
+        position,
+        "smoke_puff_0002",
+        7,
+        7,
+        randomFloat(0, PI * 2),
+        20,
+        emptyLight()
+    );
+}

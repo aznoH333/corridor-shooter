@@ -223,6 +223,7 @@ bool enemyUpdate(Entity* this, GameState* state) {
         );
 
         addScreenShake(state, 8);
+        playSound("gore", 1, 0.3);
 
         
         return false;
