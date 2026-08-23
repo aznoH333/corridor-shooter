@@ -5,7 +5,7 @@
 #include "raymath.h"
 #include "utils.h"
 #include "vec3Utils.h"
-
+#include "enemies.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,6 +18,8 @@ typedef struct {
     char* texture;
     float width;
     float height;
+    int lifeTime;
+    int fadeAfter;
 } ParticleSplatter;
 
 
@@ -30,12 +32,52 @@ ParticleSplatter noSplatter() {
     };
 }
 
-
-
-
 typedef struct {
     int lifeTime;
+    int fadeAfter;
 } ParticleSplatterData;
+
+
+bool particleSplatterUpdate(Entity* this, GameState* state) {
+    
+    
+    ParticleSplatterData* data = (ParticleSplatterData*) &this->data;
+
+    data->lifeTime--;
+
+    // set color
+    float color = min(1, (float)data->lifeTime / data->fadeAfter);
+
+    this->texture.color.a = color * 255;
+
+
+    return data->lifeTime > 0;
+}
+
+void particleSplatter(
+    GameState* state,
+    Vector3 position,
+    ParticleSplatter definition
+) {
+    
+    addEntity(state, (Entity){
+        .texture = simpleTexture(definition.texture, definition.width, definition.height),
+        .x = position.x,
+        .y = position.y,
+        .z = position.z,
+        .width = 1.0f,
+        .height = 1.0f,
+        .update = &particleSplatterUpdate,
+        .light = emptyLight(),
+        .type = ENTITY_UNSET,
+    }, 
+    &(ParticleSplatterData){
+        .lifeTime = definition.lifeTime,
+        .fadeAfter = definition.fadeAfter,
+    },
+        sizeof(ParticleSplatterData)
+    );
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,6 +147,27 @@ bool particleUpdate(Entity* this, GameState* state) {
         this->light.radius = percentage * 255;
     }
 
+
+    // world interaction
+    if (data->splatter.chance > 0){
+        Vector3 collision = checkWorldCollision(this->x, this->y, this->z, this->width, this->height, &state->map);
+        
+        float collided = Vector3Length(collision) > 0.1;
+
+        if (collided) {
+            
+            
+            if (randomChance(data->splatter.chance)) {
+                particleSplatter(state, (Vector3) {this->x, this->y, this->z}, data->splatter);
+            }
+
+            return false;
+        }
+
+
+
+
+    }
 
 
     return data->internalTimer < data->lifetime;
@@ -210,7 +273,14 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
         false,          // fade away
 
         emptyLight(),   // particle light
-        noSplatter()    // splatter
+        (ParticleSplatter) { // splatter
+            .chance = 0.25,
+            .texture = "debug_entities_0001",
+            .width = 32,
+            .height = 32,
+            .lifeTime = 90,
+            .fadeAfter = 60,
+        }    
     );
 }
 
