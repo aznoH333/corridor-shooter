@@ -6,6 +6,38 @@
 #include "utils.h"
 #include "vec3Utils.h"
 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#ParticleSplatter#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    float chance;
+    char* texture;
+    float width;
+    float height;
+} ParticleSplatter;
+
+
+ParticleSplatter noSplatter() {
+    return (ParticleSplatter){
+        .chance = 0,
+        .texture = 0,
+        .width = 0,
+        .height = 0
+    };
+}
+
+
+
+
+typedef struct {
+    int lifeTime;
+} ParticleSplatterData;
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#Base particle#
@@ -28,6 +60,8 @@ typedef struct {
     bool fadeAway;
 
     int internalTimer;
+
+    ParticleSplatter splatter;
 }ParticleData;
 
 bool particleUpdate(Entity* this, GameState* state) {
@@ -98,7 +132,8 @@ void particle(
     bool fadeAway,
 
     // light
-    EntityLight light
+    EntityLight light,
+    ParticleSplatter splatter
 ) {
     
     ParticleData data = {
@@ -111,7 +146,8 @@ void particle(
         .frameDuration = frameDuration,
         .lifetime = lifetime,
         .fadeAway = fadeAway,
-        .internalTimer = 0
+        .internalTimer = 0,
+        .splatter = splatter,
     };
 
     // copy frames
@@ -179,7 +215,8 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
         50,             // lifetime
         false,          // fade away
 
-        emptyLight()    // particle light
+        emptyLight(),   // particle light
+        noSplatter()    // splatter
     );
 }
 
@@ -241,8 +278,8 @@ void fadeParticle(
         fadeTime,           // lifetime
         true,               // fade away
 
-        light               // particle light
-
+        light,              // particle light
+        noSplatter()        // splatter
     );
 }
 
@@ -333,7 +370,7 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
         
         30,                 // lifetime
         false,              // fade away
-        emptyLight()        // particle light
-
+        emptyLight(),       // particle light
+        noSplatter()
     );
 }
