@@ -23,8 +23,8 @@ void pushEntity(GameState* state, Entity* entity);
 const float TEX_SIZE_TO_GAME = 0.03125f;
 
 
-const char* groundTexture = "ground_0002";
-const char* wallTexture = "wall_0002";
+const char* groundTexture = "ground_0001";
+const char* wallTexture = "wall_0003";
 
 
 World convertToWorld(GameState* state) {

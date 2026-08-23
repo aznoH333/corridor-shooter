@@ -265,12 +265,17 @@ bool playerUpdate(Entity* this, GameState* state) {
             bullet(state, this->x, this->y, this->z, 1.0f, direction);
             data->gunCooldown = data->totalGunCooldown;
             addScreenShake(state, 3);
-            playSound("machine_gun_1", 1, 1);
+            playSound("machine_gun_2", 1, 1);
             data->gunSpreadAccumulator++;
             
             muzzleFlash(
                 state, 
                 Vector3Add((Vector3){this->x, this->y, this->z}, Vector3Scale(direction, 0.2))
+            );
+            bulletCasing(
+                state,
+                (Vector3){this->x, this->y, this->z},
+                direction
             );
         }
 

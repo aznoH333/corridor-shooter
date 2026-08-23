@@ -293,3 +293,44 @@ void bloodPuff(GameState* state, Vector3 position){
         emptyLight()
     );
 }
+
+
+void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
+    
+    
+    
+    Vector3 casingDirection = Vector3Normalize(Vector3Add((Vector3){.x = 0, .y = 0.5, .z = 0}, baseDirection)); 
+
+    Vector3 directionRandomness = Vector3Normalize((Vector3){
+        .x = randomFloat(-1, 1),
+        .y = randomFloat(-1, 1),
+        .z = randomFloat(-1, 1)
+    });
+
+    casingDirection = Vector3Add(casingDirection, Vector3Scale(directionRandomness, 0.1));
+
+
+
+    float rotation = randomFloat(0, PI * 2);
+    
+    particle(
+        state,              // gamestate
+        position,           // position
+        casingDirection,    // direction
+        0.1,                // speed
+        0,                  // speed decay
+        0.14,                // gravity
+
+        (char*[]){"casing"},// frames
+        3,                  // texture width
+        3,                  // texture height
+        rotation,           // texture rotation
+        1,                  // used frames
+        10,                 // frame duration 
+        
+        30,                 // lifetime
+        false,              // fade away
+        emptyLight()        // particle light
+
+    );
+}
