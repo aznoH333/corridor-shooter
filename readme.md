@@ -12,6 +12,7 @@ $ make mac
 win not supported yet :(
 
 # todo:
-- [ ] Entity rotation
-- [ ] Particle splatter
+- [X] Entity rotation
+- [X] Particle splatter
+- [ ] Fix shader not having a color depth buffer
 - [ ] Gore bits
