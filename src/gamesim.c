@@ -21,8 +21,8 @@ EntityTexture simpleTexture(char* texture, float width, float height) {
         .height = height,
         .offset = (Vector3) {.x = 0, .y = 0, .z = 0},
         .yaw = 0,
-        .pitch = 0,
-        .roll = 0
+        .pitch = QUARTER_ROTATION,
+        .roll = QUARTER_ROTATION
     };
 }
 
@@ -34,6 +34,17 @@ EntityTexture rotatedTexture(char* texture, float width, float height, float rot
 
     return t;
 }
+
+EntityTexture rotatedTextureFull(char* texture, float width, float height, float yaw, float pitch, float roll) {
+    EntityTexture t = simpleTexture(texture, width, height);
+
+    t.yaw = yaw;
+    t.pitch = pitch;
+    t.roll = roll;
+
+    return t;
+}
+
 
 
 
@@ -141,6 +152,13 @@ World convertToWorld(GameState* state) {
         for (int i = 0; i < state->entities.count; ++i) {
             Entity* entity = &state->entities.values[i];
             EntityTexture texture = entity->texture;
+
+
+            float yaw = texture.yaw;
+            float pitch = texture.pitch;
+            float roll = texture.roll;
+
+
             pushPlane(
                 &world,
                 (Plane) {
@@ -148,9 +166,9 @@ World convertToWorld(GameState* state) {
                     .x = entity->x + texture.offset.x,
                     .y = entity->y + texture.offset.y,
                     .z = entity->z + texture.offset.z,
-                    .yaw = texture.yaw,
-                    .pitch = QUARTER_ROTATION + texture.pitch,
-                    .roll = QUARTER_ROTATION + texture.roll,
+                    .yaw = yaw,
+                    .pitch = pitch,
+                    .roll = roll,
                     // convert from texturesize to gamesize
                     .width = texture.width * TEX_SIZE_TO_GAME,
                     .height = texture.height * TEX_SIZE_TO_GAME,

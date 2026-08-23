@@ -35,6 +35,42 @@ Vector3 checkWorldCollision(float x, float y, float z, float width, float height
 }
 
 
+Vector3 getClosestWorldPosition(GameMap* map, Vector3 position) {
+    float minDist = 0.55;
+    float halfMapWidth = map->width * 0.5f;
+
+
+    // this is probably the biggest piece of shit code i have ever written
+    // i am honestly quite proud of i managed to complicate such a simple problem
+    int bestIndex = -1;
+    float bestDist = minDist;
+    float conditions[6][5] = {
+        {position.z,       halfMapWidth,         position.x,         position.y,  halfMapWidth},
+        {position.z,      -halfMapWidth,         position.x,         position.y, -halfMapWidth},
+        {position.y,                  0,         position.x,                  0,    position.z},
+        {position.y, map->ceilingHeight,         position.x, map->ceilingHeight,    position.z},
+        {position.x,                -10,                -10,         position.y,    position.z},
+        {position.x,        map->length,        map->length,         position.y,    position.z},
+    };
+
+    for (int i = 0; i < 6; ++i) {
+        float dist = fabs(conditions[i][0] - conditions[i][1]);
+        
+        if (dist < bestDist) {
+            bestIndex = i;
+            bestDist = dist;
+        }
+    }
+
+    if (bestIndex != -1) {
+        return (Vector3) {conditions[bestIndex][2], conditions[bestIndex][3], conditions[bestIndex][4]};
+    }
+
+    return position;
+}
+
+
+
 
 float approachNumber(float value, float target, float step) {
     if (value < target) {

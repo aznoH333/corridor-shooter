@@ -25,6 +25,7 @@ typedef struct {
 
 EntityTexture simpleTexture(char* texture, float width, float height);
 EntityTexture rotatedTexture(char* texture, float width, float height, float rotation);
+EntityTexture rotatedTextureFull(char* texture, float width, float height, float yaw, float pitch, float roll);
 
 
 typedef struct {
@@ -74,7 +75,7 @@ typedef struct {
     int screenShake;
 } GameCamera;
 
-#define MAX_ENTITIES 100
+#define MAX_ENTITIES 1000
 typedef struct {
     Entity values[MAX_ENTITIES];
     int count;

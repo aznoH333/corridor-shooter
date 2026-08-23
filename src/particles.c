@@ -57,16 +57,18 @@ bool particleSplatterUpdate(Entity* this, GameState* state) {
 void particleSplatter(
     GameState* state,
     Vector3 position,
-    ParticleSplatter definition
+    ParticleSplatter definition,
+    float yaw,
+    float pitch,
+    float roll
 ) {
-    
     addEntity(state, (Entity){
-        .texture = simpleTexture(definition.texture, definition.width, definition.height),
+        .texture = rotatedTextureFull(definition.texture, definition.width, definition.height, yaw, pitch, roll),
         .x = position.x,
         .y = position.y,
         .z = position.z,
-        .width = 1.0f,
-        .height = 1.0f,
+        .width = 0.0f,
+        .height = 0.0f,
         .update = &particleSplatterUpdate,
         .light = emptyLight(),
         .type = ENTITY_UNSET,
@@ -158,7 +160,48 @@ bool particleUpdate(Entity* this, GameState* state) {
             
             
             if (randomChance(data->splatter.chance)) {
-                particleSplatter(state, (Vector3) {this->x, this->y, this->z}, data->splatter);
+                Vector3 worldAllignedPosition = getClosestWorldPosition(&state->map, (Vector3) {this->x, this->y, this->z});
+                
+                // add a tiny offset to avoid z fighting
+                
+                float zFightOffset = randomFloat(0.01, 0.05);
+                
+                worldAllignedPosition.x -= collision.x * zFightOffset;
+                worldAllignedPosition.y -= collision.y * zFightOffset;
+                worldAllignedPosition.z -= collision.z * zFightOffset;
+
+
+                float yaw = 0;//PI / 2 * collision.y;
+                float roll = 0; // PI / 2 * collision.z;
+                float pitch = 0;
+
+
+
+                if (collision.z != 0) {
+                    pitch = QUARTER_ROTATION * - collision.z;
+                    yaw = randomFloat(0, FULL_ROTATION);
+                }
+
+                else if (collision.y != 0) {
+                    yaw = randomFloat(0, FULL_ROTATION);// HALF_ROTATION * collision.y;
+                }
+
+                else if (collision.x != 0){
+                    roll = QUARTER_ROTATION * collision.x;
+                    pitch = randomFloat(0, FULL_ROTATION);
+
+                }
+                
+
+
+                particleSplatter(
+                    state, 
+                    (Vector3) worldAllignedPosition, 
+                    data->splatter,
+                    yaw,
+                    pitch,
+                    roll 
+                );
             }
 
             return false;
@@ -247,7 +290,16 @@ const char* BLOOD_SPRITES[] = {
     "blood_0003",
     "blood_0004"
 };
+
+const char* BLOOD_SPLATTER_TEXTURES[] = {
+    "blood_splatter_0001", 
+    "blood_splatter_0002", 
+    "blood_splatter_0003",
+    "blood_splatter_0004"
+};
+
 const int BLOOD_SPRITE_COUNT = 4;
+const int BLOOD_SPLATTER_TEXTURE_COUNT = 4;
 void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
     int sprite = GetRandomValue(0, BLOOD_SPRITE_COUNT - 1);
     
@@ -274,12 +326,12 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
 
         emptyLight(),   // particle light
         (ParticleSplatter) { // splatter
-            .chance = 0.25,
-            .texture = "debug_entities_0001",
-            .width = 32,
-            .height = 32,
-            .lifeTime = 90,
-            .fadeAfter = 60,
+            .chance = 0.5,
+            .texture = BLOOD_SPLATTER_TEXTURES[GetRandomValue(0, BLOOD_SPLATTER_TEXTURE_COUNT)],
+            .width = 24,
+            .height = 24,
+            .lifeTime = GetRandomValue(400, 500),
+            .fadeAfter = 300,
         }    
     );
 }
@@ -344,6 +396,7 @@ void fadeParticle(
 
         light,              // particle light
         noSplatter()        // splatter
+        
     );
 }
 
