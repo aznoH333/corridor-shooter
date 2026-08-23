@@ -4,6 +4,7 @@
 #include "math.h"
 #include "raymath.h"
 #include "utils.h"
+#include "vec3Utils.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,6 +301,8 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
     
     
     Vector3 casingDirection = Vector3Normalize(Vector3Add((Vector3){.x = 0, .y = 0.5, .z = 0}, baseDirection)); 
+
+    casingDirection = Vector3Rotate(baseDirection, -PI / 2, PI / 4, 0);
 
     Vector3 directionRandomness = Vector3Normalize((Vector3){
         .x = randomFloat(-1, 1),
