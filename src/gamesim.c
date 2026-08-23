@@ -8,6 +8,34 @@
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Entity texture initialization helpers#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EntityTexture simpleTexture(char* texture, float width, float height) {
+    return (EntityTexture) {
+        .texture = texture,
+        .color = WHITE,
+        .width = width,
+        .height = height,
+        .offset = (Vector3) {.x = 0, .y = 0, .z = 0},
+        .yaw = 0,
+        .pitch = 0,
+        .roll = 0
+    };
+}
+
+
+EntityTexture rotatedTexture(char* texture, float width, float height, float rotation) {
+    EntityTexture t = simpleTexture(texture, width, height);
+
+    t.pitch = rotation;
+
+    return t;
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,20 +140,21 @@ World convertToWorld(GameState* state) {
     {
         for (int i = 0; i < state->entities.count; ++i) {
             Entity* entity = &state->entities.values[i];
+            EntityTexture texture = entity->texture;
             pushPlane(
                 &world,
                 (Plane) {
-                    .texture = entity->texture,
-                    .x = entity->x,
-                    .y = entity->y + entity->textureOffsetY,
-                    .z = entity->z + entity->textureOffsetX,
-                    .yaw = 0,
-                    .pitch = QUARTER_ROTATION + entity->textureRotation,
-                    .roll = QUARTER_ROTATION,
+                    .texture = texture.texture,
+                    .x = entity->x + texture.offset.x,
+                    .y = entity->y + texture.offset.y,
+                    .z = entity->z + texture.offset.z,
+                    .yaw = texture.yaw,
+                    .pitch = QUARTER_ROTATION + texture.pitch,
+                    .roll = QUARTER_ROTATION + texture.roll,
                     // convert from texturesize to gamesize
-                    .width = entity->textureWidth * TEX_SIZE_TO_GAME,
-                    .height = entity->textureHeight * TEX_SIZE_TO_GAME,
-                    .color = entity->color,
+                    .width = texture.width * TEX_SIZE_TO_GAME,
+                    .height = texture.height * TEX_SIZE_TO_GAME,
+                    .color = texture.color,
                 }
             );
 

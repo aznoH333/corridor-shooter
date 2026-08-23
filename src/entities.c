@@ -71,9 +71,9 @@ bool bulletUpdate(Entity* this, GameState* state) {
         for (int i = 1; i < 5; ++i) {
             addEntityPlane(state, 
                 particlePosition, 
-                this->texture, 
-                this->textureWidth, 
-                this->textureHeight, 
+                this->texture.texture, 
+                this->texture.width, 
+                this->texture.height, 
                 WHITE
             );
 
@@ -104,21 +104,16 @@ bool bulletUpdate(Entity* this, GameState* state) {
 
 void bullet(GameState* state, float x, float y, float z, float velocity, Vector3 direction) {
     addEntity(state, (Entity) {
-        .texture = "bullet_2",
+        .texture = simpleTexture("bullet_2", 2, 2),
         .x = x,
         .y = y,
         .z = z,
         .width = 0.1f,
         .height = 0.1f,
-        .textureWidth = 2.0f,
-        .textureHeight = 2.0f,
-        .textureOffsetX = 0,
-        .textureOffsetY = 0,
         .update = &bulletUpdate,
         .light = emptyLight(),
         .type = ENTITY_BULLET,
-        .color = WHITE,
-        .textureRotation = 0,
+        
 
     }, &(BulletData){
         .velocity = velocity,
@@ -218,7 +213,7 @@ bool playerUpdate(Entity* this, GameState* state) {
 
         float walkTimer = fabs(sin((float)state->internalTimer * 0.15f)) * velocityLength * 0.11f;
         // movement animation
-        this->textureOffsetY = walkTimer;
+        this->texture.offset.y = walkTimer;
 
         // footstep noise
         if (walkTimer < 0.01 && velocityLength > 0.1) {
@@ -305,16 +300,12 @@ bool playerUpdate(Entity* this, GameState* state) {
 
 void player(GameState* state, float x, float y, float z){
     addEntity(state, (Entity) {
-        .texture = "player_alt",
+        .texture = simpleTexture("player_alt", 18, 24),
         .x = x,
         .y = y + 0.5f,
         .z = z,
         .width = 1.0f,
         .height = 1.0f,
-        .textureWidth = 18.0f,
-        .textureHeight = 24.0f,
-        .textureOffsetX = 0,
-        .textureOffsetY = 0,
         .update = &playerUpdate,
         .light = (EntityLight){
             .isLight = true,
@@ -323,9 +314,7 @@ void player(GameState* state, float x, float y, float z){
             .g = 1,
             .b = 1
         },
-        .type = ENTITY_PLAYER,
-        .color = WHITE,
-        .textureRotation = 0,
+        .type = ENTITY_PLAYER
 
     }, &(PlayerData){
         .velocity = (Vector3) {0, 0, 0},
@@ -382,16 +371,12 @@ bool dummyUpdate(Entity* this, GameState* state){
 
 void dummy(GameCamera* state, float x, float y, float z){
     addEntity(state, (Entity){
-        .texture = "debug_entities_0001",
+        .texture = simpleTexture("debug_entities_0001", 32, 32),
         .x = x,
         .y = y + 0.5f,
         .z = z,
         .width = 1.0f,
         .height = 1.0f,
-        .textureWidth = 32.0f,
-        .textureHeight = 32.0f,
-        .textureOffsetX = 0,
-        .textureOffsetY = 0,
         .update = &dummyUpdate,
         .light = (EntityLight){
             .isLight = true,
@@ -401,8 +386,6 @@ void dummy(GameCamera* state, float x, float y, float z){
             .b = 0
         },
         .type = ENTITY_UNSET,
-        .color = WHITE,
-        .textureRotation = 0,
 
     }, &(DummyData){
         .direction = (Vector3) {.x = 1, .y = 1, .z = 1}

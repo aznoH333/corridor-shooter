@@ -75,7 +75,7 @@ bool particleUpdate(Entity* this, GameState* state) {
         int animationIndex = ((int)floor((double)data->internalTimer / data->frameDuration)) % data->usedFrames;
 
 
-        this->texture = data->frames[animationIndex]; // results in a blank texture
+        this->texture.texture = data->frames[animationIndex]; // results in a blank texture
     }
 
     // movement
@@ -100,7 +100,7 @@ bool particleUpdate(Entity* this, GameState* state) {
     if (data->fadeAway){
         float percentage = 1 - ((float)data->internalTimer / data-> lifetime);
 
-        this->color.a = percentage * 255;
+        this->texture.color.a = percentage * 255;
 
         this->light.radius = percentage * 255;
     }
@@ -157,21 +157,15 @@ void particle(
     
     
     addEntity(state, (Entity){
-        .texture = frames[0],
+        .texture = rotatedTexture(frames[0], textureWidth, textureHeight, textureRotation),
         .x = position.x,
         .y = position.y,
         .z = position.z,
         .width = 1.0f,
         .height = 1.0f,
-        .textureWidth = textureWidth,
-        .textureHeight = textureHeight,
-        .textureOffsetX = 0,
-        .textureOffsetY = 0,
         .update = &particleUpdate,
         .light = light,
         .type = ENTITY_UNSET,
-        .color = WHITE,
-        .textureRotation = textureRotation,
     }, &data,
         sizeof(ParticleData)
     );

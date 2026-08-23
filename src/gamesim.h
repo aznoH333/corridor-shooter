@@ -9,6 +9,24 @@ typedef struct GameState GameState;
 
 #define ENTITY_DATA_SIZE 1024
 
+
+
+
+typedef struct {
+    char* texture;
+    Color color;
+    float width;
+    float height;
+    Vector3 offset;
+    float yaw;
+    float pitch;
+    float roll;
+} EntityTexture;
+
+EntityTexture simpleTexture(char* texture, float width, float height);
+EntityTexture rotatedTexture(char* texture, float width, float height, float rotation);
+
+
 typedef struct {
     bool isLight;
     float radius;
@@ -24,20 +42,17 @@ typedef enum {
     ENTITY_UNSET,
 } EntityType;
 
+
+
 struct Entity{
     // generic data
-    char* texture;
+    EntityTexture texture;
     float x;
     float y;
     float z;
     float width;
     float height;
-    float textureWidth;
-    float textureHeight;
-    float textureOffsetX;
-    float textureOffsetY;
-    float textureRotation;
-    Color color;
+    
     EntityLight light;
     EntityType type;
 

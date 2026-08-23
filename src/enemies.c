@@ -241,22 +241,15 @@ bool enemyUpdate(Entity* this, GameState* state) {
 
 void genericGuy(GameState* state, Vector3 position) {
     addEntity(state, (Entity){
-        .texture = "debug_entities_0001",
+        .texture = simpleTexture("debug_entities_0001", 64, 64),
         .x = position.x,
         .y = position.y + 1,
         .z = position.z,
         .width = 2.0f,
         .height = 2.0f,
-        .textureWidth = 64.0f,
-        .textureHeight = 64.0f,
-        .textureOffsetX = 0,
-        .textureOffsetY = 0,
         .update = &enemyUpdate,
         .light = emptyLight,
         .type = ENTITY_ENEMY,
-        .color = WHITE,
-        .textureRotation = 0,
-
     }, &(EnemyData){
         .actionTimer = 60,
         .actionTimerMax = 60,
