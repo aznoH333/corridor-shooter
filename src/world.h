@@ -44,7 +44,7 @@ typedef struct {
 } Light;
 
 
-#define MAX_PLANES 1000
+#define MAX_PLANES 5000
 #define MAX_BILLBOARDS 100
 #define MAX_LIGHTS 50
 

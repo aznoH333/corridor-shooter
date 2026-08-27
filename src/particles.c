@@ -327,7 +327,7 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
         emptyLight(),   // particle light
         (ParticleSplatter) { // splatter
             .chance = 0.5,
-            .texture = BLOOD_SPLATTER_TEXTURES[GetRandomValue(0, BLOOD_SPLATTER_TEXTURE_COUNT)],
+            .texture = BLOOD_SPLATTER_TEXTURES[GetRandomValue(0, BLOOD_SPLATTER_TEXTURE_COUNT - 1)],
             .width = 24,
             .height = 24,
             .lifeTime = 500,
