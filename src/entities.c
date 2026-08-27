@@ -295,7 +295,8 @@ bool playerUpdate(Entity* this, GameState* state) {
     {
         // debug
         if (IsKeyPressed(KEY_U)) {
-            bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
+            //bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
+            goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
         }
     }
 

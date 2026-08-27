@@ -216,7 +216,7 @@ bool enemyUpdate(Entity* this, GameState* state) {
 
     // dying
     if (data->health <= 0) {
-        bloodSplash(
+        goreExplosion(
             state,
             (Vector3) {this->x, this->y, this->z},
             40

@@ -99,6 +99,8 @@ typedef struct {
     float minBounceForce;
     bool isFrozen;
     float rotationForce;
+    float soundVolume;
+    float soundPitch;
 } ParticleBounce;
 
 
@@ -111,6 +113,8 @@ ParticleBounce noBounce() {
         .minBounceForce = 0,
         .isFrozen = false,
         .rotationForce = 0,
+        .soundVolume = 0,
+        .soundPitch = 0
     };
 }
 
@@ -255,7 +259,7 @@ bool particleUpdate(Entity* this, GameState* state) {
                 
 
                 if (data->bounce.useBounceSound) {
-                    playSound(data->bounce.bounceSound, 1, 1);
+                    playSound(data->bounce.bounceSound, data->bounce.soundPitch, data->bounce.soundVolume);
                 }
 
                 // freeze
@@ -356,7 +360,7 @@ void particle(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#Variation functions#
+//#Blod and gore#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -446,6 +450,101 @@ void bloodSplash(GameState* state, Vector3 origin, float amount){
 }
 
 
+const char* GORE_TEXTURES[] = {
+    "gore_0001",
+    "gore_0002",
+    "gore_0003",
+    "gore_0004"
+};
+const int GORE_TEXTURE_COUNT = 4;
+void gore(GameState* state, Vector3 position, Vector3 direction, float speed) {
+    int sprite = GetRandomValue(0, GORE_TEXTURE_COUNT - 1);
+    
+    float rotation = randomFloat(0, PI * 2);
+
+    particle(
+        state,
+        position,
+        direction,
+        speed,
+        0,              // speed decay
+        0.15f,           // gravity
+
+        // frames
+        (char*[]){GORE_TEXTURES[sprite]}, 
+        16,             // texture width
+        16,             // texture height
+        rotation,       // texture rotation
+        1,              // used frames
+        10,             // frame duration 
+        
+        600,             // lifetime
+        true,            // fade away
+
+        emptyLight(),   // particle light
+        (ParticleSplatter) { // splatter
+            .chance = 0.75f,
+            .texture = BLOOD_SPLATTER_TEXTURES[GetRandomValue(0, BLOOD_SPLATTER_TEXTURE_COUNT - 1)],
+            .width = 24,
+            .height = 24,
+            .lifeTime = GetRandomValue(6000, 8000),
+            .fadeAfter = GetRandomValue(5000, 5500),
+        },
+        (ParticleBounce) {  // bounce
+            .enabled = true,
+            .bounciness = 0.25,
+            .bounceSound = "shell_bounce",
+            .useBounceSound = true,
+            .minBounceForce = 0.02,
+            .isFrozen = false,
+            .rotationForce = randomFloat(0.02, 0.08) * direction.z,
+            .soundVolume = 0.25,
+            .soundPitch = 1
+        },
+        0.25,           // width
+        0.25,           // height
+        false           // enable depth mask
+    );
+}
+
+
+void goreExplosion(GameState* state, Vector3 position, float amount) {
+    bloodSplash(state, position, amount);
+
+    int count = ((int)min(amount, 10) + GetRandomValue(0, 2));
+    
+    
+    float speedMin = 0.05;
+    float speedMax = 0.15;
+
+
+    for (int i = 0; i < count; ++i) {
+        float horizontalRotation = randomFloat(0, PI * 2);
+        float verticalSpeed = randomFloat(-0.2f, 3);
+
+        Vector3 direction = Vector3Normalize((Vector3){cos(horizontalRotation), verticalSpeed, sin(horizontalRotation)});
+
+
+        // 0.05 -> very small splash
+        // 0.1 -> covers width of level
+        float speed = randomFloat(speedMin, speedMax);
+
+        gore(
+            state,
+            position,
+            direction,
+            speed
+        );
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Fade particle#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void fadeParticle(
     GameState* state, 
     Vector3 position, 
@@ -485,6 +584,11 @@ void fadeParticle(
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Gun effects#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void muzzleFlash(GameState* state, Vector3 position) {
     fadeParticle(
         state, 
@@ -580,6 +684,8 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
             .minBounceForce = 0.02,
             .isFrozen = false,
             .rotationForce = 0.05,
+            .soundVolume = 0.25,
+            .soundPitch = 1
         },
         0.1,                // width
         0.1,                // height

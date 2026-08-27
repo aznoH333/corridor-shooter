@@ -5,6 +5,9 @@
 
 void blood(GameState* state, Vector3 position, Vector3 direction, float speed);
 void bloodSplash(GameState* state, Vector3 origin, float amount);
+void gore(GameState* state, Vector3 position, Vector3 direction, float speed);
+void goreExplosion(GameState* state, Vector3 position, float amount);
+
 void fadeParticle(GameState* state, Vector3 position, char* texture, float textureWidth, float textureHeight, float textureRotation, int fadeTime, EntityLight light);
 void muzzleFlash(GameState* state, Vector3 position);
 void smokePuff(GameState* state, Vector3 position);
