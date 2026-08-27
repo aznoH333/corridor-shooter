@@ -493,13 +493,13 @@ void gore(GameState* state, Vector3 position, Vector3 direction, float speed) {
         (ParticleBounce) {  // bounce
             .enabled = true,
             .bounciness = 0.25,
-            .bounceSound = "shell_bounce",
+            .bounceSound = "flesh_impact_fast",
             .useBounceSound = true,
             .minBounceForce = 0.02,
             .isFrozen = false,
             .rotationForce = randomFloat(0.02, 0.08) * direction.z,
             .soundVolume = 0.25,
-            .soundPitch = 1
+            .soundPitch = 1.2
         },
         0.25,           // width
         0.25,           // height
