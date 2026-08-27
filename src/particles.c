@@ -86,6 +86,34 @@ void particleSplatter(
     );
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Particle bounce#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    bool enabled;
+    float bounciness;
+    char* bounceSound;
+    bool useBounceSound;
+    float minBounceForce;
+    bool isFrozen;
+    float rotationForce;
+} ParticleBounce;
+
+
+ParticleBounce noBounce() {
+    return (ParticleBounce) {
+        .enabled = false,
+        .bounciness = 0,
+        .bounceSound = "",
+        .useBounceSound = false,
+        .minBounceForce = 0,
+        .isFrozen = false,
+        .rotationForce = 0,
+    };
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,6 +140,7 @@ typedef struct {
     int internalTimer;
 
     ParticleSplatter splatter;
+    ParticleBounce bounce;
 }ParticleData;
 
 bool particleUpdate(Entity* this, GameState* state) {
@@ -143,6 +172,8 @@ bool particleUpdate(Entity* this, GameState* state) {
 
         // speed decay
         data->speed = max(data->speed - data->speedDecay, 0);
+
+        this->texture.pitch += data->bounce.rotationForce;
     }
 
     // fade
@@ -156,7 +187,7 @@ bool particleUpdate(Entity* this, GameState* state) {
 
 
     // world interaction
-    if (data->splatter.chance > 0){
+    if ((data->splatter.chance > 0 || data->bounce.enabled) && !data->bounce.isFrozen){
         Vector3 collision = checkWorldCollision(this->x, this->y, this->z, this->width, this->height, &state->map);
         
         float collided = Vector3Length(collision) > 0.1;
@@ -209,7 +240,36 @@ bool particleUpdate(Entity* this, GameState* state) {
                 );
             }
 
-            return false;
+
+            if (data->bounce.enabled) {
+                // bounce
+
+
+                data->direction.y *= 1 - (fabs(collision.y) * 2);
+                data->direction.x *= 1 - (fabs(collision.x) * 2);
+                data->direction.z *= 1 - (fabs(collision.z) * 2);
+                data->bounce.rotationForce *= 1 - (fabs(collision.z) * 2);
+
+
+                data->speed *= data->bounce.bounciness;
+                
+
+                if (data->bounce.useBounceSound) {
+                    playSound(data->bounce.bounceSound, 1, 1);
+                }
+
+                // freeze
+                if (data->speed < data->bounce.minBounceForce) {
+                    data->bounce.isFrozen = true;
+                    data->speed = 0;
+                    data->splatter.chance = 0;
+                    this->y = this->height * 0.5;
+                    data->bounce.rotationForce = 0;
+                }
+
+            }
+
+            return data->bounce.enabled;
         }
 
 
@@ -247,7 +307,11 @@ void particle(
 
     // light
     EntityLight light,
-    ParticleSplatter splatter
+    ParticleSplatter splatter,
+    ParticleBounce bounce,
+    float width,
+    float height,
+    bool enableDepthMask
 ) {
     
     ParticleData data = {
@@ -263,6 +327,7 @@ void particle(
         .internalTimer = 0,
         .splatter = splatter,
         .baseLightRadius = light.radius,
+        .bounce = bounce
     };
 
     // copy frames
@@ -270,17 +335,19 @@ void particle(
         data.frames[i] = frames[i];
     }
     
-    
+    EntityTexture texture = rotatedTexture(frames[0], textureWidth, textureHeight, textureRotation);
+    texture.enableDepthMask = enableDepthMask;
     addEntity(state, (Entity){
-        .texture = rotatedTexture(frames[0], textureWidth, textureHeight, textureRotation),
+        .texture = texture,
         .x = position.x,
         .y = position.y,
         .z = position.z,
-        .width = 1.0f,
-        .height = 1.0f,
+        .width = width,
+        .height = height,
         .update = &particleUpdate,
         .light = light,
         .type = ENTITY_UNSET,
+        
     }, &data,
         sizeof(ParticleData)
     );
@@ -341,7 +408,11 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
             .height = 24,
             .lifeTime = GetRandomValue(6000, 8000),
             .fadeAfter = GetRandomValue(5000, 5500),
-        }    
+        },
+        noBounce(),     // bounce
+        0.25,           // width
+        0.25,           // height
+        true            // enable depth mask
     );
 }
 
@@ -404,8 +475,11 @@ void fadeParticle(
         true,               // fade away
 
         light,              // particle light
-        noSplatter()        // splatter
-        
+        noSplatter(),       // splatter
+        noBounce(),         // bounce
+        0.25,               // width
+        0.25,               // height
+        true                // enable depth mask
     );
 }
 
@@ -483,9 +557,9 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
         state,              // gamestate
         position,           // position
         casingDirection,    // direction
-        0.1,                // speed
+        0.1,              // speed
         0,                  // speed decay
-        0.14,                // gravity
+        0.28,               // gravity
 
         (char*[]){"casing"},// frames
         3,                  // texture width
@@ -494,9 +568,21 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
         1,                  // used frames
         10,                 // frame duration 
         
-        30,                 // lifetime
-        false,              // fade away
+        600,                // lifetime
+        true,               // fade away
         emptyLight(),       // particle light
-        noSplatter()
+        noSplatter(),
+        (ParticleBounce) {  // bounce
+            .enabled = true,
+            .bounciness = 0.5,
+            .bounceSound = "shell_bounce",
+            .useBounceSound = true,
+            .minBounceForce = 0.02,
+            .isFrozen = false,
+            .rotationForce = 0.05,
+        },
+        0.1,                // width
+        0.1,                // height
+        false               // enable depth mask
     );
 }
