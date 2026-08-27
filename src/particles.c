@@ -48,7 +48,7 @@ bool particleSplatterUpdate(Entity* this, GameState* state) {
     // set color
     float color = min(1, (float)data->lifeTime / data->fadeAfter);
 
-    this->texture.color.a = color * 255;
+    this->texture.color.a = color * 160;
 
 
     return data->lifeTime > 0;
@@ -62,8 +62,13 @@ void particleSplatter(
     float pitch,
     float roll
 ) {
+    
+    
+    EntityTexture texture = rotatedTextureFull(definition.texture, definition.width, definition.height, yaw, pitch, roll);
+    texture.enableDepthMask = false;
+
     addEntity(state, (Entity){
-        .texture = rotatedTextureFull(definition.texture, definition.width, definition.height, yaw, pitch, roll),
+        .texture = texture,
         .x = position.x,
         .y = position.y,
         .z = position.z,
@@ -102,6 +107,7 @@ typedef struct {
     // lifetime
     int lifetime;
     bool fadeAway;
+    float baseLightRadius;
 
     int internalTimer;
 
@@ -111,8 +117,7 @@ typedef struct {
 bool particleUpdate(Entity* this, GameState* state) {
     ParticleData* data = (ParticleData*) &this->data;
 
-    // timer
-    data->internalTimer++;
+    
 
     // animation
     {
@@ -146,7 +151,7 @@ bool particleUpdate(Entity* this, GameState* state) {
 
         this->texture.color.a = percentage * 255;
 
-        this->light.radius = percentage * 255;
+        this->light.radius = percentage * data->baseLightRadius;
     }
 
 
@@ -213,6 +218,9 @@ bool particleUpdate(Entity* this, GameState* state) {
     }
 
 
+    // timer
+    data->internalTimer++;
+
     return data->internalTimer < data->lifetime;
 }
 
@@ -254,6 +262,7 @@ void particle(
         .fadeAway = fadeAway,
         .internalTimer = 0,
         .splatter = splatter,
+        .baseLightRadius = light.radius,
     };
 
     // copy frames
@@ -330,8 +339,8 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
             .texture = BLOOD_SPLATTER_TEXTURES[GetRandomValue(0, BLOOD_SPLATTER_TEXTURE_COUNT - 1)],
             .width = 24,
             .height = 24,
-            .lifeTime = 500,
-            .fadeAfter = 300,
+            .lifeTime = GetRandomValue(6000, 8000),
+            .fadeAfter = GetRandomValue(5000, 5500),
         }    
     );
 }
@@ -413,7 +422,7 @@ void muzzleFlash(GameState* state, Vector3 position) {
         2,
         (EntityLight){
             .isLight = true,
-            .radius = 15,
+            .radius = 50,
             .r = 0.9,
             .g = 0.7,
             .b = 0

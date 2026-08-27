@@ -63,7 +63,8 @@ void renderWorld(World* world, WorldRenderingData* renderingData){
             planeInstance->yaw, 
             planeInstance->pitch, 
             planeInstance->roll,
-            planeInstance->color
+            planeInstance->color,
+            planeInstance->enableDepthMask
         );
     }
 

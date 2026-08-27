@@ -22,7 +22,8 @@ EntityTexture simpleTexture(char* texture, float width, float height) {
         .offset = (Vector3) {.x = 0, .y = 0, .z = 0},
         .yaw = 0,
         .pitch = QUARTER_ROTATION,
-        .roll = QUARTER_ROTATION
+        .roll = QUARTER_ROTATION,
+        .enableDepthMask = true,
     };
 }
 
@@ -87,6 +88,7 @@ World convertToWorld(GameState* state) {
                 .width = map->width,
                 .height = map->width,
                 .color = WHITE,
+                .enableDepthMask = true,
             });
 
             // ceiling
@@ -101,6 +103,7 @@ World convertToWorld(GameState* state) {
                 .width = map->width,
                 .height = map->width,
                 .color = WHITE,
+                .enableDepthMask = true,
             });
 
             // walls
@@ -115,7 +118,7 @@ World convertToWorld(GameState* state) {
                 .width = map->width,
                 .height = map->width,
                 .color = WHITE,
-
+                .enableDepthMask = true,
             });
 
             pushPlane(&world, (Plane) {
@@ -129,6 +132,7 @@ World convertToWorld(GameState* state) {
                 .width = map->width,
                 .height = map->width,
                 .color = WHITE,
+                .enableDepthMask = true,
             });
         }
         
@@ -144,6 +148,7 @@ World convertToWorld(GameState* state) {
             .width = map->width,
             .height = map->width,
             .color = WHITE,
+            .enableDepthMask = true,
         });
     }
     
@@ -173,6 +178,7 @@ World convertToWorld(GameState* state) {
                     .width = texture.width * TEX_SIZE_TO_GAME,
                     .height = texture.height * TEX_SIZE_TO_GAME,
                     .color = texture.color,
+                    .enableDepthMask = texture.enableDepthMask,
                 }
             );
 
@@ -343,6 +349,7 @@ void addEntityPlane(
                 .width = textureWidth * TEX_SIZE_TO_GAME,
                 .height = textureHeight * TEX_SIZE_TO_GAME,
                 .color = color,
+                .enableDepthMask = true
             }
         );
 }

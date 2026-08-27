@@ -21,6 +21,7 @@ typedef struct {
     float yaw;
     float pitch;
     float roll;
+    bool enableDepthMask;
 } EntityTexture;
 
 EntityTexture simpleTexture(char* texture, float width, float height);

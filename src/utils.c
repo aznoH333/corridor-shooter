@@ -531,7 +531,19 @@ Shader* Get3DShader(){
 // 3D Rendering utils
 // -------------------------------------------------------------------------------------
 
-void plane(char* spriteName, float x, float y, float z, float width, float height, float yaw, float pitch, float roll, Color color) {
+void plane(
+    char* spriteName, 
+    float x, 
+    float y, 
+    float z, 
+    float width, 
+    float height, 
+    float yaw, 
+    float pitch, 
+    float roll, 
+    Color color,
+    bool enableDepthMask
+) {
     
     
     Matrix matrix = MatrixIdentity();
@@ -542,7 +554,16 @@ void plane(char* spriteName, float x, float y, float z, float width, float heigh
     planeModel.transform = matrix;
     SetMaterialTexture(&planeModel.materials[0], MATERIAL_MAP_DIFFUSE, *getSprite(spriteName));
 
+    if (!enableDepthMask) {
+        rlDisableDepthMask();
+    }
+    
     DrawModel(planeModel, (Vector3){x, y, z}, 1.0f, color);
+
+    if (!enableDepthMask) {
+        rlEnableDepthMask();
+    }
+
 }
 
 void billboard(char* spriteName, float x, float y, float z, float scale, Color color) {

@@ -23,6 +23,7 @@ typedef struct {
     float width;
     float height;
     Color color;
+    bool enableDepthMask;
 } Plane;
 
 typedef struct {
