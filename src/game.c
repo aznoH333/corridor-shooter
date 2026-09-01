@@ -43,6 +43,7 @@ int main(void)
     spawnEnemy(&state, (Vector3){30, 0, -1}, 0);
     
 
+    HideCursor();
 
 	// Main game loop
     while (!WindowShouldClose())

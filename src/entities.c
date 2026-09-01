@@ -298,8 +298,69 @@ bool playerUpdate(Entity* this, GameState* state) {
             //bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
             goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
         }
+
+
+        
     }
 
+
+    // crosshair
+    {
+        Vector2 mousePos = getMousePosition();
+
+
+        float cursorX = mousePos.x;
+        float cursorY = mousePos.y - (data->gunSpreadAccumulator * data->recoilMultiplier * 1000);
+        float spreadMultiplier = data->minGunSpread + (data->gunSpreadAccumulator * data->gunSpreadMultiplier);
+
+        float sideOffset = spreadMultiplier * 1000;
+        const float baseLineOffset = 16; // equal to line indicator widhtpx / 2 * 4
+        sideOffset += baseLineOffset;
+
+
+        // main dot
+        sprMain(
+            "crosshair_0001",       // spr name
+            cursorX,                // x
+            cursorY,                // y
+            4,                      // width
+            4,                      // height
+            false,                  // flip x
+            false,                  // flip y
+            0,                      // rotation
+            (Color){255,255,255,160},// color
+            0                       // drawing layer
+        );
+
+
+
+        // side lines
+        sprMain(
+            "crosshair_0002",       // spr name
+            cursorX - sideOffset,   // x
+            cursorY,                // y
+            4,                      // width
+            4,                      // height
+            false,                  // flip x
+            false,                  // flip y
+            0,                      // rotation
+            (Color){255,255,255,160},// color
+            0                       // drawing layer
+        );
+
+        sprMain(
+            "crosshair_0002",       // spr name
+            cursorX + sideOffset,   // x
+            cursorY,                // y
+            4,                      // width
+            4,                      // height
+            false,                  // flip x
+            false,                  // flip y
+            0,                      // rotation
+            (Color){255,255,255,160},// color
+            0                       // drawing layer
+        );
+    }
 
 
     return true;
