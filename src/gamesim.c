@@ -63,7 +63,8 @@ void pushEntity(GameState* state, Entity* entity);
 const float TEX_SIZE_TO_GAME = 0.03125f;
 
 
-const char* groundTexture = "brick_test_2_0004";
+const char* groundTexture = "metal_tiled_3";
+const char* ceilingTexture = "concrete_tiled_10";
 const char* wallTexture = "brick_test_2_0003";
 
 
@@ -93,7 +94,7 @@ World convertToWorld(GameState* state) {
 
             // ceiling
             pushPlane(&world, (Plane) {
-                .texture = groundTexture,
+                .texture = ceilingTexture,
                 .x = i * map->width + map->width * 0.5,
                 .y = map->ceilingHeight,
                 .z = 0,

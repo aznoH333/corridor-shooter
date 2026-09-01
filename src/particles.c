@@ -101,6 +101,7 @@ typedef struct {
     float rotationForce;
     float soundVolume;
     float soundPitch;
+    float soundChance;
 } ParticleBounce;
 
 
@@ -114,7 +115,8 @@ ParticleBounce noBounce() {
         .isFrozen = false,
         .rotationForce = 0,
         .soundVolume = 0,
-        .soundPitch = 0
+        .soundPitch = 0,
+        .soundChance = 0
     };
 }
 
@@ -258,7 +260,7 @@ bool particleUpdate(Entity* this, GameState* state) {
                 data->speed *= data->bounce.bounciness;
                 
 
-                if (data->bounce.useBounceSound) {
+                if (data->bounce.useBounceSound && randomChance(data->bounce.soundChance)) {
                     playSound(data->bounce.bounceSound, data->bounce.soundPitch, data->bounce.soundVolume);
                 }
 
@@ -499,7 +501,8 @@ void gore(GameState* state, Vector3 position, Vector3 direction, float speed) {
             .isFrozen = false,
             .rotationForce = randomFloat(0.02, 0.08) * direction.z,
             .soundVolume = 0.25,
-            .soundPitch = 1.2
+            .soundPitch = 0.7,
+            .soundChance = 0.3,
         },
         0.25,           // width
         0.25,           // height
@@ -685,7 +688,8 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
             .isFrozen = false,
             .rotationForce = 0.05,
             .soundVolume = 0.25,
-            .soundPitch = 1
+            .soundPitch = 1,
+            .soundChance = 1
         },
         0.1,                // width
         0.1,                // height
