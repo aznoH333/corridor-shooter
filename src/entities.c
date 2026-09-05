@@ -389,6 +389,14 @@ bool playerUpdate(Entity* this, GameState* state) {
 
 
 void player(GameState* state, float x, float y, float z){
+    
+    
+    const int bulletType = 0;
+    const int bulletModifier = 0;
+    const int receiverType = 3;
+    const int receiverModifier = 2;
+    const int magazineType = 0;
+    
     addEntity(state, (Entity) {
         .texture = simpleTexture("player_alt", 18, 24),
         .x = x,
@@ -413,7 +421,7 @@ void player(GameState* state, float x, float y, float z){
         // gun stuff
         .gunCooldown = 0,
         .gunSpreadAccumulator = 0,
-        .gun = gun(0, 0, 0, 0, 0)
+        .gun = gun(bulletType, bulletModifier, receiverType, receiverModifier, magazineType)
         
     }, sizeof(PlayerData));
 }
