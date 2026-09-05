@@ -4,6 +4,8 @@
 #include "gamesim.h"
 
 
+
+
 void player(GameState* state, float x, float y, float z);
 void dummy(GameCamera* state, float x, float y, float z);
 

@@ -4,6 +4,8 @@
 #include "raylib.h"
 #include "utils.h"
 #include "particles.h"
+#include "gun.h"
+#include "enemies.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -17,7 +19,7 @@ typedef struct {
     Vector3 direction;
     float lightRadius;
     int internalTimer;
-
+    float damage;
 } BulletData;
 
 bool bulletUpdate(Entity* this, GameState* state) {
@@ -45,8 +47,17 @@ bool bulletUpdate(Entity* this, GameState* state) {
     Entity* collidedEnemy = getCollidingEntityByType(state, this, ENTITY_ENEMY);
 
     if (collidedEnemy != NULL) {
+        
+        
+        EnemyData* enemyData = (EnemyData*)collidedEnemy->data;
+        
         bloodPuff(state, (Vector3){this->x, this->y, this->z});
         playSound("flesh_impact_fast", 0.3, 0.3);
+
+        enemyTakeDamage(collidedEnemy, enemyData, state, (Vector3){this->x, this->y, this->z}, data->damage);
+        printf("remaining health : %f, damage : %f \n ", enemyData->health, data->damage);
+        enemyData->health = 3;
+
 
         return false;
     }
@@ -74,7 +85,7 @@ bool bulletUpdate(Entity* this, GameState* state) {
                 this->texture.texture, 
                 this->texture.width, 
                 this->texture.height, 
-                WHITE
+                this->texture.color
             );
 
             particlePosition.x -= data->direction.x * (i * 0.05f);
@@ -84,27 +95,25 @@ bool bulletUpdate(Entity* this, GameState* state) {
         }
     }
     
-    
-    
-    
 
     // update
     this->x = next.x;
     this->y = next.y;
     this->z = next.z;
     data->internalTimer++;
-
-
-
     
 
     return true;
 }
 
 
-void bullet(GameState* state, float x, float y, float z, float velocity, Vector3 direction) {
+void bullet(GameState* state, float x, float y, float z, float velocity, Vector3 direction, float damage, Color color) {
+    
+    EntityTexture texture = simpleTexture("bullet_2", 2, 2);
+    texture.color = color;
+    
     addEntity(state, (Entity) {
-        .texture = simpleTexture("bullet_2", 2, 2),
+        .texture = texture,
         .x = x,
         .y = y,
         .z = z,
@@ -122,6 +131,7 @@ void bullet(GameState* state, float x, float y, float z, float velocity, Vector3
         .maxDistanceTraveled = 20,
         .lightRadius = 5,
         .internalTimer = 0,
+        .damage = damage,
     }, sizeof(BulletData));
 }
 
@@ -139,12 +149,8 @@ typedef struct {
 
     // gun data
     int gunCooldown;
-    int totalGunCooldown;
-    
-    float minGunSpread;
     int gunSpreadAccumulator;
-    float gunSpreadMultiplier;
-    float recoilMultiplier;
+    Gun gun;    
 
 } PlayerData;
 
@@ -234,43 +240,58 @@ bool playerUpdate(Entity* this, GameState* state) {
             
             
             // base bullet direction
-            Vector3 direction = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
+            Vector3 baseDirection = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
 
-            // calculate spread
-            Vector3 spreadVector = Vector3Normalize((Vector3) {
-                .x = randomFloat(-1, 1),
-                .y = randomFloat(-1, 1),
-                .z = randomFloat(-1, 1)
-            });
-            float spreadMultiplier = data->minGunSpread + (data->gunSpreadAccumulator * data->gunSpreadMultiplier);
-
-            direction = Vector3Add(direction, Vector3Scale(spreadVector, spreadMultiplier));
 
             // calculate recoil
             Vector3 recoilVector = (Vector3) {
                 .x = 0,
-                .y = data->gunSpreadAccumulator * data->recoilMultiplier,
+                .y = data->gunSpreadAccumulator * data->gun.recoilMultiplier,
                 .z = 0
             };
 
-            direction = Vector3Normalize(Vector3Add(direction, recoilVector));
+            baseDirection = Vector3Normalize(Vector3Add(baseDirection, recoilVector));
 
 
-            // fire bullet
-            bullet(state, this->x, this->y, this->z, 1.0f, direction);
-            data->gunCooldown = data->totalGunCooldown;
-            addScreenShake(state, 3);
-            playSound("machine_gun_2", 1, 1);
+            
+
+
+
+            // fire bullets
+            for (int i = 0; i < data->gun.projectilesPerShot; i++) {
+                Vector3 direction = {baseDirection.x, baseDirection.y, baseDirection.z};
+
+                // calculate spread
+                Vector3 spreadVector = Vector3Normalize((Vector3) {
+                    .x = randomFloat(-1, 1),
+                    .y = randomFloat(-1, 1),
+                    .z = randomFloat(-1, 1)
+                });
+                float spreadMultiplier = data->gun.minSpread + (data->gunSpreadAccumulator * data->gun.spreadMultiplier);
+
+                direction = Vector3Add(direction, Vector3Scale(spreadVector, spreadMultiplier));
+
+
+                bullet(state, this->x, this->y, this->z, data->gun.bulletVelocity, direction, data->gun.damage, data->gun.bulletColor);
+            }
+
+            data->gunCooldown = data->gun.fireCooldown;
+            addScreenShake(state, data->gun.screenShake);
+            playSound(data->gun.firingSound, data->gun.firingSoundPitch, data->gun.firingSoundVolume);
             data->gunSpreadAccumulator++;
             
             muzzleFlash(
                 state, 
-                Vector3Add((Vector3){this->x, this->y, this->z}, Vector3Scale(direction, 0.2))
+                Vector3Add((Vector3){this->x, this->y, this->z}, Vector3Scale(baseDirection, 0.2))
             );
             bulletCasing(
                 state,
                 (Vector3){this->x, this->y, this->z},
-                direction
+                baseDirection,
+                data->gun.bulletCasingTexture,
+                data->gun.bulletCasingSound,
+                data->gun.bulletCasingSoundPitch,
+                data->gun.bulletCasingSoundVolume
             );
         }
 
@@ -310,8 +331,8 @@ bool playerUpdate(Entity* this, GameState* state) {
 
 
         float cursorX = mousePos.x;
-        float cursorY = mousePos.y - (data->gunSpreadAccumulator * data->recoilMultiplier * 1000);
-        float spreadMultiplier = data->minGunSpread + (data->gunSpreadAccumulator * data->gunSpreadMultiplier);
+        float cursorY = mousePos.y - (data->gunSpreadAccumulator * data->gun.recoilMultiplier * 1000);
+        float spreadMultiplier = data->gun.minSpread + (data->gunSpreadAccumulator * data->gun.spreadMultiplier);
 
         float sideOffset = spreadMultiplier * 1000;
         const float baseLineOffset = 16; // equal to line indicator widhtpx / 2 * 4
@@ -391,11 +412,8 @@ void player(GameState* state, float x, float y, float z){
 
         // gun stuff
         .gunCooldown = 0,
-        .totalGunCooldown = 4,
-        .minGunSpread = 0.02,
         .gunSpreadAccumulator = 0,
-        .gunSpreadMultiplier = 0.002,
-        .recoilMultiplier = 0.01,
+        .gun = gun(0, 0, 0, 0, 0)
         
     }, sizeof(PlayerData));
 }

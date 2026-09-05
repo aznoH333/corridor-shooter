@@ -9,22 +9,6 @@
 //#Enemy base code#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef enum {
-    ENEMY_AI_GRID_APPROACH,
-    ENEMY_AI_SHIELD_APPROACH,
-    ENEMY_AI_RANGER
-} EnemyAI;
-
-typedef struct {
-    int actionTimer;
-    int actionTimerMax;
-    Vector3 movementDirection;
-    float movementSpeed;
-    float movementVelocity;
-    float deceleration;
-    float health;
-    EnemyAI ai;
-} EnemyData;
 
 
 void moveEnemyInDirection(EnemyData* data, Vector3 direction, float velocity) {
@@ -159,6 +143,7 @@ void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
 }
 
 void enemyTakeDamage(Entity* this, EnemyData* data, GameState* state, Vector3 point, float damage) {
+    
     data->health -= damage;
 
     bloodSplash(
@@ -171,15 +156,6 @@ void enemyTakeDamage(Entity* this, EnemyData* data, GameState* state, Vector3 po
 bool enemyUpdate(Entity* this, GameState* state) {
     EnemyData* data = (EnemyData*) &this->data;
 
-
-    // taking damage
-    {
-        Entity* collidedBullet = getCollidingEntityByType(state, this, ENTITY_BULLET);
-
-        if (collidedBullet != NULL) {
-            enemyTakeDamage(this, data, state, (Vector3) {collidedBullet->x, collidedBullet->y, collidedBullet->z} , 1);
-        }
-    }
 
     // actions
     {
@@ -248,7 +224,7 @@ void genericGuy(GameState* state, Vector3 position) {
         .width = 2.0f,
         .height = 2.0f,
         .update = &enemyUpdate,
-        .light = emptyLight,
+        .light = emptyLight(),
         .type = ENTITY_ENEMY,
     }, &(EnemyData){
         .actionTimer = 60,

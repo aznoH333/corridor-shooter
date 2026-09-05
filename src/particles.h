@@ -12,6 +12,14 @@ void fadeParticle(GameState* state, Vector3 position, char* texture, float textu
 void muzzleFlash(GameState* state, Vector3 position);
 void smokePuff(GameState* state, Vector3 position);
 void bloodPuff(GameState* state, Vector3 position);
-void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection);
+void bulletCasing(
+    GameState* state, 
+    Vector3 position, 
+    Vector3 baseDirection,
+    char* texture,
+    char* soundName,
+    float soundPitch,
+    float soundVolume
+);
 
 #endif

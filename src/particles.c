@@ -640,7 +640,15 @@ void bloodPuff(GameState* state, Vector3 position){
 }
 
 
-void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
+void bulletCasing(
+    GameState* state, 
+    Vector3 position, 
+    Vector3 baseDirection,
+    char* texture,
+    char* soundName,
+    float soundPitch,
+    float soundVolume
+){
     
     
     
@@ -668,7 +676,7 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
         0,                  // speed decay
         0.28,               // gravity
 
-        (char*[]){"casing"},// frames
+        (char*[]){texture},// frames
         3,                  // texture width
         3,                  // texture height
         rotation,           // texture rotation
@@ -682,14 +690,14 @@ void bulletCasing(GameState* state, Vector3 position, Vector3 baseDirection){
         (ParticleBounce) {  // bounce
             .enabled = true,
             .bounciness = 0.5,
-            .bounceSound = "shell_bounce",
+            .bounceSound = soundName,
             .useBounceSound = true,
             .minBounceForce = 0.02,
             .isFrozen = false,
             .rotationForce = 0.05,
             .soundVolume = 0.25,
-            .soundPitch = 1,
-            .soundChance = 1
+            .soundPitch = soundPitch,
+            .soundChance = soundVolume
         },
         0.1,                // width
         0.1,                // height
