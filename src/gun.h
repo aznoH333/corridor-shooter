@@ -10,14 +10,14 @@ typedef struct {
     float spreadMultiplier;
     float recoilMultiplier;
     float damage;
-    int fireCooldown;
+    float fireCooldown;
     float bulletVelocity;
-    int projectilesPerShot;
-    int screenShake;
+    float projectilesPerShot;
+    float screenShake;
 
     // magazine
-    int magazineSize;
-    int reloadTime;
+    float magazineSize;
+    float reloadTime;
 
 
     // firing sound

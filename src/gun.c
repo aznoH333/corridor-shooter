@@ -110,8 +110,7 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GunElement bulletTypes[] = {
-    // 9mm round
-    {
+    { // 9mm round
         .spreadBase = 0.01,
         .spreadBaseMultiplier = 1.0,
 
@@ -144,7 +143,7 @@ GunElement bulletTypes[] = {
             .projectileColor = {.r = 255, .g = 183, .b = 74, .a = 255},
             
             .changeCasingSprite = true,
-            .bulletCasingSprite = "casing",
+            .bulletCasingSprite = "casing_0001",
             
             .changeCasingSound = true,
             .bulletCasingSound = "shell_bounce",
@@ -162,9 +161,8 @@ GunElement bulletTypes[] = {
         .screenShake = 3,
         .screenShakeMultiplier = 1.0,
     },
-
-    // 9 gauge shotgun shell
-    {
+    
+    { // 9 gauge shotgun shell
         .spreadBase = 0.04,
         .spreadBaseMultiplier = 1.0,
 
@@ -197,7 +195,7 @@ GunElement bulletTypes[] = {
             .projectileColor = {.r = 170, .g = 85, .b = 0, .a = 255},
             
             .changeCasingSprite = true,
-            .bulletCasingSprite = "casing",
+            .bulletCasingSprite = "casing_0002",
             
             .changeCasingSound = true,
             .bulletCasingSound = "shell_bounce",
@@ -212,9 +210,62 @@ GunElement bulletTypes[] = {
         .casingPitchMultiplier = 1,
         .casingVolumeMultiplier = 0.25,
 
-        .screenShake = 3,
+        .screenShake = 40,
         .screenShakeMultiplier = 1.0,
-    }
+    },
+
+    { // 9 gauge slug shell
+        .spreadBase = 0.02,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.01,
+        .spreadMultiplier = 1.0,
+
+        .recoil = 0.05,
+        .recoilMultiplier = 1.0,
+
+        .damage = 4,
+        .damageMultiplier = 1.0,
+
+        .projectiles = 1.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 30,
+        .firerateMultiplier = 1.0,
+
+        .ammo = 5,
+        .ammoMultiplier = 1,
+
+        .reload = 30,
+        .reloadMultiplier = 1,
+
+        .velocity = 1.7,
+        .velocityMultiplier = 1.0,
+
+        .bulletVisuals = {
+            .changeColor = true,
+            .projectileColor = {.r = 140, .g = 140, .b = 140, .a = 255},
+            
+            .changeCasingSprite = true,
+            .bulletCasingSprite = "casing_0003",
+            
+            .changeCasingSound = true,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = true,
+            .firingSound = "shotgun"
+        },
+
+        .shootPitchMultiplier = 1,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 1,
+        .casingVolumeMultiplier = 0.25,
+
+        .screenShake = 40,
+        .screenShakeMultiplier = 1.0,
+    },
+    
 };
 
 
@@ -224,8 +275,7 @@ GunElement bulletTypes[] = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GunElement bulletModifiers[] = {
-    // default round
-    {
+    { // default round
         .spreadBase = 0.0,
         .spreadBaseMultiplier = 1.0,
 
@@ -275,7 +325,215 @@ GunElement bulletModifiers[] = {
 
         .screenShake = 0,
         .screenShakeMultiplier = 1.0,
-    }
+    },
+    
+    { // piercing round
+        .spreadBase = 0.0,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.0,
+        .spreadMultiplier = 1.0,
+
+        .recoil = 0.0,
+        .recoilMultiplier = 1.2,
+
+        .damage = 0.0,
+        .damageMultiplier = 1.2,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 1.2,
+
+        .ammo = 0,
+        .ammoMultiplier = 0.8,
+
+        .reload = 0,
+        .reloadMultiplier = 1,
+
+        .velocity = 0,
+        .velocityMultiplier = 1.0,
+
+        .bulletVisuals = {
+            .changeColor = true,
+            .projectileColor = {.r = 255, .g = 255, .b = 255, .a = 255},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 1,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 1,
+        .casingVolumeMultiplier = 1,
+
+        .screenShake = 0,
+        .screenShakeMultiplier = 1.0,
+    },
+    
+    { // triplicate round
+        .spreadBase = 0.0,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.0,
+        .spreadMultiplier = 1.3333,
+
+        .recoil = 0.0,
+        .recoilMultiplier = 1.0,
+
+        .damage = 0.0,
+        .damageMultiplier = 0.4,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 3.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 1.0,
+
+        .ammo = 0,
+        .ammoMultiplier = 1,
+
+        .reload = 0,
+        .reloadMultiplier = 1,
+
+        .velocity = 0,
+        .velocityMultiplier = 0.75,
+
+        .bulletVisuals = {
+            .changeColor = true,
+            .projectileColor = {.r = 255, .g = 255, .b = 85, .a = 180},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 1,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 1,
+        .casingVolumeMultiplier = 1,
+
+        .screenShake = 0,
+        .screenShakeMultiplier = 1.0,
+    },
+    { // incendiary round // TODO incendiary effect
+        .spreadBase = 0.0,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.0,
+        .spreadMultiplier = 1.0,
+
+        .recoil = 0.0,
+        .recoilMultiplier = 1.0,
+
+        .damage = 0.0,
+        .damageMultiplier = 0.75,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 1.0,
+
+        .ammo = 0,
+        .ammoMultiplier = 1,
+
+        .reload = 0,
+        .reloadMultiplier = 1,
+
+        .velocity = 0,
+        .velocityMultiplier = 1.0,
+
+        .bulletVisuals = {
+            .changeColor = true,
+            .projectileColor = {.r = 170, .g = 54, .b = 0, .a = 255},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 1,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 1,
+        .casingVolumeMultiplier = 1,
+
+        .screenShake = 0,
+        .screenShakeMultiplier = 1.0,
+    },
+
+    
+    { // stun round // TODO incendiary effect
+        .spreadBase = 0.0,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.0,
+        .spreadMultiplier = 1.0,
+
+        .recoil = 0.0,
+        .recoilMultiplier = 1.0,
+
+        .damage = 0.0,
+        .damageMultiplier = 0.75,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 1.0,
+
+        .ammo = 0,
+        .ammoMultiplier = 1,
+
+        .reload = 0,
+        .reloadMultiplier = 1,
+
+        .velocity = 0,
+        .velocityMultiplier = 1.0,
+
+        .bulletVisuals = {
+            .changeColor = true,
+            .projectileColor = {.r = 85, .g = 85, .b = 255, .a = 255},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 1,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 1,
+        .casingVolumeMultiplier = 1,
+
+        .screenShake = 0,
+        .screenShakeMultiplier = 1.0,
+    },
 };
 
 
@@ -457,7 +715,7 @@ GunElement receiverTypes[] = {
         .damageMultiplier = 0.5,
 
         .projectiles = 0.0,
-        .projectilesMultiplier = 0.3,
+        .projectilesMultiplier = 1,
 
         .firerate = 3,
         .firerateMultiplier = 0.25,
@@ -493,6 +751,111 @@ GunElement receiverTypes[] = {
 
         .screenShake = 0,
         .screenShakeMultiplier = 0.5,
+    },
+    // rifle
+    {
+        .spreadBase = -0.002,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.0,
+        .spreadMultiplier = 0.8,
+
+        .recoil = 0.001,
+        .recoilMultiplier = 1.0,
+
+        .damage = 3.0,
+        .damageMultiplier = 1.2,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 1.1,
+
+        .ammo = 0,
+        .ammoMultiplier = 0.85,
+
+        .reload = 0,
+        .reloadMultiplier = 1,
+
+        .velocity = 0,
+        .velocityMultiplier = 1.2,
+
+        .bulletVisuals = {
+            .changeColor = false,
+            .projectileColor = {.r = 255, .g = 183, .b = 74, .a = 255},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 0.9,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 0.9,
+        .casingVolumeMultiplier = 1,
+
+        .screenShake = 3,
+        .screenShakeMultiplier = 1.0,
+    },
+
+    // sniper rifle
+    {
+        .spreadBase = -0.002,
+        .spreadBaseMultiplier = 0.8,
+
+        .spread = 0.0,
+        .spreadMultiplier = 0.7,
+
+        .recoil = 0.01,
+        .recoilMultiplier = 1.1,
+
+        .damage = 0.0,
+        .damageMultiplier = 5,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 4,
+
+        .ammo = -2,
+        .ammoMultiplier = 0.3,
+
+        .reload = 0,
+        .reloadMultiplier = 1.2,
+
+        .velocity = 0,
+        .velocityMultiplier = 1.6,
+
+        .bulletVisuals = {
+            .changeColor = false,
+            .projectileColor = {.r = 255, .g = 183, .b = 74, .a = 255},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 0.5,
+        .shootVolumeMultiplier = 1.2,
+
+        .casingPitchMultiplier = 0.5,
+        .casingVolumeMultiplier = 2,
+
+        .screenShake = 10,
+        .screenShakeMultiplier = 1.0,
     },
 };
 
@@ -571,7 +934,7 @@ GunElement receiverModifiers[] = {
         .damageMultiplier = 0.7,
 
         .projectiles = 0.0,
-        .projectilesMultiplier = 0.8,
+        .projectilesMultiplier = 1.0,
 
         .firerate = 0,
         .firerateMultiplier = 0.75,
@@ -624,7 +987,7 @@ GunElement receiverModifiers[] = {
         .damageMultiplier = 0.5,
 
         .projectiles = 0.0,
-        .projectilesMultiplier = 0.6,
+        .projectilesMultiplier = 1.0,
 
         .firerate = 0,
         .firerateMultiplier = 0.5,
@@ -807,15 +1170,13 @@ Gun applyGunElement(Gun gun, GunElement element) {
     
 
 
-    // firing speed underflow
-    // if a weapon should fire more than once pre frame 
 
     
     return (Gun) {
         .minSpread = fmax((gun.minSpread + element.spreadBase) * element.spreadBaseMultiplier, 0),
         .spreadMultiplier = fmax((gun.spreadMultiplier + element.spread) * element.spreadMultiplier, 0),
         .recoilMultiplier = fmax((gun.recoilMultiplier + element.recoil) * element.recoilMultiplier, 0),
-        .fireCooldown = fmax((gun.fireCooldown + element.firerate) * element.firerateMultiplier, 1),
+        .fireCooldown = fmax((gun.fireCooldown + element.firerate) * element.firerateMultiplier, 0.1),
         .bulletVelocity = fmax((gun.bulletVelocity + element.velocity) * element.velocityMultiplier, 0.1),
         .magazineSize = fmax((gun.magazineSize + element.ammo) * element.ammoMultiplier, 1),
         .reloadTime = fmax((gun.reloadTime + element.reload) * element.reloadMultiplier, 1),

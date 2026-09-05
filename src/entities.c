@@ -254,11 +254,18 @@ bool playerUpdate(Entity* this, GameState* state) {
 
 
             
+            // calculate projectiles to shoot
+            float bulletsToShoot =  data->gun.projectilesPerShot;
+            if (data->gun.fireCooldown < 1) {
+                float bulletsPerFrame = 1 / data->gun.fireCooldown;
+                bulletsToShoot *= ceil(bulletsPerFrame);
+            }
 
+            printf("what %f \n", data->gun.fireCooldown);
 
 
             // fire bullets
-            for (int i = 0; i < data->gun.projectilesPerShot; i++) {
+            for (int i = 0; i < floorf(bulletsToShoot); i++) {
                 Vector3 direction = {baseDirection.x, baseDirection.y, baseDirection.z};
 
                 // calculate spread
@@ -391,10 +398,10 @@ bool playerUpdate(Entity* this, GameState* state) {
 void player(GameState* state, float x, float y, float z){
     
     
-    const int bulletType = 0;
+    const int bulletType = 2;
     const int bulletModifier = 0;
-    const int receiverType = 3;
-    const int receiverModifier = 2;
+    const int receiverType = 5;
+    const int receiverModifier = 3;
     const int magazineType = 0;
     
     addEntity(state, (Entity) {

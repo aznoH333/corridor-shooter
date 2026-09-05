@@ -677,8 +677,8 @@ void bulletCasing(
         0.28,               // gravity
 
         (char*[]){texture},// frames
-        3,                  // texture width
-        3,                  // texture height
+        7,                  // texture width
+        7,                  // texture height
         rotation,           // texture rotation
         1,                  // used frames
         10,                 // frame duration 
