@@ -31,6 +31,9 @@ typedef struct {
     char* bulletCasingSound; // plays when the casing bounces of the ground
     float bulletCasingSoundPitch;
     float bulletCasingSoundVolume;
+
+    // aiming
+    float gunWeight;
 } Gun;
 
 

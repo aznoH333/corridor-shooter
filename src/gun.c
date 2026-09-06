@@ -61,6 +61,10 @@ typedef struct {
     float recoil;
     float recoilMultiplier;
 
+    // weight
+    float weight;
+    float weightMultiplier;
+
     // damage
     float damage;
     float damageMultiplier;
@@ -120,6 +124,9 @@ GunElement bulletTypes[] = {
         .recoil = 0.01,
         .recoilMultiplier = 1.0,
 
+        .weight = 10,
+        .weightMultiplier = 1,
+
         .damage = 1.0,
         .damageMultiplier = 1.0,
 
@@ -172,6 +179,9 @@ GunElement bulletTypes[] = {
         .recoil = 0.05,
         .recoilMultiplier = 1.0,
 
+        .weight = 20,
+        .weightMultiplier = 1,
+
         .damage = 0.6,
         .damageMultiplier = 1.0,
 
@@ -220,6 +230,9 @@ GunElement bulletTypes[] = {
 
         .spread = 0.01,
         .spreadMultiplier = 1.0,
+        
+        .weight = 20,
+        .weightMultiplier = 1,
 
         .recoil = 0.05,
         .recoilMultiplier = 1.0,
@@ -284,6 +297,9 @@ GunElement bulletModifiers[] = {
 
         .recoil = 0.0,
         .recoilMultiplier = 1.0,
+        
+        .weight = 0,
+        .weightMultiplier = 1,
 
         .damage = 0.0,
         .damageMultiplier = 1.0,
@@ -336,6 +352,9 @@ GunElement bulletModifiers[] = {
 
         .recoil = 0.0,
         .recoilMultiplier = 1.2,
+        
+        .weight = 0,
+        .weightMultiplier = 1,
 
         .damage = 0.0,
         .damageMultiplier = 1.2,
@@ -389,6 +408,9 @@ GunElement bulletModifiers[] = {
         .recoil = 0.0,
         .recoilMultiplier = 1.0,
 
+        .weight = 0,
+        .weightMultiplier = 1,
+
         .damage = 0.0,
         .damageMultiplier = 0.4,
 
@@ -439,6 +461,9 @@ GunElement bulletModifiers[] = {
 
         .recoil = 0.0,
         .recoilMultiplier = 1.0,
+
+        .weight = 0,
+        .weightMultiplier = 1,
 
         .damage = 0.0,
         .damageMultiplier = 0.75,
@@ -492,6 +517,9 @@ GunElement bulletModifiers[] = {
 
         .recoil = 0.0,
         .recoilMultiplier = 1.0,
+
+        .weight = 0,
+        .weightMultiplier = 1,
 
         .damage = 0.0,
         .damageMultiplier = 0.75,
@@ -555,6 +583,9 @@ GunElement receiverTypes[] = {
         .recoil = 0.0,
         .recoilMultiplier = 1.0,
 
+        .weight = 20,
+        .weightMultiplier = 1,
+
         .damage = 0.0,
         .damageMultiplier = 1.0,
 
@@ -606,6 +637,9 @@ GunElement receiverTypes[] = {
 
         .recoil = 0.0,
         .recoilMultiplier = 0.75,
+
+        .weight = 15,
+        .weightMultiplier = 1,
 
         .damage = 0.0,
         .damageMultiplier = 0.75,
@@ -659,6 +693,9 @@ GunElement receiverTypes[] = {
         .recoil = 0.01,
         .recoilMultiplier = 1.0,
 
+        .weight = 35,
+        .weightMultiplier = 1,
+
         .damage = 0.0,
         .damageMultiplier = 1.0,
 
@@ -711,8 +748,11 @@ GunElement receiverTypes[] = {
         .recoil = 0.01,
         .recoilMultiplier = 1.0,
 
+        .weight = 50,
+        .weightMultiplier = 1,
+
         .damage = 0.0,
-        .damageMultiplier = 0.5,
+        .damageMultiplier = 1.0,
 
         .projectiles = 0.0,
         .projectilesMultiplier = 1,
@@ -762,6 +802,9 @@ GunElement receiverTypes[] = {
 
         .recoil = 0.001,
         .recoilMultiplier = 1.0,
+
+        .weight = 25,
+        .weightMultiplier = 1,
 
         .damage = 3.0,
         .damageMultiplier = 1.2,
@@ -815,6 +858,9 @@ GunElement receiverTypes[] = {
 
         .recoil = 0.01,
         .recoilMultiplier = 1.1,
+
+        .weight = 30,
+        .weightMultiplier = 1,
 
         .damage = 0.0,
         .damageMultiplier = 5,
@@ -877,6 +923,9 @@ GunElement receiverModifiers[] = {
         .recoil = 0.0,
         .recoilMultiplier = 1.0,
 
+        .weight = 0,
+        .weightMultiplier = 1,
+
         .damage = 0.0,
         .damageMultiplier = 1.0,
 
@@ -929,6 +978,9 @@ GunElement receiverModifiers[] = {
 
         .recoil = 0.01,
         .recoilMultiplier = 1.0,
+
+        .weight = 0,
+        .weightMultiplier = 0.8,
 
         .damage = 0.0,
         .damageMultiplier = 0.7,
@@ -983,6 +1035,9 @@ GunElement receiverModifiers[] = {
         .recoil = 0.01,
         .recoilMultiplier = 1.2,
 
+        .weight = 0,
+        .weightMultiplier = 0.7,
+
         .damage = 0.0,
         .damageMultiplier = 0.5,
 
@@ -1034,6 +1089,9 @@ GunElement receiverModifiers[] = {
 
         .recoil = 0.0,
         .recoilMultiplier = 1.0,
+
+        .weight = 0,
+        .weightMultiplier = 1.3,
 
         .damage = 0.0,
         .damageMultiplier = 1.25,
@@ -1097,6 +1155,9 @@ GunElement magazineTypes[] = {
 
         .damage = 0.0,
         .damageMultiplier = 1.0,
+
+        .weight = 10,
+        .weightMultiplier = 1,
 
         .projectiles = 0.0,
         .projectilesMultiplier = 1.0,
@@ -1169,13 +1230,17 @@ Gun applyGunElement(Gun gun, GunElement element) {
     }
     
 
-
-
     
     return (Gun) {
         .minSpread = fmax((gun.minSpread + element.spreadBase) * element.spreadBaseMultiplier, 0),
         .spreadMultiplier = fmax((gun.spreadMultiplier + element.spread) * element.spreadMultiplier, 0),
         .recoilMultiplier = fmax((gun.recoilMultiplier + element.recoil) * element.recoilMultiplier, 0),
+        
+        
+        .gunWeight = (gun.gunWeight + element.weight) * element.weightMultiplier,
+        
+        
+        
         .fireCooldown = fmax((gun.fireCooldown + element.firerate) * element.firerateMultiplier, 0.1),
         .bulletVelocity = fmax((gun.bulletVelocity + element.velocity) * element.velocityMultiplier, 0.1),
         .magazineSize = fmax((gun.magazineSize + element.ammo) * element.ammoMultiplier, 1),
@@ -1234,7 +1299,10 @@ Gun gun(
         .bulletCasingTexture = "casing",
         .bulletCasingSound = "shell_bounce", // plays when the casing bounces of the ground
         .bulletCasingSoundPitch = 1,
-        .bulletCasingSoundVolume = 1
+        .bulletCasingSoundVolume = 1,
+
+        // aiming
+        .gunWeight = 0,
     };
 
     // apply modifiers
@@ -1244,7 +1312,7 @@ Gun gun(
     gun = applyGunElement(gun, receiverModifiers[receiverModifier]);
     gun = applyGunElement(gun, magazineTypes[magazineType]);
 
-    
+    printf("final weight %f \n", gun.gunWeight);
     
     return gun;
 }

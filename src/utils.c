@@ -587,9 +587,8 @@ void setCamera(float x, float y, float z, float rotationHorizontal, float rotati
 
 }
 
-Ray getMouseRaycast(){
-	Vector2 mousePosition = getMousePosition();
-	Ray mouseRay = GetScreenToWorldRayEx(mousePosition, camera3d, worldWidth, worldHeight);
+Ray getMouseRaycast(Vector2 screenPosition){
+	Ray mouseRay = GetScreenToWorldRayEx(screenPosition, camera3d, worldWidth, worldHeight);
 	return mouseRay;
 }
 

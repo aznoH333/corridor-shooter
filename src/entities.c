@@ -149,8 +149,10 @@ typedef struct {
 
     // gun data
     int gunCooldown;
-    int gunSpreadAccumulator;
-    Gun gun;    
+    Gun gun;
+
+    // aiming
+    Vector2 aimLocation;
 
 } PlayerData;
 
@@ -234,116 +236,61 @@ bool playerUpdate(Entity* this, GameState* state) {
         state->camera.distance = max(state->camera.distance, playerCamValue);
     }
 
-    // shooting
-    {
-        if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && data->gunCooldown == 0) {
-            
-            
-            // base bullet direction
-            Vector3 baseDirection = Vector3Normalize(Vector3Subtract(getMouseHit(state), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
-
-
-            // calculate recoil
-            Vector3 recoilVector = (Vector3) {
-                .x = 0,
-                .y = data->gunSpreadAccumulator * data->gun.recoilMultiplier,
-                .z = 0
-            };
-
-            baseDirection = Vector3Normalize(Vector3Add(baseDirection, recoilVector));
-
-
-            
-            // calculate projectiles to shoot
-            float bulletsToShoot =  data->gun.projectilesPerShot;
-            if (data->gun.fireCooldown < 1) {
-                float bulletsPerFrame = 1 / data->gun.fireCooldown;
-                bulletsToShoot *= ceil(bulletsPerFrame);
-            }
-
-            printf("what %f \n", data->gun.fireCooldown);
-
-
-            // fire bullets
-            for (int i = 0; i < floorf(bulletsToShoot); i++) {
-                Vector3 direction = {baseDirection.x, baseDirection.y, baseDirection.z};
-
-                // calculate spread
-                Vector3 spreadVector = Vector3Normalize((Vector3) {
-                    .x = randomFloat(-1, 1),
-                    .y = randomFloat(-1, 1),
-                    .z = randomFloat(-1, 1)
-                });
-                float spreadMultiplier = data->gun.minSpread + (data->gunSpreadAccumulator * data->gun.spreadMultiplier);
-
-                direction = Vector3Add(direction, Vector3Scale(spreadVector, spreadMultiplier));
-
-
-                bullet(state, this->x, this->y, this->z, data->gun.bulletVelocity, direction, data->gun.damage, data->gun.bulletColor);
-            }
-
-            data->gunCooldown = data->gun.fireCooldown;
-            addScreenShake(state, data->gun.screenShake);
-            playSound(data->gun.firingSound, data->gun.firingSoundPitch, data->gun.firingSoundVolume);
-            data->gunSpreadAccumulator++;
-            
-            muzzleFlash(
-                state, 
-                Vector3Add((Vector3){this->x, this->y, this->z}, Vector3Scale(baseDirection, 0.2))
-            );
-            bulletCasing(
-                state,
-                (Vector3){this->x, this->y, this->z},
-                baseDirection,
-                data->gun.bulletCasingTexture,
-                data->gun.bulletCasingSound,
-                data->gun.bulletCasingSoundPitch,
-                data->gun.bulletCasingSoundVolume
-            );
-        }
 
 
 
-        if (data->gunCooldown == 0 && data->gunSpreadAccumulator > 0) {
-            data->gunSpreadAccumulator--;
-        }
-        data->gunSpreadAccumulator = min(data->gunSpreadAccumulator, 10);
-
-
-
-        if (data->gunCooldown > 0) {
-            data->gunCooldown--;
-        }
-
-        
-
-    }
-
-
-    {
-        // debug
-        if (IsKeyPressed(KEY_U)) {
-            //bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
-            goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
-        }
-
-
-        
-    }
-
-
+    float spreadMultiplier = 0;
     // crosshair
     {
-        Vector2 mousePos = getMousePosition();
+        
+        Vector2 mousePos = getMousePosition();        
+        // calculate move speed
+        float aimSpeed = (1 / data->gun.gunWeight) * 500.0f;
+        const float aimCircleSize = 200;
+
+        Vector2 distanceV = Vector2Subtract(mousePos, data->aimLocation);
+        float distance = Vector2Length(distanceV);
 
 
-        float cursorX = mousePos.x;
-        float cursorY = mousePos.y - (data->gunSpreadAccumulator * data->gun.recoilMultiplier * 1000);
-        float spreadMultiplier = data->gun.minSpread + (data->gunSpreadAccumulator * data->gun.spreadMultiplier);
+        if (distance < aimCircleSize) {
+            aimSpeed = interpolate(aimSpeed * 0.05, aimSpeed, distance / aimCircleSize);
+        }
+
+        Vector2 directionToMove = Vector2Scale(Vector2Normalize(distanceV), aimSpeed);
+        
+        if (distance < aimSpeed) {
+            data->aimLocation.x = mousePos.x;
+            data->aimLocation.y = mousePos.y;
+        } else {
+            data->aimLocation.x += directionToMove.x;
+            data->aimLocation.y += directionToMove.y;
+        }
+        
+
+        // draw cursor        
+        float cursorX = data->aimLocation.x;
+        float cursorY = data->aimLocation.y;
+        spreadMultiplier = data->gun.minSpread + ((distance / 10) * data->gun.spreadMultiplier);
 
         float sideOffset = spreadMultiplier * 1000;
         const float baseLineOffset = 16; // equal to line indicator widhtpx / 2 * 4
         sideOffset += baseLineOffset;
+
+
+
+        // true aim indicator
+        sprMain(
+            "true_aim_indicator",   // spr name
+            mousePos.x,             // x
+            mousePos.y,             // y
+            4,                      // width
+            4,                      // height
+            false,                  // flip x
+            false,                  // flip y
+            0,                      // rotation
+            (Color){160,255,160,160},// color
+            0                       // drawing layer
+        );
 
 
         // main dot
@@ -391,6 +338,102 @@ bool playerUpdate(Entity* this, GameState* state) {
     }
 
 
+
+
+    // shooting
+    {
+        if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && data->gunCooldown == 0) {
+            
+            
+            // base bullet direction
+            Vector3 baseDirection = Vector3Normalize(Vector3Subtract(getMouseHit(state, data->aimLocation), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
+
+            
+            // calculate projectiles to shoot
+            float bulletsToShoot =  data->gun.projectilesPerShot;
+            if (data->gun.fireCooldown < 1) {
+                float bulletsPerFrame = 1 / data->gun.fireCooldown;
+                bulletsToShoot *= ceil(bulletsPerFrame);
+            }
+
+            printf("what %f \n", data->gun.fireCooldown);
+
+
+            // fire bullets
+            for (int i = 0; i < floorf(bulletsToShoot); i++) {
+                Vector3 direction = {baseDirection.x, baseDirection.y, baseDirection.z};
+
+                // calculate spread
+                Vector3 spreadVector = Vector3Normalize((Vector3) {
+                    .x = randomFloat(-1, 1),
+                    .y = randomFloat(-1, 1),
+                    .z = randomFloat(-1, 1)
+                });
+                //float spreadMultiplier = data->gun.minSpread + (data->gunSpreadAccumulator * data->gun.spreadMultiplier);
+
+                direction = Vector3Add(direction, Vector3Scale(spreadVector, spreadMultiplier));
+
+
+                bullet(state, this->x, this->y, this->z, data->gun.bulletVelocity, direction, data->gun.damage, data->gun.bulletColor);
+            }
+
+            // add recoil
+            Vector2 recoilR = {.x = randomFloat(-1, 1), .y = randomFloat(-1, 1) - 1.1};
+            Vector2 recoilDir = Vector2Scale(Vector2Normalize(recoilR), data->gun.recoilMultiplier * 1000);
+            data->aimLocation.x += recoilDir.x;
+            data->aimLocation.y += recoilDir.y;
+
+
+
+
+            data->gunCooldown = data->gun.fireCooldown;
+            addScreenShake(state, data->gun.screenShake);
+            playSound(data->gun.firingSound, data->gun.firingSoundPitch, data->gun.firingSoundVolume);
+            
+            
+            muzzleFlash(
+                state, 
+                Vector3Add((Vector3){this->x, this->y, this->z}, Vector3Scale(baseDirection, 0.2))
+            );
+            bulletCasing(
+                state,
+                (Vector3){this->x, this->y, this->z},
+                baseDirection,
+                data->gun.bulletCasingTexture,
+                data->gun.bulletCasingSound,
+                data->gun.bulletCasingSoundPitch,
+                data->gun.bulletCasingSoundVolume
+            );
+        }
+
+
+
+        
+
+
+
+        if (data->gunCooldown > 0) {
+            data->gunCooldown--;
+        }
+
+        
+
+    }
+
+
+    {
+        // debug
+        if (IsKeyPressed(KEY_U)) {
+            //bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
+            goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
+        }
+
+
+        
+    }
+
+
+
     return true;
 }
 
@@ -400,7 +443,7 @@ void player(GameState* state, float x, float y, float z){
     
     const int bulletType = 2;
     const int bulletModifier = 0;
-    const int receiverType = 5;
+    const int receiverType = 4;
     const int receiverModifier = 3;
     const int magazineType = 0;
     
@@ -427,8 +470,9 @@ void player(GameState* state, float x, float y, float z){
 
         // gun stuff
         .gunCooldown = 0,
-        .gunSpreadAccumulator = 0,
-        .gun = gun(bulletType, bulletModifier, receiverType, receiverModifier, magazineType)
+        .gun = gun(bulletType, bulletModifier, receiverType, receiverModifier, magazineType),
+
+        .aimLocation = (Vector2) {.x = 400, .y = 400}
         
     }, sizeof(PlayerData));
 }

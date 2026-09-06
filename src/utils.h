@@ -110,7 +110,7 @@ void plane(
 );
 void billboard(char* spriteName, float x, float y, float z, float scale, Color color);
 void setCamera(float x, float y, float z, float rotationHorizontal, float rotationVertical);
-Ray getMouseRaycast();
+Ray getMouseRaycast(Vector2 screenPosition);
 
 // -------------------------------------------------------------------------------------
 // Text

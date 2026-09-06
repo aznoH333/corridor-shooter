@@ -191,8 +191,8 @@ static void checkMapZPlane(Ray ray, float planeZ, float minX, float maxX, float 
     }
 }
 
-Vector3 getMouseHit(GameState* state) {
-    Ray mouseRay = getMouseRaycast();
+Vector3 getMouseHit(GameState* state, Vector2 screenPos) {
+    Ray mouseRay = getMouseRaycast(screenPos);
     mouseRay.direction = Vector3Normalize(mouseRay.direction);
 
     float closestDistance = MOUSE_HIT_MAX_DISTANCE;

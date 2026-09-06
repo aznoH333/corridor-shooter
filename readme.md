@@ -14,5 +14,14 @@ win not supported yet :(
 # todo:
 - [X] Entity rotation
 - [X] Particle splatter
-- [ ] Fix shader not having a color depth buffer
-- [ ] Gore bits
+- [X] Fix shader not having a color depth buffer
+- [X] Gore bits
+- [ ] fix invincible enemies
+- [ ] incendiary rounds effect
+- [ ] stun rounds effect
+- [ ] enemy armor system
+- [ ] gun weight
+- [ ] rework recoil to look more natural
+- [ ] customisable bullet trails
+- [ ] magazines and ammo counts
+- [ ] explosives and explosive damage
