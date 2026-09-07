@@ -22,4 +22,11 @@ void bulletCasing(
     float soundVolume
 );
 
+
+void magazine(
+    GameState* state,
+    Vector3 position,
+    Vector3 baseDirection
+);
+
 #endif

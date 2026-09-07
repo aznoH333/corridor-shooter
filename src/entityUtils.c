@@ -230,3 +230,23 @@ Vector3 getMouseHit(GameState* state, Vector2 screenPos) {
 
     return closestHit;
 }
+
+
+// i know std can do this easily but i wanted to write my own for no reason
+void insertNumberInString(char* string, int start, int end, int number) {
+    
+    int acc = number;
+    for (int i = end - start; i >= 0; --i) {
+        char c = 48;        
+       
+        
+        if (acc > 0) {
+            int mod = acc % 10;
+            c += mod;
+            acc = (acc - mod) / 10;
+        }
+
+        string[start + i] = c;
+    }
+
+}

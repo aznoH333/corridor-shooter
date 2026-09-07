@@ -20,8 +20,8 @@ win not supported yet :(
 - [ ] incendiary rounds effect
 - [ ] stun rounds effect
 - [ ] enemy armor system
-- [ ] gun weight
-- [ ] rework recoil to look more natural
+- [X] gun weight
+- [X] rework recoil to look more natural
 - [ ] customisable bullet trails
-- [ ] magazines and ammo counts
+- [X] magazines and ammo counts
 - [ ] explosives and explosive damage

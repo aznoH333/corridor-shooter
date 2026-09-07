@@ -704,3 +704,62 @@ void bulletCasing(
         false               // enable depth mask
     );
 }
+
+
+
+void magazine(
+    GameState* state,
+    Vector3 position,
+    Vector3 baseDirection
+) {
+    Vector3 magDir = Vector3Normalize(Vector3Add((Vector3){.x = 0, .y = 0.5, .z = 0}, baseDirection)); 
+
+
+    magDir = Vector3Rotate(baseDirection, -PI / 2, PI / 4, 0);
+
+    Vector3 directionRandomness = Vector3Normalize((Vector3){
+        .x = randomFloat(-1, 1),
+        .y = randomFloat(-1, 1),
+        .z = randomFloat(-1, 1)
+    });
+
+    magDir = Vector3Add(magDir, Vector3Scale(directionRandomness, 0.1));
+
+    float rotation = 0; //randomFloat(0, PI * 2);
+    
+    particle(
+        state,              // gamestate
+        position,           // position
+        magDir,             // direction
+        0.05,               // speed
+        0,                  // speed decay
+        0.28,               // gravity
+
+        (char*[]){"magazine"},// frames
+        5,                  // texture width
+        8,                  // texture height
+        rotation,           // texture rotation
+        1,                  // used frames
+        10,                 // frame duration 
+        
+        600,                // lifetime
+        true,               // fade away
+        emptyLight(),       // particle light
+        noSplatter(),
+        (ParticleBounce) {  // bounce
+            .enabled = true,
+            .bounciness = 0.5,
+            .bounceSound = NULL,
+            .useBounceSound = false,
+            .minBounceForce = 0.02,
+            .isFrozen = false,
+            .rotationForce = 0.02,
+            .soundVolume = 0.25,
+            .soundPitch = 1,
+            .soundChance = 1
+        },
+        0.1,                // width
+        0.1,                // height
+        false               // enable depth mask
+    );
+}

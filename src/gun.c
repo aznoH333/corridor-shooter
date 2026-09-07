@@ -136,10 +136,10 @@ GunElement bulletTypes[] = {
         .firerate = 10,
         .firerateMultiplier = 1.0,
 
-        .ammo = 10,
+        .ammo = 20,
         .ammoMultiplier = 1,
 
-        .reload = 30,
+        .reload = 90,
         .reloadMultiplier = 1,
 
         .velocity = 1.7,
@@ -153,7 +153,7 @@ GunElement bulletTypes[] = {
             .bulletCasingSprite = "casing_0001",
             
             .changeCasingSound = true,
-            .bulletCasingSound = "shell_bounce",
+            .bulletCasingSound = "shell_bounce_alt",
             
             .changeFiringSound = true,
             .firingSound = "machine_gun_2"
@@ -188,13 +188,13 @@ GunElement bulletTypes[] = {
         .projectiles = 10.0,
         .projectilesMultiplier = 1.0,
 
-        .firerate = 30,
+        .firerate = 45,
         .firerateMultiplier = 1.0,
 
-        .ammo = 5,
+        .ammo = 8,
         .ammoMultiplier = 1,
 
-        .reload = 30,
+        .reload = 100,
         .reloadMultiplier = 1,
 
         .velocity = 1.6,
@@ -225,10 +225,10 @@ GunElement bulletTypes[] = {
     },
 
     { // 9 gauge slug shell
-        .spreadBase = 0.02,
+        .spreadBase = 0.0,
         .spreadBaseMultiplier = 1.0,
 
-        .spread = 0.01,
+        .spread = 0.002,
         .spreadMultiplier = 1.0,
         
         .weight = 20,
@@ -243,13 +243,13 @@ GunElement bulletTypes[] = {
         .projectiles = 1.0,
         .projectilesMultiplier = 1.0,
 
-        .firerate = 30,
+        .firerate = 45,
         .firerateMultiplier = 1.0,
 
-        .ammo = 5,
+        .ammo = 8,
         .ammoMultiplier = 1,
 
-        .reload = 30,
+        .reload = 105,
         .reloadMultiplier = 1,
 
         .velocity = 1.7,
@@ -572,8 +572,7 @@ GunElement bulletModifiers[] = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GunElement receiverTypes[] = {
-    // default receiver
-    {
+    { // default receiver
         .spreadBase = 0.0,
         .spreadBaseMultiplier = 1.0,
 
@@ -627,8 +626,7 @@ GunElement receiverTypes[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 1.0,
     },
-    // submachine gun
-    {
+    { // submachine gun
         .spreadBase = 0.0,
         .spreadBaseMultiplier = 1.3,
 
@@ -650,7 +648,7 @@ GunElement receiverTypes[] = {
         .firerate = -3,
         .firerateMultiplier = 1.0,
 
-        .ammo = 30,
+        .ammo = 0,
         .ammoMultiplier = 1,
 
         .reload = -4,
@@ -682,8 +680,7 @@ GunElement receiverTypes[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 1.0,
     },
-    // machine gun
-    {
+    { // machine gun
         .spreadBase = 0.04,
         .spreadBaseMultiplier = 1.0,
 
@@ -705,8 +702,8 @@ GunElement receiverTypes[] = {
         .firerate = 0,
         .firerateMultiplier = 0.5,
 
-        .ammo = 10,
-        .ammoMultiplier = 2,
+        .ammo = 0,
+        .ammoMultiplier = 3,
 
         .reload = 15,
         .reloadMultiplier = 1.5,
@@ -737,8 +734,7 @@ GunElement receiverTypes[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 1.0,
     },
-    // minigun
-    {
+    { // minigun
         .spreadBase = 0.04,
         .spreadBaseMultiplier = 1.0,
 
@@ -748,8 +744,8 @@ GunElement receiverTypes[] = {
         .recoil = 0.01,
         .recoilMultiplier = 1.0,
 
-        .weight = 50,
-        .weightMultiplier = 1,
+        .weight = 10,
+        .weightMultiplier = 2,
 
         .damage = 0.0,
         .damageMultiplier = 1.0,
@@ -760,8 +756,8 @@ GunElement receiverTypes[] = {
         .firerate = 3,
         .firerateMultiplier = 0.25,
 
-        .ammo = 20,
-        .ammoMultiplier = 3,
+        .ammo = 0,
+        .ammoMultiplier = 6,
 
         .reload = 15,
         .reloadMultiplier = 2,
@@ -792,18 +788,17 @@ GunElement receiverTypes[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 0.5,
     },
-    // rifle
-    {
+    { // rifle
         .spreadBase = -0.002,
         .spreadBaseMultiplier = 1.0,
 
         .spread = 0.0,
         .spreadMultiplier = 0.8,
 
-        .recoil = 0.001,
-        .recoilMultiplier = 1.0,
+        .recoil = 0.05,
+        .recoilMultiplier = 1.2,
 
-        .weight = 25,
+        .weight = 10,
         .weightMultiplier = 1,
 
         .damage = 3.0,
@@ -847,16 +842,14 @@ GunElement receiverTypes[] = {
         .screenShake = 3,
         .screenShakeMultiplier = 1.0,
     },
-
-    // sniper rifle
-    {
+    { // sniper rifle
         .spreadBase = -0.002,
         .spreadBaseMultiplier = 0.8,
 
         .spread = 0.0,
         .spreadMultiplier = 0.7,
 
-        .recoil = 0.01,
+        .recoil = 0.1,
         .recoilMultiplier = 1.1,
 
         .weight = 30,
@@ -872,7 +865,7 @@ GunElement receiverTypes[] = {
         .firerateMultiplier = 4,
 
         .ammo = -2,
-        .ammoMultiplier = 0.3,
+        .ammoMultiplier = 0.5,
 
         .reload = 0,
         .reloadMultiplier = 1.2,
@@ -912,8 +905,7 @@ GunElement receiverTypes[] = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GunElement receiverModifiers[] = {
-    // default receiver type
-    {
+    { // default receiver type
         .spreadBase = 0.0,
         .spreadBaseMultiplier = 1.0,
 
@@ -967,9 +959,7 @@ GunElement receiverModifiers[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 1.0,
     },
-
-    // short receiver type
-    {
+    { // short receiver type
         .spreadBase = 0.01,
         .spreadBaseMultiplier = 1.1,
 
@@ -991,8 +981,8 @@ GunElement receiverModifiers[] = {
         .firerate = 0,
         .firerateMultiplier = 0.75,
 
-        .ammo = 10,
-        .ammoMultiplier = 1.1,
+        .ammo = 0,
+        .ammoMultiplier = 1,
 
         .reload = 0,
         .reloadMultiplier = 1,
@@ -1023,9 +1013,7 @@ GunElement receiverModifiers[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 0.75,
     },
-
-    // super short receiver
-    {
+    { // super short receiver
         .spreadBase = 0.02,
         .spreadBaseMultiplier = 1.1,
 
@@ -1047,8 +1035,8 @@ GunElement receiverModifiers[] = {
         .firerate = 0,
         .firerateMultiplier = 0.5,
 
-        .ammo = 20,
-        .ammoMultiplier = 1.1,
+        .ammo = 0,
+        .ammoMultiplier = 0.9,
 
         .reload = 0,
         .reloadMultiplier = 0.75,
@@ -1079,8 +1067,7 @@ GunElement receiverModifiers[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 0.5,
     },
-    // heavy receiver type
-    {
+    { // heavy receiver type
         .spreadBase = 0.0,
         .spreadBaseMultiplier = 1.0,
 
@@ -1103,7 +1090,7 @@ GunElement receiverModifiers[] = {
         .firerateMultiplier = 1.4,
 
         .ammo = 0,
-        .ammoMultiplier = 0.9,
+        .ammoMultiplier = 1.0,
 
         .reload = 0,
         .reloadMultiplier = 1,
@@ -1134,6 +1121,7 @@ GunElement receiverModifiers[] = {
         .screenShake = 0,
         .screenShakeMultiplier = 1.3,
     },
+    
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1142,8 +1130,7 @@ GunElement receiverModifiers[] = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GunElement magazineTypes[] = {
-    // default magazine
-    {
+    { // default magazine
         .spreadBase = 0.0,
         .spreadBaseMultiplier = 1.0,
 
@@ -1156,7 +1143,7 @@ GunElement magazineTypes[] = {
         .damage = 0.0,
         .damageMultiplier = 1.0,
 
-        .weight = 10,
+        .weight = 20,
         .weightMultiplier = 1,
 
         .projectiles = 0.0,
@@ -1196,7 +1183,116 @@ GunElement magazineTypes[] = {
 
         .screenShake = 0,
         .screenShakeMultiplier = 1.0,
-    }
+    },
+
+    { // short magazine
+        .spreadBase = 0.0,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.0,
+        .spreadMultiplier = 1.0,
+
+        .recoil = 0.0,
+        .recoilMultiplier = 1.0,
+
+        .damage = 0.0,
+        .damageMultiplier = 1.0,
+
+        .weight = 5,
+        .weightMultiplier = 1,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 1.0,
+
+        .ammo = 0,
+        .ammoMultiplier = 0.8,
+
+        .reload = 0,
+        .reloadMultiplier = 0.7,
+
+        .velocity = 0,
+        .velocityMultiplier = 1.0,
+
+        .bulletVisuals = {
+            .changeColor = false,
+            .projectileColor = {.r = 255, .g = 183, .b = 74, .a = 255},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 1,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 1,
+        .casingVolumeMultiplier = 1,
+
+        .screenShake = 0,
+        .screenShakeMultiplier = 1.0,
+    },
+    { // drum magazine
+        .spreadBase = 0.0,
+        .spreadBaseMultiplier = 1.0,
+
+        .spread = 0.0,
+        .spreadMultiplier = 1.0,
+
+        .recoil = 0.0,
+        .recoilMultiplier = 1.0,
+
+        .damage = 0.0,
+        .damageMultiplier = 1.0,
+
+        .weight = 40,
+        .weightMultiplier = 1,
+
+        .projectiles = 0.0,
+        .projectilesMultiplier = 1.0,
+
+        .firerate = 0,
+        .firerateMultiplier = 1.0,
+
+        .ammo = 0,
+        .ammoMultiplier = 1.5,
+
+        .reload = 0,
+        .reloadMultiplier = 1.5,
+
+        .velocity = 0,
+        .velocityMultiplier = 1.0,
+
+        .bulletVisuals = {
+            .changeColor = false,
+            .projectileColor = {.r = 255, .g = 183, .b = 74, .a = 255},
+            
+            .changeCasingSprite = false,
+            .bulletCasingSprite = "casing",
+            
+            .changeCasingSound = false,
+            .bulletCasingSound = "shell_bounce",
+            
+            .changeFiringSound = false,
+            .firingSound = "machine_gun_2"
+        },
+
+        .shootPitchMultiplier = 1,
+        .shootVolumeMultiplier = 1,
+
+        .casingPitchMultiplier = 1,
+        .casingVolumeMultiplier = 1,
+
+        .screenShake = 0,
+        .screenShakeMultiplier = 1.0,
+    },
 };
 
 
@@ -1267,7 +1363,7 @@ Gun applyGunElement(Gun gun, GunElement element) {
 
 
 
-Gun gun(
+Gun makeGun(
     int bulletType,       // defines the projectile type (9mm, 9gauge, ect)
     int bulletModifier,   // variant of bullet (normal, incendiary, armor penetrating)
     int receiverType,     // how the gun behaves (gameplay stereotypes like : smg, heavy machine gun, single shot, semi auto, ect)

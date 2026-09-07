@@ -41,7 +41,7 @@ typedef struct {
 
 
 
-Gun gun(
+Gun makeGun(
     int bulletType,       // defines the projectile type (9mm, 9gauge, ect)
     int bulletModifier,   // variant of bullet (normal, incendiary, armor penetrating)
     int receiverType,     // how the gun behaves (gameplay stereotypes like : smg, heavy machine gun, single shot, semi auto, ect)
