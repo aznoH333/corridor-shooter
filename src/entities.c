@@ -506,7 +506,7 @@ void player(GameState* state, float x, float y, float z){
     
     const int bulletType = 0;
     const int bulletModifier = 0;
-    const int receiverType = 4;
+    const int receiverType = 2;
     const int receiverModifier = 0;
     const int magazineType = 0;
     
