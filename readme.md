@@ -16,7 +16,7 @@ win not supported yet :(
 - [X] Particle splatter
 - [X] Fix shader not having a color depth buffer
 - [X] Gore bits
-- [ ] fix invincible enemies
+- [X] fix invincible enemies
 - [ ] incendiary rounds effect
 - [ ] stun rounds effect
 - [ ] enemy armor system

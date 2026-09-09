@@ -48,16 +48,12 @@ bool bulletUpdate(Entity* this, GameState* state) {
 
     if (collidedEnemy != NULL) {
         
-        
-        EnemyData* enemyData = (EnemyData*)collidedEnemy->data;
+        EnemyData* enemyData = (EnemyData*)(&collidedEnemy->data);
         
         bloodPuff(state, (Vector3){this->x, this->y, this->z});
         playSound("flesh_impact_fast", 0.3, 0.3);
 
         enemyTakeDamage(collidedEnemy, enemyData, state, (Vector3){this->x, this->y, this->z}, data->damage);
-        printf("remaining health : %f, damage : %f \n ", enemyData->health, data->damage);
-        enemyData->health = 3;
-
 
         return false;
     }
@@ -360,7 +356,9 @@ bool playerUpdate(Entity* this, GameState* state) {
             
 
             if (data->ammo == 0) { // dry fire
-                playSound("dry_fire", data->gun.firingSoundPitch, 0.75);
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                    playSound("dry_fire", data->gun.firingSoundPitch, 0.75);
+                }
             } else { // shoot bullets
                 // base bullet direction
                 Vector3 baseDirection = Vector3Normalize(Vector3Subtract(getMouseHit(state, data->aimLocation), (Vector3){.x = this->x, .y = this->y, .z = this->z}));
@@ -460,12 +458,14 @@ bool playerUpdate(Entity* this, GameState* state) {
         }
 
 
+        if (data->reloadTimer == 20) {
+            playSound("reload_finish_alt", 1.25, 1);
+
+        }
+
 
         if (data->reloadTimer > 0) {
             data->reloadTimer--;
-
-            playSound("reload_finish_alt", 1.25, 1);
-
         }
 
         if (data->reloadTimer == 1) {
@@ -513,7 +513,7 @@ void player(GameState* state, float x, float y, float z){
     Gun gun = makeGun(bulletType, bulletModifier, receiverType, receiverModifier, magazineType);
 
     addEntity(state, (Entity) {
-        .texture = simpleTexture("player_alt", 18, 24),
+        .texture = simpleTexture("player_0005", 18, 24),
         .x = x,
         .y = y + 0.5f,
         .z = z,

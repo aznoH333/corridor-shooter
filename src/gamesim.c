@@ -239,6 +239,15 @@ World convertToWorld(GameState* state) {
 GameState createNextFrame(GameState* currentState) {
     GameState nextFrame = initEmptyGame();
     
+
+
+    // run updates
+
+
+
+
+
+
     // todo update here
     nextFrame.map = currentState->map;
 
@@ -246,11 +255,24 @@ GameState createNextFrame(GameState* currentState) {
     
 
     { // update entities
+        
+        bool updateResults[MAX_ENTITIES] = {0};
+        
+        
         for (int i = 0; i < currentState->entities.count; ++i) {
             Entity* entity = &currentState->entities.values[i];
+            
+            // we have to cull entities in a later loop otherwise weird update order related bugs happen when an entity attempts to modify an older entity
             bool result = entity->update(entity, currentState);
 
-            if (result) {
+
+            updateResults[i] = result;
+            
+        }
+
+        for (int i = 0; i < currentState->entities.count; ++i) {
+            if (updateResults[i]) {
+                Entity* entity = &currentState->entities.values[i];
                 pushEntity(&nextFrame, entity);
             }
         }
