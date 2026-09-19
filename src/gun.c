@@ -136,7 +136,7 @@ GunElement bulletTypes[] = {
         .firerate = 10,
         .firerateMultiplier = 1.0,
 
-        .ammo = 20,
+        .ammo = 30,
         .ammoMultiplier = 1,
 
         .reload = 90,

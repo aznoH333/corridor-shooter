@@ -32,17 +32,13 @@ int main(void)
     //dummy(&state, 20, 0, 0);
     //SwitchResolution(0, 0, true);
 
-    spawnEnemy(&state, (Vector3){20, 0, 0}, 0);
-    /*
-    spawnEnemy(&state, (Vector3){20, 0, 1}, 0);
-    spawnEnemy(&state, (Vector3){20, 0, -1}, 0);
-    spawnEnemy(&state, (Vector3){25, 0, 0}, 0);
-    spawnEnemy(&state, (Vector3){25, 0, 1}, 0);
-    spawnEnemy(&state, (Vector3){25, 0, -1}, 0);
-    spawnEnemy(&state, (Vector3){30, 0, 0}, 0);
-    spawnEnemy(&state, (Vector3){30, 0, 1}, 0);
-    spawnEnemy(&state, (Vector3){30, 0, -1}, 0);
-    */
+    spawnEnemy(&state, (Vector3){50, 0, 0}, 0);
+    spawnEnemy(&state, (Vector3){50, 0, 1.5}, 0);
+    spawnEnemy(&state, (Vector3){50, 0, -1.5}, 0);
+    spawnEnemy(&state, (Vector3){55, 0, 0}, 0);
+    //spawnEnemy(&state, (Vector3){55, 0, 1}, 0);
+    //spawnEnemy(&state, (Vector3){55, 0, -1}, 0);
+    
 
     HideCursor();
 

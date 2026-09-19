@@ -31,7 +31,7 @@
 // -------------------------------------------------------------------------------------
 unsigned long hashString(char* name);
 
-#define HASH_MAP_SIZE 512
+#define HASH_MAP_SIZE 2000
 #define GenHashmapDefinition(type, hashMapStructName) typedef struct { 	\
 	type elements[HASH_MAP_SIZE];										\
 } hashMapStructName;

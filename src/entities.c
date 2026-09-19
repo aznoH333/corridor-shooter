@@ -229,9 +229,17 @@ bool playerUpdate(Entity* this, GameState* state) {
         }
 
 
-        float walkTimer = fabs(sin((float)state->internalTimer * 0.15f)) * velocityLength * 0.11f;
+        float timerSin = sin((float)state->internalTimer * 0.15f) * velocityLength * 0.11f;
+        float walkTimer = fabs(timerSin);
         // movement animation
         this->texture.offset.y = walkTimer;
+
+        // sprite
+        if (timerSin < 0) {
+            this->texture.texture = "player_2_0003";
+        } else {
+            this->texture.texture = "player_2_0004";
+        }
 
         // footstep noise
         if (walkTimer < 0.01 && velocityLength > 0.1) {
@@ -506,14 +514,14 @@ void player(GameState* state, float x, float y, float z){
     
     const int bulletType = 0;
     const int bulletModifier = 0;
-    const int receiverType = 2;
-    const int receiverModifier = 0;
-    const int magazineType = 0;
+    const int receiverType = 1;
+    const int receiverModifier = 1;
+    const int magazineType = 2;
     
     Gun gun = makeGun(bulletType, bulletModifier, receiverType, receiverModifier, magazineType);
 
     addEntity(state, (Entity) {
-        .texture = simpleTexture("player_0005", 18, 24),
+        .texture = simpleTexture("player_2_0003", 15, 28),
         .x = x,
         .y = y + 0.5f,
         .z = z,
