@@ -15,6 +15,18 @@ class EnemyStats:
     actionMult: float = 0.0
 
 
+def default_part_stats() -> EnemyStats:
+    """Default stats for newly created parts."""
+    return EnemyStats(
+        health=0.0,
+        healthMult=1.0,
+        speed=0.0,
+        speedMult=1.0,
+        action=0.0,
+        actionMult=1.0,
+    )
+
+
 @dataclass
 class Part:
     """EnemyPartDefinition + tool-only name."""
@@ -23,7 +35,7 @@ class Part:
     texture: str = ""
     textureSizeX: int = 0
     textureSizeY: int = 0
-    stats: EnemyStats = field(default_factory=EnemyStats)
+    stats: EnemyStats = field(default_factory=default_part_stats)
 
 
 @dataclass
