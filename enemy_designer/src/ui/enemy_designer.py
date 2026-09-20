@@ -37,6 +37,8 @@ _TAG_EMPTY = "enemy_empty_hint"
 _TAG_NAME = "enemy_name"
 _TAG_WIDTH = "enemy_width"
 _TAG_HEIGHT = "enemy_height"
+_TAG_SHIFT_X = "enemy_shift_x"
+_TAG_SHIFT_Y = "enemy_shift_y"
 _TAG_STATUS = "enemy_status"
 _TAG_FINAL_HEALTH = "enemy_final_health"
 _TAG_FINAL_SPEED = "enemy_final_speed"
@@ -139,6 +141,29 @@ def build_enemy_designer(*, parent: int | str) -> None:
                     color=(180, 180, 180, 255),
                 )
                 dpg.add_spacer(height=4)
+                dpg.add_text("Shift all parts (px)")
+                with dpg.group(horizontal=True):
+                    dpg.add_input_float(
+                        label="dX",
+                        tag=_TAG_SHIFT_X,
+                        width=90,
+                        default_value=0.0,
+                        format="%.3g",
+                    )
+                    dpg.add_input_float(
+                        label="dY",
+                        tag=_TAG_SHIFT_Y,
+                        width=90,
+                        default_value=0.0,
+                        format="%.3g",
+                    )
+                with dpg.group(horizontal=True):
+                    dpg.add_button(label="Apply shift", callback=_on_shift_all_parts)
+                    dpg.add_button(label="←", width=28, callback=lambda: _nudge_all_parts(-1, 0))
+                    dpg.add_button(label="→", width=28, callback=lambda: _nudge_all_parts(1, 0))
+                    dpg.add_button(label="↑", width=28, callback=lambda: _nudge_all_parts(0, -1))
+                    dpg.add_button(label="↓", width=28, callback=lambda: _nudge_all_parts(0, 1))
+                dpg.add_spacer(height=4)
                 dpg.add_text("Final stats")
                 dpg.add_text("health: —", tag=_TAG_FINAL_HEALTH)
                 dpg.add_text("speed: —", tag=_TAG_FINAL_SPEED)
@@ -195,9 +220,10 @@ def build_enemy_designer(*, parent: int | str) -> None:
                     )
                 dpg.add_spacer(height=8)
                 with dpg.group(horizontal=True):
-                    dpg.add_button(label="Save", width=100, callback=_on_save)
+                    dpg.add_button(label="Save", width=80, callback=_on_save)
+                    dpg.add_button(label="Duplicate", width=90, callback=_on_duplicate)
                     dpg.add_button(
-                        label="Delete", width=100, callback=_on_delete_enemy_request
+                        label="Delete", width=80, callback=_on_delete_enemy_request
                     )
             dpg.add_spacer(height=8)
             dpg.add_text("", tag=_TAG_STATUS, wrap=280)
@@ -278,6 +304,67 @@ def _unique_enemy_name(base: str = "enemy") -> str:
     while f"{base}_{index}" in _ENEMIES:
         index += 1
     return f"{base}_{index}"
+
+
+def _duplicate_enemy_name(base: str) -> str:
+    name = f"{base} (copy)"
+    if name not in _ENEMIES:
+        return name
+    index = 2
+    while f"{base} (copy {index})" in _ENEMIES:
+        index += 1
+    return f"{base} (copy {index})"
+
+
+def _on_duplicate() -> None:
+    enemy = _current_enemy()
+    if enemy is None:
+        _set_status("Select an enemy to duplicate.")
+        return
+
+    new_name = _duplicate_enemy_name(enemy.name)
+    clone = Enemy(
+        name=new_name,
+        width=enemy.width,
+        height=enemy.height,
+        parts=deepcopy(enemy.parts),
+    )
+    _ENEMIES[new_name] = clone
+    try:
+        enemy_io.save_enemy(clone, enemy_io.enemy_path(ENEMIES_DIR, new_name))
+    except OSError as exc:
+        del _ENEMIES[new_name]
+        _set_status(f"Failed to duplicate: {exc}")
+        return
+
+    _refresh_enemy_list(select=new_name)
+    _set_status(f"Duplicated as {new_name}.enemy")
+
+
+def _nudge_all_parts(dx: float, dy: float) -> None:
+    enemy = _current_enemy()
+    if enemy is None:
+        return
+    if not enemy.parts:
+        _set_status("No parts to move.")
+        return
+    for placement in enemy.parts:
+        placement.offsetX += dx
+        placement.offsetY += dy
+    _refresh_part_ui()
+    _redraw_canvas()
+    _set_status(f"Moved all parts by ({dx:g}, {dy:g}) px")
+
+
+def _on_shift_all_parts() -> None:
+    dx = float(dpg.get_value(_TAG_SHIFT_X))
+    dy = float(dpg.get_value(_TAG_SHIFT_Y))
+    if dx == 0 and dy == 0:
+        _set_status("Enter a non-zero dX / dY to shift.")
+        return
+    _nudge_all_parts(dx, dy)
+    dpg.set_value(_TAG_SHIFT_X, 0.0)
+    dpg.set_value(_TAG_SHIFT_Y, 0.0)
 
 
 def _part_list_labels(enemy: Enemy) -> list[str]:
