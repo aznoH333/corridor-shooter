@@ -373,6 +373,7 @@ void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidt
 	loadAssets();
 
     // load plane model
+    
     planeModel = LoadModelFromMesh(GenMeshPlane(1.0f, 1.0f, 1, 1));
 
 	shader = LoadShader(0, 0);
@@ -553,13 +554,18 @@ void plane(
     matrix = MatrixMultiply(matrix, MatrixRotateXYZ((Vector3){pitch, yaw, roll}));
 
     planeModel.transform = matrix;
+
     SetMaterialTexture(&planeModel.materials[0], MATERIAL_MAP_DIFFUSE, *getSprite(spriteName));
 
     if (!enableDepthMask) {
         rlDisableDepthMask();
     }
+
+
+
     
     DrawModel(planeModel, (Vector3){x, y, z}, 1.0f, color);
+
 
     if (!enableDepthMask) {
         rlEnableDepthMask();

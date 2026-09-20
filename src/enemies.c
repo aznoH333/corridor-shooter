@@ -43,14 +43,14 @@ void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
     bool canMoveRight = this->z + halfEnemyWidth + WALL_MARGIN < halfMapWidth;
     float zDirection = zDifference > 0 ? 1.0f : -1.0f;
     Vector3 direction = {0};
-    float movementVelocity = data->movementSpeed;
-    float maxMoveDistance = data->movementSpeed;
-    float desiredMoveDistance = data->movementSpeed;
+    float movementVelocity = data->stats.speed;
+    float maxMoveDistance = data->stats.speed;
+    float desiredMoveDistance = data->stats.speed;
     bool shouldLimitMoveDistance = false;
 
     if (data->deceleration > 0) {
-        float stepCount = ceilf(data->movementSpeed / data->deceleration);
-        maxMoveDistance = stepCount * data->movementSpeed - data->deceleration * stepCount * (stepCount - 1.0f) * 0.5f;
+        float stepCount = ceilf(data->stats.speed / data->deceleration);
+        maxMoveDistance = stepCount * data->stats.speed - data->deceleration * stepCount * (stepCount - 1.0f) * 0.5f;
         desiredMoveDistance = maxMoveDistance;
     }
 
@@ -118,7 +118,7 @@ void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
             movementVelocity = 0;
         } else if (desiredMoveDistance < maxMoveDistance && data->deceleration > 0) {
             float lowVelocity = 0;
-            float highVelocity = data->movementSpeed;
+            float highVelocity = data->stats.speed;
 
             for (int i = 0; i < 12; ++i) {
                 float testVelocity = (lowVelocity + highVelocity) * 0.5f;
@@ -134,7 +134,7 @@ void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
 
             movementVelocity = lowVelocity;
         } else if (data->deceleration <= 0) {
-            movementVelocity = min(data->movementSpeed, desiredMoveDistance);
+            movementVelocity = min(data->stats.speed, desiredMoveDistance);
         }
     }
 
@@ -156,19 +156,35 @@ void enemyTakeDamage(Entity* this, EnemyData* data, GameState* state, Vector3 po
 bool enemyUpdate(Entity* this, GameState* state) {
     EnemyData* data = (EnemyData*) &this->data;
 
+    { // drawing
+        for (int i = 0; i < data->usedParts; ++i) {
+            EnemyPart* part = &data->parts[i];
+            
+            addEntityPlane(state, 
+                (Vector3) {this->x, this->y + part->y, this->z + part->x}, 
+                part->texture, 
+                part->textureSizeX,
+                part->textureSizeY, 
+                WHITE,
+                0,
+                QUARTER_ROTATION,
+                QUARTER_ROTATION
+            );
 
-    // actions
-    {
+        }
+    }
+
+
+    { // actions
         data->actionTimer--;
 
         if (data->actionTimer == 0) {
-            data->actionTimer = data->actionTimerMax;
+            data->actionTimer = data->stats.action;
             enemyAiDecision(this, data, state);
         }
     }
 
-    // moving
-    {
+    { // moving
         Vector3 next = Vector3Add((Vector3){.x = this->x, .y = this->y, .z = this->z}, Vector3Scale(data->movementDirection, data->movementVelocity));
         data->movementVelocity = approachNumber(data->movementVelocity, 0, data->deceleration);
 
@@ -211,13 +227,110 @@ bool enemyUpdate(Entity* this, GameState* state) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Part definitions#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    char* texture;
+    float textureSizeX;
+    float textureSizeY;
+    EnemyStats stats;
+
+} EnemyPartDefinition;
+
+
+static EnemyPartDefinition PART_DEBUG = {
+    .texture = "picus",
+    .textureSizeX = 16,
+    .textureSizeY = 16,
+    .stats = {
+        .health = 1,
+        .healthMult = 1,
+
+        .speed = 0.2,
+        .speedMult = 1,
+
+        .action = 60,
+        .actionMult = 1
+    }
+};
+
+EnemyPart makeEnemyPart(
+    EnemyPartDefinition definition,
+    float x,
+    float y,
+    float rotation
+) {
+    return (EnemyPart) {
+        // visual
+        .texture = definition.texture,
+        .x = x,
+        .y = y,
+        .rotation = rotation,
+        .textureSizeX = definition.textureSizeX,
+        .textureSizeY = definition.textureSizeY,
+
+        // stats
+        .stats = definition.stats
+    };
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Enemy definitions#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    float width;
+    float height;
+
+    EnemyPart parts[MAX_ENEMY_PARTS];
+    int usedParts;
+} EnemyDefinition;
+
+#define MAX_ENEMY_DEFINITIONS 20
+static EnemyDefinition enemies[MAX_ENEMY_DEFINITIONS] = {0};
+static int usedEnemies = 0;
+
+
+
+void addEnemy(
+    EnemyDefinition def
+) {
+    enemies[usedEnemies++] = def;
+}
+
+void initEnemies() {
+    addEnemy(
+    (EnemyDefinition){ // debug enemy
+        .width = 1,
+        .height = 1,
+        .parts = { 
+            makeEnemyPart(
+                PART_DEBUG, // part
+                0,          // x offset
+                0,          // y offset
+                0           // rotation
+            )
+        },
+        .usedParts = 1,
+        
+    });
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#Spawning functions#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 void genericGuy(GameState* state, Vector3 position) {
     addEntity(state, (Entity){
-        .texture = simpleTexture("enemy_0002", 23, 35),
+        .texture = noTexture(),
         .x = position.x,
         .y = position.y + 1,
         .z = position.z,
@@ -239,13 +352,83 @@ void genericGuy(GameState* state, Vector3 position) {
         sizeof(EnemyData)
     );
 }
+*/
 
 
-void (*spawnFunctions[])(GameState*, Vector3) = {&genericGuy};
+EnemyStats combineStats(EnemyStats first, EnemyStats second) {
+    return (EnemyStats) {
+        .health = (first.health + second.health) * second.healthMult,
+        .healthMult = 0,
+
+        .speed = (first.speed + second.speed) * second.speedMult,
+        .speedMult = 0,
+
+        .action = (first.action + second.action) * second.actionMult,
+        .actionMult = 0
+    };
+
+}
+
 
 
 void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
-    void (*spawn)(GameState*, Vector3) = spawnFunctions[enemyIndex];
+    
+    EnemyDefinition definition = enemies[enemyIndex];
 
-    spawn(state, position);
+    // combine stats
+
+    EnemyStats stats = { // init empty
+        .health = 0,
+        .healthMult = 0,
+        
+        .speed = 0,
+        .speedMult = 0,
+        
+        .action = 0,
+        .actionMult = 0,
+    };
+
+
+    for (int i = 0; i < definition.usedParts; ++i) {
+        EnemyPart part = definition.parts[i];
+
+        stats = combineStats(stats, part.stats);
+    }
+
+
+
+    // copy the parts array
+    // c doesn't like when you raw assign arrays.
+    EnemyData data = {
+        .actionTimer = stats.action,
+        .movementDirection = (Vector3) {0},
+        .movementVelocity = 0,
+        .deceleration = 0.01,
+        .health = stats.health,
+        .ai = ENEMY_AI_GRID_APPROACH,
+        .stats = stats,
+        .parts = {0},
+        .usedParts = definition.usedParts
+    };
+
+    for (int i = 0; i < definition.usedParts; ++i) {
+        data.parts[i] = definition.parts[i];        
+    }
+
+
+
+    // spawn entity
+    addEntity(state, (Entity){
+        .texture = noTexture(),
+        .x = position.x,
+        .y = position.y + definition.height / 2,
+        .z = position.z,
+        .width = definition.width,
+        .height = definition.height,
+        .update = &enemyUpdate,
+        .light = emptyLight(),
+        .type = ENTITY_ENEMY,
+    }, &data,
+        sizeof(EnemyData)
+    );
 }

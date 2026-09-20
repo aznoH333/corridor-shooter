@@ -29,6 +29,7 @@ int main(void)
     GameState state = initEmptyGame();
     player(&state, 0, 0, 0);
     playMusic("ambience", 1);
+    initEnemies();
     //dummy(&state, 20, 0, 0);
     //SwitchResolution(0, 0, true);
 

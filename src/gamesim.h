@@ -22,8 +22,10 @@ typedef struct {
     float pitch;
     float roll;
     bool enableDepthMask;
+    bool enabled;
 } EntityTexture;
 
+EntityTexture noTexture();
 EntityTexture simpleTexture(char* texture, float width, float height);
 EntityTexture rotatedTexture(char* texture, float width, float height, float rotation);
 EntityTexture rotatedTextureFull(char* texture, float width, float height, float yaw, float pitch, float roll);
@@ -108,7 +110,17 @@ EntityLight emptyLight();
 // world manipulation functions
 void addEntity(GameState* state, Entity entity, void* data, int dataSize);
 void addPlane(GameState* state, Plane plane);
-void addEntityPlane(GameState* state, Vector3 position, char* texture, float textureWidth, float textureHeight, Color color);
+void addEntityPlane(
+    GameState* state, 
+    Vector3 position, 
+    char* texture, 
+    float textureWidth, 
+    float textureHeight,
+    Color color,
+    float yaw,
+    float pitch,
+    float roll
+);
 
 // camera functions
 void addScreenShake(GameState* state, int ammount);

@@ -81,7 +81,10 @@ bool bulletUpdate(Entity* this, GameState* state) {
                 this->texture.texture, 
                 this->texture.width, 
                 this->texture.height, 
-                this->texture.color
+                this->texture.color,
+                0,
+                QUARTER_ROTATION,
+                QUARTER_ROTATION
             );
 
             particlePosition.x -= data->direction.x * (i * 0.05f);
@@ -489,8 +492,6 @@ bool playerUpdate(Entity* this, GameState* state) {
             //bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
             goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
         }
-
-
         
     }
 

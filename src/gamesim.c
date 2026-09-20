@@ -24,6 +24,15 @@ EntityTexture simpleTexture(char* texture, float width, float height) {
         .pitch = QUARTER_ROTATION,
         .roll = QUARTER_ROTATION,
         .enableDepthMask = true,
+        .enabled = true,
+    };
+}
+
+
+
+EntityTexture noTexture() {
+    return (EntityTexture) {
+        .enabled = false
     };
 }
 
@@ -158,6 +167,10 @@ World convertToWorld(GameState* state) {
         for (int i = 0; i < state->entities.count; ++i) {
             Entity* entity = &state->entities.values[i];
             EntityTexture texture = entity->texture;
+
+            if (texture.enabled == false) {
+                continue;
+            }
 
 
             float yaw = texture.yaw;
@@ -357,7 +370,12 @@ void addEntityPlane(
     char* texture, 
     float textureWidth, 
     float textureHeight, 
-    Color color) {
+    Color color,
+    float yaw,
+    float pitch,
+    float roll
+    
+) {
         addPlane(
             state,
             (Plane) {
@@ -365,9 +383,9 @@ void addEntityPlane(
                 .x = position.x,
                 .y = position.y,
                 .z = position.z,
-                .yaw = 0,
-                .pitch = QUARTER_ROTATION,
-                .roll = QUARTER_ROTATION,
+                .yaw = yaw,
+                .pitch = pitch,
+                .roll = roll,
                 // convert from texturesize to gamesize
                 .width = textureWidth * TEX_SIZE_TO_GAME,
                 .height = textureHeight * TEX_SIZE_TO_GAME,
