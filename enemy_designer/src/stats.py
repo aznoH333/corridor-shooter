@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.models import EnemyStats, Part
+from src.models import Enemy, EnemyPartPlacement, EnemyStats, Part
 
 
 def combine_stats(first: EnemyStats, second: EnemyStats) -> EnemyStats:
@@ -23,3 +23,20 @@ def fold_part_stats(parts: list[Part]) -> EnemyStats:
     for part in parts:
         acc = combine_stats(acc, part.stats)
     return acc
+
+
+def fold_enemy_stats(
+    placements: list[EnemyPartPlacement],
+    library: dict[str, Part],
+) -> EnemyStats:
+    """Fold placed-part stats in list order using the part library."""
+    resolved: list[Part] = []
+    for placement in placements:
+        part = library.get(placement.partName)
+        if part is not None:
+            resolved.append(part)
+    return fold_part_stats(resolved)
+
+
+def fold_enemy(enemy: Enemy, library: dict[str, Part]) -> EnemyStats:
+    return fold_enemy_stats(enemy.parts, library)

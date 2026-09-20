@@ -11,7 +11,7 @@ from src.ui.part_designer import build_part_designer
 def main() -> None:
     dpg.create_context()
     dpg.set_global_font_scale(1.25)
-    dpg.create_viewport(title="Enemy Designer", width=1100, height=700)
+    dpg.create_viewport(title="Enemy Designer", width=1280, height=800)
 
     with dpg.window(tag="primary_window", label="Enemy Designer"):
         with dpg.tab_bar(tag="main_tabs"):

@@ -55,3 +55,6 @@ class Enemy:
 
     name: str = ""
     parts: list[EnemyPartPlacement] = field(default_factory=list)
+
+
+MAX_ENEMY_PARTS = 8
