@@ -167,7 +167,7 @@ bool enemyUpdate(Entity* this, GameState* state) {
                 part->textureSizeY, 
                 WHITE,
                 0,
-                QUARTER_ROTATION,
+                QUARTER_ROTATION + part->rotation,
                 QUARTER_ROTATION
             );
 
@@ -235,7 +235,6 @@ typedef struct {
     float textureSizeX;
     float textureSizeY;
     EnemyStats stats;
-
 } EnemyPartDefinition;
 
 
@@ -254,27 +253,6 @@ static EnemyPartDefinition PART_DEBUG = {
         .actionMult = 1
     }
 };
-
-EnemyPart makeEnemyPart(
-    EnemyPartDefinition definition,
-    float x,
-    float y,
-    float rotation
-) {
-    return (EnemyPart) {
-        // visual
-        .texture = definition.texture,
-        .x = x,
-        .y = y,
-        .rotation = rotation,
-        .textureSizeX = definition.textureSizeX,
-        .textureSizeY = definition.textureSizeY,
-
-        // stats
-        .stats = definition.stats
-    };
-
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -296,6 +274,30 @@ static int usedEnemies = 0;
 
 
 
+EnemyPart makeEnemyPart(
+    EnemyPartDefinition definition,
+    float x,
+    float y,
+    float z,
+    float rotation
+) {
+    return (EnemyPart) {
+        // visual
+        .texture = definition.texture,
+        .x = x,
+        .y = y,
+        .z = z,
+        .rotation = rotation,
+        .textureSizeX = definition.textureSizeX,
+        .textureSizeY = definition.textureSizeY,
+
+        // stats
+        .stats = definition.stats
+    };
+}
+
+
+
 void addEnemy(
     EnemyDefinition def
 ) {
@@ -312,10 +314,18 @@ void initEnemies() {
                 PART_DEBUG, // part
                 0,          // x offset
                 0,          // y offset
+                0,          // z offset
+                0           // rotation
+            ),
+            makeEnemyPart(
+                PART_DEBUG, // part
+                0,          // x offset
+                2,          // y offset
+                0,          // z offset
                 0           // rotation
             )
         },
-        .usedParts = 1,
+        .usedParts = 2,
         
     });
 }

@@ -28,6 +28,7 @@ typedef struct {
     char* texture;
     float x;
     float y;
+    float z;
     float rotation;
     float textureSizeX;
     float textureSizeY;
