@@ -45,7 +45,7 @@ typedef enum {
 } EnemyAI;
 
 
-#define MAX_ENEMY_PARTS 8
+#define MAX_ENEMY_PARTS 32
 
 typedef struct {
     int actionTimer;

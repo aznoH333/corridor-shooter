@@ -1,4 +1,4 @@
-"""Read/write .enemy files (v1)."""
+"""Read/write .enemy files (v1 / v2)."""
 
 from __future__ import annotations
 
@@ -6,15 +6,37 @@ from pathlib import Path
 
 from src.models import Enemy, EnemyPartPlacement, MAX_ENEMY_PARTS
 
-ENEMY_FORMAT_VERSION = "v1"
+ENEMY_FORMAT_VERSION = "v2"
 
 
 def load_enemy(path: Path) -> Enemy:
     lines = path.read_text(encoding="utf-8").splitlines()
-    if not lines or lines[0] != ENEMY_FORMAT_VERSION:
-        raise ValueError(f"Unsupported or missing .enemy version in {path}")
+    if not lines:
+        raise ValueError(f"Empty .enemy file: {path}")
 
-    body = lines[1:]
+    version = lines[0]
+    if version == "v2":
+        return _load_v2(path, lines)
+    if version == "v1":
+        return _load_v1(path, lines)
+    raise ValueError(f"Unsupported .enemy version '{version}' in {path}")
+
+
+def _load_v2(path: Path, lines: list[str]) -> Enemy:
+    if len(lines) < 3:
+        raise ValueError(f"Truncated v2 .enemy file: {path}")
+    width = float(lines[1])
+    height = float(lines[2])
+    parts = _parse_parts(path, lines[3:])
+    return Enemy(name=path.stem, width=width, height=height, parts=parts)
+
+
+def _load_v1(path: Path, lines: list[str]) -> Enemy:
+    parts = _parse_parts(path, lines[1:])
+    return Enemy(name=path.stem, width=1.0, height=1.0, parts=parts)
+
+
+def _parse_parts(path: Path, body: list[str]) -> list[EnemyPartPlacement]:
     if len(body) % 5 != 0:
         raise ValueError(f"Expected groups of 5 lines per part in {path}")
 
@@ -30,9 +52,10 @@ def load_enemy(path: Path) -> Enemy:
             )
         )
         if len(parts) > MAX_ENEMY_PARTS:
-            raise ValueError(f"Enemy exceeds MAX_ENEMY_PARTS ({MAX_ENEMY_PARTS}) in {path}")
-
-    return Enemy(name=path.stem, parts=parts)
+            raise ValueError(
+                f"Enemy exceeds MAX_ENEMY_PARTS ({MAX_ENEMY_PARTS}) in {path}"
+            )
+    return parts
 
 
 def save_enemy(enemy: Enemy, path: Path) -> None:
@@ -40,7 +63,11 @@ def save_enemy(enemy: Enemy, path: Path) -> None:
         raise ValueError(f"Enemy has more than {MAX_ENEMY_PARTS} parts")
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    lines = [ENEMY_FORMAT_VERSION]
+    lines = [
+        ENEMY_FORMAT_VERSION,
+        _fmt(enemy.width),
+        _fmt(enemy.height),
+    ]
     for part in enemy.parts:
         lines.extend(
             [

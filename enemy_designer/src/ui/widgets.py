@@ -61,16 +61,22 @@ def ensure_png_file_dialog(
 
 
 def selected_path_from_dialog(app_data) -> Path | None:
-    """Extract the chosen file path from a Dear PyGui file-dialog callback."""
+    """Extract the first chosen file path from a Dear PyGui file-dialog callback."""
+    paths = selected_paths_from_dialog(app_data)
+    return paths[0] if paths else None
+
+
+def selected_paths_from_dialog(app_data) -> list[Path]:
+    """Extract all chosen file paths from a Dear PyGui file-dialog callback."""
     if not app_data:
-        return None
+        return []
     selections = app_data.get("selections") or {}
     if selections:
-        return Path(next(iter(selections.values())))
+        return [Path(path) for path in selections.values()]
     file_path_name = app_data.get("file_path_name")
     if file_path_name:
-        return Path(file_path_name)
-    return None
+        return [Path(file_path_name)]
+    return []
 
 
 def load_preview_texture(

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import dearpygui.dearpygui as dpg
 
 from src.formats import part_io
@@ -187,28 +189,60 @@ def _on_change_texture_clicked() -> None:
 
 
 def _on_texture_picked(_sender, app_data, _user_data) -> None:
-    path = widgets.selected_path_from_dialog(app_data)
-    if path is None:
-        return
-    if path.suffix.lower() != ".png":
-        _set_status(f"Expected a PNG, got {path.name}")
-        return
-    if not path.is_file():
-        _set_status(f"File not found: {path}")
+    paths = widgets.selected_paths_from_dialog(app_data)
+    if not paths:
         return
 
+    if _PICK_MODE == "change_texture":
+        path = paths[0]
+        result = _read_png(path)
+        if result is None:
+            return
+        texture_id, width, height = result
+        _apply_texture_to_selected(texture_id, width, height)
+        return
+
+    created: list[str] = []
+    errors: list[str] = []
+    for path in paths:
+        result = _read_png(path)
+        if result is None:
+            errors.append(path.name)
+            continue
+        texture_id, width, height = result
+        name = _create_part_from_image(texture_id, width, height, select=False)
+        if name is None:
+            errors.append(path.name)
+        else:
+            created.append(name)
+
+    if created:
+        _refresh_list(select=created[-1])
+        if len(created) == 1:
+            _set_status(f"Created {created[0]}.part")
+        else:
+            _set_status(f"Created {len(created)} parts.")
+    if errors and not created:
+        _set_status(f"Could not create parts from: {', '.join(errors)}")
+    elif errors:
+        _set_status(
+            f"Created {len(created)} parts; skipped: {', '.join(errors)}"
+        )
+
+
+def _read_png(path: Path) -> tuple[str, int, int] | None:
+    if path.suffix.lower() != ".png":
+        _set_status(f"Expected a PNG, got {path.name}")
+        return None
+    if not path.is_file():
+        _set_status(f"File not found: {path}")
+        return None
     try:
         width, height = widgets.png_size(path)
     except OSError as exc:
         _set_status(f"Could not read PNG: {exc}")
-        return
-
-    texture_id = widgets.texture_id_from_path(path)
-
-    if _PICK_MODE == "create":
-        _create_part_from_image(texture_id, width, height)
-    else:
-        _apply_texture_to_selected(texture_id, width, height)
+        return None
+    return widgets.texture_id_from_path(path), width, height
 
 
 def _unique_name(base: str) -> str:
@@ -220,7 +254,13 @@ def _unique_name(base: str) -> str:
     return f"{base}_{index}"
 
 
-def _create_part_from_image(texture_id: str, width: int, height: int) -> None:
+def _create_part_from_image(
+    texture_id: str,
+    width: int,
+    height: int,
+    *,
+    select: bool = True,
+) -> str | None:
     name = _unique_name(texture_id)
     part = Part(
         name=name,
@@ -235,12 +275,14 @@ def _create_part_from_image(texture_id: str, width: int, height: int) -> None:
     except OSError as exc:
         del _PARTS[name]
         _set_status(f"Failed to save: {exc}")
-        return
+        return None
 
-    global _SAVED_NAME
-    _SAVED_NAME = name
-    _refresh_list(select=name)
-    _set_status(f"Created {name}.part")
+    if select:
+        global _SAVED_NAME
+        _SAVED_NAME = name
+        _refresh_list(select=name)
+        _set_status(f"Created {name}.part")
+    return name
 
 
 def _apply_texture_to_selected(texture_id: str, width: int, height: int) -> None:

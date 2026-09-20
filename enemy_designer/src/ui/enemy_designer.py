@@ -3,11 +3,18 @@
 from __future__ import annotations
 
 import math
+from copy import deepcopy
 
 import dearpygui.dearpygui as dpg
 
 from src.formats import enemy_io, part_io
-from src.models import Enemy, EnemyPartPlacement, MAX_ENEMY_PARTS, Part
+from src.models import (
+    Enemy,
+    EnemyPartPlacement,
+    MAX_ENEMY_PARTS,
+    PIXELS_PER_GAME_UNIT,
+    Part,
+)
 from src.paths import ENEMIES_DIR, PARTS_DIR
 from src.stats import fold_enemy
 from src.ui import widgets
@@ -18,13 +25,18 @@ _SELECTED: str | None = None
 _SAVED_NAME: str | None = None
 _SELECTED_PART_IDX: int | None = None
 _DRAGGING_IDX: int | None = None
+_DRAG_MODE: str | None = None  # "move" | "rotate"
 _DRAG_GRAB: tuple[float, float] = (0.0, 0.0)
 _SUPPRESS_EDIT = False
+_CLIPBOARD: EnemyPartPlacement | None = None
+_PENDING_DELETE: str | None = None  # "enemy" | "part"
 
 _TAG_LIST = "enemy_list"
 _TAG_FORM = "enemy_form"
 _TAG_EMPTY = "enemy_empty_hint"
 _TAG_NAME = "enemy_name"
+_TAG_WIDTH = "enemy_width"
+_TAG_HEIGHT = "enemy_height"
 _TAG_STATUS = "enemy_status"
 _TAG_FINAL_HEALTH = "enemy_final_health"
 _TAG_FINAL_SPEED = "enemy_final_speed"
@@ -42,11 +54,22 @@ _TAG_CHECKER_TEX = "enemy_checker_texture"
 _TAG_TEX_REGISTRY = "enemy_texture_registry"
 _TAG_ADD_PART_WINDOW = "enemy_add_part_window"
 _TAG_ADD_PART_LIST = "enemy_add_part_list"
+_TAG_ADD_PART_PREVIEW = "enemy_add_part_preview"
+_TAG_ADD_PART_PREVIEW_TEX = "enemy_add_part_preview_tex"
+_TAG_ADD_PART_SIZE = "enemy_add_part_size"
+_TAG_ADD_PART_TEXTURE = "enemy_add_part_texture"
+_TAG_ADD_PART_STATS = "enemy_add_part_stats"
+_TAG_CONFIRM = "enemy_confirm_delete"
+_TAG_CONFIRM_MSG = "enemy_confirm_delete_msg"
 _TAG_HANDLERS = "enemy_canvas_handlers"
+_ADD_PART_PREVIEW_COUNTER = 0
+_ADD_PART_ACTIVE_TEX = _TAG_ADD_PART_PREVIEW_TEX
 
 _CANVAS_ZOOM = 4
 _CANVAS_LOGICAL = 160  # game pixels; display = logical * zoom
 _CANVAS_SIZE = _CANVAS_LOGICAL * _CANVAS_ZOOM
+_ROT_HANDLE_RADIUS_LOGICAL = 2.5
+_ROT_HANDLE_HIT_LOGICAL = 5.0
 
 
 def build_enemy_designer(*, parent: int | str) -> None:
@@ -97,6 +120,24 @@ def build_enemy_designer(*, parent: int | str) -> None:
                 dpg.add_text("Enemy")
                 dpg.add_separator()
                 dpg.add_input_text(label="Name", tag=_TAG_NAME, width=260)
+                dpg.add_input_float(
+                    label="Width (units)",
+                    tag=_TAG_WIDTH,
+                    width=140,
+                    format="%.3g",
+                    callback=_on_size_edited,
+                )
+                dpg.add_input_float(
+                    label="Height (units)",
+                    tag=_TAG_HEIGHT,
+                    width=140,
+                    format="%.3g",
+                    callback=_on_size_edited,
+                )
+                dpg.add_text(
+                    f"1 unit = {PIXELS_PER_GAME_UNIT} px",
+                    color=(180, 180, 180, 255),
+                )
                 dpg.add_spacer(height=4)
                 dpg.add_text("Final stats")
                 dpg.add_text("health: —", tag=_TAG_FINAL_HEALTH)
@@ -106,11 +147,11 @@ def build_enemy_designer(*, parent: int | str) -> None:
                 dpg.add_text(f"Parts (max {MAX_ENEMY_PARTS})")
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Add part", callback=_on_add_part_clicked)
-                    dpg.add_button(label="Remove part", callback=_on_remove_part)
+                    dpg.add_button(label="Remove part", callback=_on_remove_part_request)
                 dpg.add_listbox(
                     items=[],
                     tag=_TAG_PART_LIST,
-                    num_items=8,
+                    num_items=12,
                     width=-1,
                     callback=_on_part_list_selected,
                 )
@@ -125,14 +166,14 @@ def build_enemy_designer(*, parent: int | str) -> None:
                         callback=_on_part_def_changed,
                     )
                     dpg.add_input_float(
-                        label="X",
+                        label="X (px)",
                         tag=_TAG_PART_X,
                         width=140,
                         format="%.3g",
                         callback=_on_placement_edited,
                     )
                     dpg.add_input_float(
-                        label="Y",
+                        label="Y (px)",
                         tag=_TAG_PART_Y,
                         width=140,
                         format="%.3g",
@@ -155,14 +196,20 @@ def build_enemy_designer(*, parent: int | str) -> None:
                 dpg.add_spacer(height=8)
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Save", width=100, callback=_on_save)
-                    dpg.add_button(label="Delete", width=100, callback=_on_delete)
+                    dpg.add_button(
+                        label="Delete", width=100, callback=_on_delete_enemy_request
+                    )
             dpg.add_spacer(height=8)
             dpg.add_text("", tag=_TAG_STATUS, wrap=280)
 
         # Right: canvas
         with dpg.child_window(border=True):
             dpg.add_text("Canvas")
-            dpg.add_text("Drag parts to move. Origin is the center.", tag=_TAG_CANVAS_HINT)
+            dpg.add_text(
+                "Drag to move · yellow handle rotates · blue box = enemy size · Ctrl+C/V copy part",
+                tag=_TAG_CANVAS_HINT,
+                wrap=500,
+            )
             dpg.add_separator()
             dpg.add_drawlist(
                 width=_CANVAS_SIZE,
@@ -171,6 +218,7 @@ def build_enemy_designer(*, parent: int | str) -> None:
             )
 
     _build_add_part_window()
+    _build_confirm_window()
     _bind_canvas_handlers()
     _redraw_canvas()
     _show_empty_state("No enemies yet. Click + to create one.")
@@ -288,6 +336,8 @@ def _select_enemy(name: str) -> None:
     _show_form(True)
     _SUPPRESS_EDIT = True
     dpg.set_value(_TAG_NAME, enemy.name)
+    dpg.set_value(_TAG_WIDTH, enemy.width)
+    dpg.set_value(_TAG_HEIGHT, enemy.height)
     _SUPPRESS_EDIT = False
     _refresh_part_ui()
     _update_final_stats()
@@ -373,20 +423,82 @@ def _on_placement_edited(_sender, _app_data, _user_data) -> None:
     _redraw_canvas()
 
 
+def _on_size_edited(_sender, _app_data, _user_data) -> None:
+    if _SUPPRESS_EDIT:
+        return
+    enemy = _current_enemy()
+    if enemy is None:
+        return
+    enemy.width = max(0.01, float(dpg.get_value(_TAG_WIDTH)))
+    enemy.height = max(0.01, float(dpg.get_value(_TAG_HEIGHT)))
+    _redraw_canvas()
+
+
+def _build_confirm_window() -> None:
+    if dpg.does_item_exist(_TAG_CONFIRM):
+        return
+    with dpg.window(
+        label="Confirm delete",
+        modal=True,
+        show=False,
+        tag=_TAG_CONFIRM,
+        width=380,
+        height=140,
+        no_collapse=True,
+    ):
+        dpg.add_text("", tag=_TAG_CONFIRM_MSG, wrap=340)
+        dpg.add_spacer(height=8)
+        with dpg.group(horizontal=True):
+            dpg.add_button(label="Delete", width=100, callback=_on_confirm_delete_yes)
+            dpg.add_button(
+                label="Cancel",
+                width=100,
+                callback=lambda: dpg.configure_item(_TAG_CONFIRM, show=False),
+            )
+
+
 def _build_add_part_window() -> None:
+    global _ADD_PART_ACTIVE_TEX, _ADD_PART_PREVIEW_COUNTER
     if dpg.does_item_exist(_TAG_ADD_PART_WINDOW):
         return
+
+    _ADD_PART_PREVIEW_COUNTER = 0
+    _ADD_PART_ACTIVE_TEX = _TAG_ADD_PART_PREVIEW_TEX
+    widgets.ensure_placeholder_texture(
+        texture_tag=_TAG_ADD_PART_PREVIEW_TEX,
+        parent=_TAG_TEX_REGISTRY,
+    )
+
     with dpg.window(
         label="Add part",
         modal=True,
         show=False,
         tag=_TAG_ADD_PART_WINDOW,
-        width=320,
-        height=360,
+        width=560,
+        height=420,
         no_collapse=True,
     ):
         dpg.add_text("Choose a part definition")
-        dpg.add_listbox(items=[], tag=_TAG_ADD_PART_LIST, num_items=12, width=-1)
+        with dpg.group(horizontal=True):
+            dpg.add_listbox(
+                items=[],
+                tag=_TAG_ADD_PART_LIST,
+                num_items=14,
+                width=200,
+                callback=_on_add_part_list_selected,
+            )
+            with dpg.child_window(width=320, height=300, border=True):
+                dpg.add_text("Preview")
+                dpg.add_image(
+                    _TAG_ADD_PART_PREVIEW_TEX,
+                    tag=_TAG_ADD_PART_PREVIEW,
+                    show=False,
+                )
+                dpg.add_separator()
+                dpg.add_text("Texture: —", tag=_TAG_ADD_PART_TEXTURE)
+                dpg.add_text("Size: —", tag=_TAG_ADD_PART_SIZE)
+                dpg.add_text("Stats", bullet=False)
+                dpg.add_text("", tag=_TAG_ADD_PART_STATS, wrap=280)
         with dpg.group(horizontal=True):
             dpg.add_button(label="Add", callback=_on_confirm_add_part, width=100)
             dpg.add_button(
@@ -394,6 +506,75 @@ def _build_add_part_window() -> None:
                 callback=lambda: dpg.configure_item(_TAG_ADD_PART_WINDOW, show=False),
                 width=100,
             )
+
+
+def _on_add_part_list_selected(_sender, app_data, _user_data) -> None:
+    if app_data:
+        _update_add_part_preview(app_data)
+
+
+def _update_add_part_preview(part_name: str) -> None:
+    global _ADD_PART_PREVIEW_COUNTER, _ADD_PART_ACTIVE_TEX
+
+    part = _PARTS.get(part_name)
+    if part is None:
+        dpg.configure_item(_TAG_ADD_PART_PREVIEW, show=False)
+        dpg.set_value(_TAG_ADD_PART_TEXTURE, "Texture: —")
+        dpg.set_value(_TAG_ADD_PART_SIZE, "Size: —")
+        dpg.set_value(_TAG_ADD_PART_STATS, "")
+        return
+
+    dpg.set_value(_TAG_ADD_PART_TEXTURE, f"Texture: {part.texture}")
+    dpg.set_value(
+        _TAG_ADD_PART_SIZE,
+        f"Size: {part.textureSizeX} × {part.textureSizeY}",
+    )
+    stats = part.stats
+    dpg.set_value(
+        _TAG_ADD_PART_STATS,
+        (
+            f"health {stats.health:g}  ×{stats.healthMult:g}\n"
+            f"speed {stats.speed:g}  ×{stats.speedMult:g}\n"
+            f"action {stats.action:g}  ×{stats.actionMult:g}"
+        ),
+    )
+
+    path = widgets.resolve_texture_path(part.texture)
+    if path is None:
+        dpg.configure_item(_TAG_ADD_PART_PREVIEW, show=False)
+        return
+
+    _ADD_PART_PREVIEW_COUNTER += 1
+    new_tag = f"{_TAG_ADD_PART_PREVIEW_TEX}_{_ADD_PART_PREVIEW_COUNTER}"
+    size = widgets.load_preview_texture(
+        path,
+        texture_tag=new_tag,
+        parent=_TAG_TEX_REGISTRY,
+        max_side=180,
+    )
+    if size is None:
+        dpg.configure_item(_TAG_ADD_PART_PREVIEW, show=False)
+        return
+
+    display_w, display_h, _sw, _sh = size
+    old_tag = _ADD_PART_ACTIVE_TEX
+    _ADD_PART_ACTIVE_TEX = new_tag
+    dpg.configure_item(
+        _TAG_ADD_PART_PREVIEW,
+        texture_tag=new_tag,
+        width=display_w,
+        height=display_h,
+        show=True,
+    )
+    if (
+        old_tag != new_tag
+        and dpg.does_item_exist(old_tag)
+        and old_tag != _TAG_ADD_PART_PREVIEW_TEX
+    ):
+        try:
+            dpg.delete_item(old_tag)
+        except SystemError:
+            pass
 
 
 def _on_add_part_clicked() -> None:
@@ -411,6 +592,7 @@ def _on_add_part_clicked() -> None:
         return
     dpg.configure_item(_TAG_ADD_PART_LIST, items=names)
     dpg.set_value(_TAG_ADD_PART_LIST, names[0])
+    _update_add_part_preview(names[0])
     dpg.configure_item(_TAG_ADD_PART_WINDOW, show=True)
 
 
@@ -438,7 +620,48 @@ def _on_confirm_add_part() -> None:
     _set_status(f"Added part '{name}'")
 
 
-def _on_remove_part() -> None:
+def _on_remove_part_request() -> None:
+    global _PENDING_DELETE
+    enemy = _current_enemy()
+    placement = _current_placement()
+    if enemy is None or placement is None or _SELECTED_PART_IDX is None:
+        _set_status("No part selected.")
+        return
+    _PENDING_DELETE = "part"
+    dpg.set_value(
+        _TAG_CONFIRM_MSG,
+        f"Remove part '{placement.partName}' (index {_SELECTED_PART_IDX}) from this enemy?",
+    )
+    dpg.configure_item(_TAG_CONFIRM, show=True)
+
+
+def _on_delete_enemy_request() -> None:
+    global _PENDING_DELETE
+    enemy = _current_enemy()
+    if enemy is None:
+        _set_status("Nothing to delete.")
+        return
+    name = _SAVED_NAME or enemy.name
+    _PENDING_DELETE = "enemy"
+    dpg.set_value(
+        _TAG_CONFIRM_MSG,
+        f"Delete enemy '{name}'? This cannot be undone.",
+    )
+    dpg.configure_item(_TAG_CONFIRM, show=True)
+
+
+def _on_confirm_delete_yes() -> None:
+    global _PENDING_DELETE
+    dpg.configure_item(_TAG_CONFIRM, show=False)
+    action = _PENDING_DELETE
+    _PENDING_DELETE = None
+    if action == "part":
+        _remove_part()
+    elif action == "enemy":
+        _delete_enemy()
+
+
+def _remove_part() -> None:
     global _SELECTED_PART_IDX
     enemy = _current_enemy()
     if enemy is None or _SELECTED_PART_IDX is None:
@@ -472,6 +695,9 @@ def _on_save() -> None:
         _set_status(f"An enemy named '{name}' already exists.")
         return
 
+    enemy.width = max(0.01, float(dpg.get_value(_TAG_WIDTH)))
+    enemy.height = max(0.01, float(dpg.get_value(_TAG_HEIGHT)))
+
     old_name = _SAVED_NAME
     enemy.name = name
 
@@ -503,7 +729,7 @@ def _on_save() -> None:
     _set_status(f"Saved {name}.enemy")
 
 
-def _on_delete() -> None:
+def _delete_enemy() -> None:
     global _SELECTED, _SAVED_NAME, _SELECTED_PART_IDX
     enemy = _current_enemy()
     if enemy is None:
@@ -537,10 +763,70 @@ def _bind_canvas_handlers() -> None:
         dpg.add_mouse_click_handler(button=0, callback=_on_canvas_click)
         dpg.add_mouse_drag_handler(button=0, threshold=1, callback=_on_canvas_drag)
         dpg.add_mouse_release_handler(button=0, callback=_on_canvas_release)
+        dpg.add_key_press_handler(key=dpg.mvKey_C, callback=_on_key_copy)
+        dpg.add_key_press_handler(key=dpg.mvKey_V, callback=_on_key_paste)
 
 
-def _canvas_mouse_logical() -> tuple[float, float] | None:
-    if not dpg.does_item_exist(_TAG_CANVAS) or not dpg.is_item_hovered(_TAG_CANVAS):
+def _ctrl_down() -> bool:
+    return dpg.is_key_down(dpg.mvKey_LControl) or dpg.is_key_down(dpg.mvKey_RControl)
+
+
+def _is_text_editing() -> bool:
+    focused = dpg.get_focused_item()
+    if not focused:
+        return False
+    try:
+        item_type = dpg.get_item_type(focused)
+    except Exception:
+        return False
+    return any(
+        name in item_type
+        for name in ("InputText", "InputFloat", "InputInt", "InputDouble")
+    )
+
+
+def _on_key_copy(_sender, _app_data, _user_data) -> None:
+    global _CLIPBOARD
+    if not _ctrl_down() or _is_text_editing():
+        return
+    if _SELECTED is None:
+        return
+    placement = _current_placement()
+    if placement is None:
+        _set_status("Select a part to copy.")
+        return
+    _CLIPBOARD = deepcopy(placement)
+    _set_status(f"Copied part '{placement.partName}'")
+
+
+def _on_key_paste(_sender, _app_data, _user_data) -> None:
+    global _SELECTED_PART_IDX, _CLIPBOARD
+    if not _ctrl_down() or _is_text_editing():
+        return
+    enemy = _current_enemy()
+    if enemy is None:
+        return
+    if _CLIPBOARD is None:
+        _set_status("Clipboard is empty.")
+        return
+    if len(enemy.parts) >= MAX_ENEMY_PARTS:
+        _set_status(f"Max {MAX_ENEMY_PARTS} parts reached.")
+        return
+    pasted = deepcopy(_CLIPBOARD)
+    pasted.offsetX += 4
+    pasted.offsetY += 4
+    enemy.parts.append(pasted)
+    _SELECTED_PART_IDX = len(enemy.parts) - 1
+    _refresh_part_ui()
+    _update_final_stats()
+    _redraw_canvas()
+    _set_status(f"Pasted part '{pasted.partName}'")
+
+
+def _canvas_mouse_logical(*, require_hover: bool = True) -> tuple[float, float] | None:
+    if not dpg.does_item_exist(_TAG_CANVAS):
+        return None
+    if require_hover and not dpg.is_item_hovered(_TAG_CANVAS):
         return None
     mouse = dpg.get_mouse_pos(local=False)
     rect_min = dpg.get_item_rect_min(_TAG_CANVAS)
@@ -568,8 +854,24 @@ def _hit_test_part(placement: EnemyPartPlacement, lx: float, ly: float) -> bool:
     return abs(dx) <= hw and abs(dy) <= hh
 
 
+def _rotation_handle_pos(placement: EnemyPartPlacement) -> tuple[float, float]:
+    """Logical-pixel position of the rotation handle (top of sprite after rotation)."""
+    sw, sh = _placement_source_size(placement)
+    radius = max(sw, sh) / 2.0 + 10.0
+    # Unrotated "up" is (0, -1); rotate by placement.rotation.
+    angle = placement.rotation - math.pi / 2.0
+    hx = placement.offsetX + math.cos(angle) * radius
+    hy = placement.offsetY + math.sin(angle) * radius
+    return hx, hy
+
+
+def _hit_test_rotation_handle(placement: EnemyPartPlacement, lx: float, ly: float) -> bool:
+    hx, hy = _rotation_handle_pos(placement)
+    return math.hypot(lx - hx, ly - hy) <= _ROT_HANDLE_HIT_LOGICAL
+
+
 def _on_canvas_click(_sender, _app_data, _user_data) -> None:
-    global _DRAGGING_IDX, _DRAG_GRAB, _SELECTED_PART_IDX
+    global _DRAGGING_IDX, _DRAG_MODE, _DRAG_GRAB, _SELECTED_PART_IDX
     enemy = _current_enemy()
     if enemy is None:
         return
@@ -578,7 +880,21 @@ def _on_canvas_click(_sender, _app_data, _user_data) -> None:
         return
     lx, ly = mouse
 
-    # Top-most first (highest z, then later list index).
+    # Prefer rotation handle / body of the already-selected part so a drag
+    # on it is not stolen by a higher-z part stacked on top.
+    if _SELECTED_PART_IDX is not None and 0 <= _SELECTED_PART_IDX < len(enemy.parts):
+        selected = enemy.parts[_SELECTED_PART_IDX]
+        if _hit_test_rotation_handle(selected, lx, ly):
+            _DRAGGING_IDX = _SELECTED_PART_IDX
+            _DRAG_MODE = "rotate"
+            return
+        if _hit_test_part(selected, lx, ly):
+            _DRAGGING_IDX = _SELECTED_PART_IDX
+            _DRAG_MODE = "move"
+            _DRAG_GRAB = (lx - selected.offsetX, ly - selected.offsetY)
+            return
+
+    # Click was outside the selection — pick the top-most part under the cursor.
     order = sorted(
         range(len(enemy.parts)),
         key=lambda i: (enemy.parts[i].offsetZ, i),
@@ -589,37 +905,51 @@ def _on_canvas_click(_sender, _app_data, _user_data) -> None:
         if _hit_test_part(placement, lx, ly):
             _SELECTED_PART_IDX = index
             _DRAGGING_IDX = index
+            _DRAG_MODE = "move"
             _DRAG_GRAB = (lx - placement.offsetX, ly - placement.offsetY)
             _refresh_part_ui()
             _redraw_canvas()
             return
+
     _DRAGGING_IDX = None
+    _DRAG_MODE = None
 
 
 def _on_canvas_drag(_sender, _app_data, _user_data) -> None:
     global _SUPPRESS_EDIT
     enemy = _current_enemy()
-    if enemy is None or _DRAGGING_IDX is None:
+    if enemy is None or _DRAGGING_IDX is None or _DRAG_MODE is None:
         return
     if not (0 <= _DRAGGING_IDX < len(enemy.parts)):
         return
-    mouse = _canvas_mouse_logical()
+    mouse = _canvas_mouse_logical(require_hover=False)
     if mouse is None:
         return
     lx, ly = mouse
     placement = enemy.parts[_DRAGGING_IDX]
-    placement.offsetX = round(lx - _DRAG_GRAB[0])
-    placement.offsetY = round(ly - _DRAG_GRAB[1])
-    _SUPPRESS_EDIT = True
-    dpg.set_value(_TAG_PART_X, placement.offsetX)
-    dpg.set_value(_TAG_PART_Y, placement.offsetY)
-    _SUPPRESS_EDIT = False
+
+    if _DRAG_MODE == "move":
+        placement.offsetX = round(lx - _DRAG_GRAB[0])
+        placement.offsetY = round(ly - _DRAG_GRAB[1])
+        _SUPPRESS_EDIT = True
+        dpg.set_value(_TAG_PART_X, placement.offsetX)
+        dpg.set_value(_TAG_PART_Y, placement.offsetY)
+        _SUPPRESS_EDIT = False
+    elif _DRAG_MODE == "rotate":
+        # Handle sits at rotation - pi/2; invert that relationship.
+        angle = math.atan2(ly - placement.offsetY, lx - placement.offsetX)
+        placement.rotation = angle + math.pi / 2.0
+        _SUPPRESS_EDIT = True
+        dpg.set_value(_TAG_PART_ROT, math.degrees(placement.rotation))
+        _SUPPRESS_EDIT = False
+
     _redraw_canvas()
 
 
 def _on_canvas_release(_sender, _app_data, _user_data) -> None:
-    global _DRAGGING_IDX
+    global _DRAGGING_IDX, _DRAG_MODE
     _DRAGGING_IDX = None
+    _DRAG_MODE = None
 
 
 def _rotated_quad(
@@ -686,6 +1016,17 @@ def _redraw_canvas() -> None:
     if enemy is None:
         return
 
+    # Enemy size in game units → pixels (parts may sit outside this box).
+    half_w = enemy.width * PIXELS_PER_GAME_UNIT * _CANVAS_ZOOM / 2.0
+    half_h = enemy.height * PIXELS_PER_GAME_UNIT * _CANVAS_ZOOM / 2.0
+    dpg.draw_rectangle(
+        (origin - half_w, origin - half_h),
+        (origin + half_w, origin + half_h),
+        color=(80, 160, 255, 230),
+        thickness=2,
+        parent=_TAG_CANVAS,
+    )
+
     draw_order = sorted(
         range(len(enemy.parts)),
         key=lambda i: (enemy.parts[i].offsetZ, i),
@@ -717,5 +1058,25 @@ def _redraw_canvas() -> None:
                 (cx + dw / 2 + 2, cy + dh / 2 + 2),
                 color=(255, 220, 80, 220),
                 thickness=2,
+                parent=_TAG_CANVAS,
+            )
+            # Rotation handle: line from center to handle + circle.
+            hx, hy = _rotation_handle_pos(placement)
+            hdx = origin + hx * _CANVAS_ZOOM
+            hdy = origin + hy * _CANVAS_ZOOM
+            dpg.draw_line(
+                (cx, cy),
+                (hdx, hdy),
+                color=(255, 220, 80, 200),
+                thickness=2,
+                parent=_TAG_CANVAS,
+            )
+            handle_r = _ROT_HANDLE_RADIUS_LOGICAL * _CANVAS_ZOOM
+            dpg.draw_circle(
+                (hdx, hdy),
+                handle_r,
+                color=(255, 220, 80, 255),
+                fill=(255, 220, 80, 220),
+                thickness=1,
                 parent=_TAG_CANVAS,
             )

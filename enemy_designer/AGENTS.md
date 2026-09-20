@@ -70,13 +70,17 @@ Configurable in the enemy designer only:
 | `offsetZ` | Z / draw order (also used for color calc in-game) |
 | `rotation` | **Radians** in files; UI may show degrees |
 
-Game limit: `MAX_ENEMY_PARTS` = **8**. Enforce in the UI.
+Game limit: `MAX_ENEMY_PARTS` = **32**. Enforce in the UI.
 
 `textureSizeX/Y` and combined `stats` on placed parts are derived from the part definition (and stats fold), not authored per placement.
 
-### AI / enemy size (game-side, not in v1 export yet)
+### Enemy size
 
-Game also has `EnemyAI` (`GRID_APPROACH`, `SHIELD_APPROACH`, `RANGER`) and `EnemyDefinition.width` / `height`. **v1 `.enemy` format does not include these** — leave hooks/comments if easy, but do not invent format fields without updating this doc.
+`EnemyDefinition.width` / `height` are authored in **game units** (not pixels). **1 game unit = 32 pixels**. Part offsets remain in pixels and may be placed outside the enemy bounds; the canvas shows a blue rectangle for the enemy size.
+
+### AI (game-side, not in export yet)
+
+Game also has `EnemyAI` (`GRID_APPROACH`, `SHIELD_APPROACH`, `RANGER`). Not included in the `.enemy` format yet.
 
 ## Combined stats (must match C exactly)
 
@@ -131,10 +135,12 @@ picus
 1
 ```
 
-### `.enemy` (v1)
+### `.enemy` (v2)
 
 ```
-v1
+v2
+<width>
+<height>
 <partName>
 <offsetX>
 <offsetY>
@@ -144,7 +150,9 @@ v1
 ...
 ```
 
-Repeat the 5-line block once per part, in draw/combine order. Rotation in **radians**. No enemy name inside the file in v1 — use the filename stem as the enemy id (e.g. `grunt.enemy`).
+`width` / `height` are game units (1 unit = 32 px). Then repeat the 5-line part block once per part, in draw/combine order. Rotation in **radians**. Part offsets in **pixels**. No enemy name inside the file — use the filename stem as the enemy id (e.g. `grunt.enemy`).
+
+Readers still accept **v1** (parts only; width/height default to `1`).
 
 ## UX requirements
 
@@ -161,7 +169,7 @@ Repeat the 5-line block once per part, in draw/combine order. Rotation in **radi
 2. Add part → pick from loaded `.part` library; place on canvas (drag to set x/y if practical).
 3. Per-selected-part inspectors: x, y, z, rotation (and which part definition).
 4. Live **final stats** panel using `combineStats`.
-5. Save/load `.enemy` under `enemies/`. Cap at 8 parts.
+5. Save/load `.enemy` under `enemies/`. Cap at 32 parts. Include width/height (game units).
 
 ## Agent conventions
 

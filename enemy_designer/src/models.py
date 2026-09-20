@@ -49,12 +49,18 @@ class EnemyPartPlacement:
     rotation: float = 0.0  # radians in files
 
 
+# Match ../src/enemies.h
+MAX_ENEMY_PARTS = 32
+
+# Part offsets are in pixels; enemy width/height are in game units.
+PIXELS_PER_GAME_UNIT = 32
+
+
 @dataclass
 class Enemy:
-    """Enemy composition. Filename stem is the id in v1."""
+    """Enemy composition. Filename stem is the id."""
 
     name: str = ""
+    width: float = 1.0  # game units
+    height: float = 1.0  # game units
     parts: list[EnemyPartPlacement] = field(default_factory=list)
-
-
-MAX_ENEMY_PARTS = 8
