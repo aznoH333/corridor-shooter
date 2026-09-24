@@ -1,6 +1,8 @@
 #include "fileReader.h"
 #include "stdio.h"
 #include "math.h"
+#include "stdlib.h"
+#include "dirent.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +71,21 @@ void fileSkip(LoadedFile* file) {
 char* fileNext(LoadedFile* file) {
     return file->lines[file->lineNumber++];
 }
+
+
+char* fileNextAlloc256(LoadedFile* file) {
+    char* output = malloc(256);
+    char* next = fileNext(file);
+
+    for (int i = 0; i < 256; ++i) {
+        output[i] = next[i];
+    }
+
+    return output;
+}
+
+
+
 float fileNextF(LoadedFile* file) {
     char* line = fileNext(file);
     
@@ -115,6 +132,7 @@ float fileNextF(LoadedFile* file) {
     
     return preDot + postDot;
 }
+
 int fileNextI(LoadedFile* file) {
     return fileNextF(file);
 }
