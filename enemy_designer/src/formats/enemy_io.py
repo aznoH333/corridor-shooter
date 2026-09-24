@@ -1,12 +1,13 @@
-"""Read/write .enemy files (v1 / v2)."""
+"""Read/write .enemy files (v1 / v2 / v3)."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from src.models import Enemy, EnemyPartPlacement, MAX_ENEMY_PARTS
+from src.models import Enemy, EnemyPartPlacement, MAX_ENEMY_PARTS, clamp_color_channel
 
-ENEMY_FORMAT_VERSION = "v2"
+ENEMY_FORMAT_VERSION = "v3"
+_DEFAULT_COLOR = (255, 255, 255, 255)
 
 
 def load_enemy(path: Path) -> Enemy:
@@ -15,40 +16,51 @@ def load_enemy(path: Path) -> Enemy:
         raise ValueError(f"Empty .enemy file: {path}")
 
     version = lines[0]
+    if version == "v3":
+        return _load_sized(path, lines, part_stride=9)
     if version == "v2":
-        return _load_v2(path, lines)
+        return _load_sized(path, lines, part_stride=5)
     if version == "v1":
-        return _load_v1(path, lines)
+        parts = _parse_parts(path, lines[1:], stride=5)
+        return Enemy(name=path.stem, width=1.0, height=1.0, parts=parts)
     raise ValueError(f"Unsupported .enemy version '{version}' in {path}")
 
 
-def _load_v2(path: Path, lines: list[str]) -> Enemy:
+def _load_sized(path: Path, lines: list[str], *, part_stride: int) -> Enemy:
     if len(lines) < 3:
-        raise ValueError(f"Truncated v2 .enemy file: {path}")
+        raise ValueError(f"Truncated {lines[0]} .enemy file: {path}")
     width = float(lines[1])
     height = float(lines[2])
-    parts = _parse_parts(path, lines[3:])
+    parts = _parse_parts(path, lines[3:], stride=part_stride)
     return Enemy(name=path.stem, width=width, height=height, parts=parts)
 
 
-def _load_v1(path: Path, lines: list[str]) -> Enemy:
-    parts = _parse_parts(path, lines[1:])
-    return Enemy(name=path.stem, width=1.0, height=1.0, parts=parts)
-
-
-def _parse_parts(path: Path, body: list[str]) -> list[EnemyPartPlacement]:
-    if len(body) % 5 != 0:
-        raise ValueError(f"Expected groups of 5 lines per part in {path}")
+def _parse_parts(path: Path, body: list[str], *, stride: int) -> list[EnemyPartPlacement]:
+    if len(body) % stride != 0:
+        raise ValueError(f"Expected groups of {stride} lines per part in {path}")
 
     parts: list[EnemyPartPlacement] = []
-    for i in range(0, len(body), 5):
+    for i in range(0, len(body), stride):
+        chunk = body[i : i + stride]
+        color = _DEFAULT_COLOR
+        if stride >= 9:
+            color = (
+                clamp_color_channel(int(chunk[5])),
+                clamp_color_channel(int(chunk[6])),
+                clamp_color_channel(int(chunk[7])),
+                clamp_color_channel(int(chunk[8])),
+            )
         parts.append(
             EnemyPartPlacement(
-                partName=body[i],
-                offsetX=float(body[i + 1]),
-                offsetY=float(body[i + 2]),
-                offsetZ=float(body[i + 3]),
-                rotation=float(body[i + 4]),
+                partName=chunk[0],
+                offsetX=float(chunk[1]),
+                offsetY=float(chunk[2]),
+                offsetZ=float(chunk[3]),
+                rotation=float(chunk[4]),
+                colorR=color[0],
+                colorG=color[1],
+                colorB=color[2],
+                colorA=color[3],
             )
         )
         if len(parts) > MAX_ENEMY_PARTS:
@@ -69,6 +81,7 @@ def save_enemy(enemy: Enemy, path: Path) -> None:
         _fmt(enemy.height),
     ]
     for part in enemy.parts:
+        r, g, b, a = part.clamped_color()
         lines.extend(
             [
                 part.partName,
@@ -76,6 +89,10 @@ def save_enemy(enemy: Enemy, path: Path) -> None:
                 _fmt(part.offsetY),
                 _fmt(part.offsetZ),
                 _fmt(part.rotation),
+                str(r),
+                str(g),
+                str(b),
+                str(a),
             ]
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")

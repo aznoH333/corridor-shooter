@@ -14,6 +14,7 @@ from src.models import (
     MAX_ENEMY_PARTS,
     PIXELS_PER_GAME_UNIT,
     Part,
+    clamp_color_channel,
 )
 from src.paths import ENEMIES_DIR, PARTS_DIR
 from src.stats import fold_enemy
@@ -50,6 +51,10 @@ _TAG_PART_X = "enemy_part_x"
 _TAG_PART_Y = "enemy_part_y"
 _TAG_PART_Z = "enemy_part_z"
 _TAG_PART_ROT = "enemy_part_rot"
+_TAG_PART_R = "enemy_part_color_r"
+_TAG_PART_G = "enemy_part_color_g"
+_TAG_PART_B = "enemy_part_color_b"
+_TAG_PART_A = "enemy_part_color_a"
 _TAG_CANVAS = "enemy_canvas"
 _TAG_CANVAS_HINT = "enemy_canvas_hint"
 _TAG_CHECKER_TEX = "enemy_checker_texture"
@@ -159,10 +164,11 @@ def build_enemy_designer(*, parent: int | str) -> None:
                     )
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Apply shift", callback=_on_shift_all_parts)
-                    dpg.add_button(label="←", width=28, callback=lambda: _nudge_all_parts(-1, 0))
-                    dpg.add_button(label="→", width=28, callback=lambda: _nudge_all_parts(1, 0))
-                    dpg.add_button(label="↑", width=28, callback=lambda: _nudge_all_parts(0, -1))
-                    dpg.add_button(label="↓", width=28, callback=lambda: _nudge_all_parts(0, 1))
+                with dpg.group(horizontal=True):
+                    dpg.add_button(label="left", callback=lambda: _nudge_all_parts(-1, 0))
+                    dpg.add_button(label="up", callback=lambda: _nudge_all_parts(0, -1))
+                    dpg.add_button(label="right", callback=lambda: _nudge_all_parts(1, 0))
+                    dpg.add_button(label="down", callback=lambda: _nudge_all_parts(0, 1))
                 dpg.add_spacer(height=4)
                 dpg.add_text("Final stats")
                 dpg.add_text("health: —", tag=_TAG_FINAL_HEALTH)
@@ -216,6 +222,47 @@ def build_enemy_designer(*, parent: int | str) -> None:
                         tag=_TAG_PART_ROT,
                         width=140,
                         format="%.3g",
+                        callback=_on_placement_edited,
+                    )
+                    dpg.add_text("Color (subtractive RGBA)")
+                    dpg.add_slider_int(
+                        label="R",
+                        tag=_TAG_PART_R,
+                        width=180,
+                        default_value=255,
+                        min_value=0,
+                        max_value=255,
+                        clamped=True,
+                        callback=_on_placement_edited,
+                    )
+                    dpg.add_slider_int(
+                        label="G",
+                        tag=_TAG_PART_G,
+                        width=180,
+                        default_value=255,
+                        min_value=0,
+                        max_value=255,
+                        clamped=True,
+                        callback=_on_placement_edited,
+                    )
+                    dpg.add_slider_int(
+                        label="B",
+                        tag=_TAG_PART_B,
+                        width=180,
+                        default_value=255,
+                        min_value=0,
+                        max_value=255,
+                        clamped=True,
+                        callback=_on_placement_edited,
+                    )
+                    dpg.add_slider_int(
+                        label="A",
+                        tag=_TAG_PART_A,
+                        width=180,
+                        default_value=255,
+                        min_value=0,
+                        max_value=255,
+                        clamped=True,
                         callback=_on_placement_edited,
                     )
                 dpg.add_spacer(height=8)
@@ -454,6 +501,11 @@ def _refresh_part_ui() -> None:
         dpg.set_value(_TAG_PART_Y, placement.offsetY)
         dpg.set_value(_TAG_PART_Z, placement.offsetZ)
         dpg.set_value(_TAG_PART_ROT, math.degrees(placement.rotation))
+        r, g, b, a = placement.clamped_color()
+        dpg.set_value(_TAG_PART_R, r)
+        dpg.set_value(_TAG_PART_G, g)
+        dpg.set_value(_TAG_PART_B, b)
+        dpg.set_value(_TAG_PART_A, a)
         _SUPPRESS_EDIT = False
     else:
         dpg.configure_item(_TAG_PART_FORM, show=False)
@@ -507,6 +559,10 @@ def _on_placement_edited(_sender, _app_data, _user_data) -> None:
     placement.offsetY = float(dpg.get_value(_TAG_PART_Y))
     placement.offsetZ = float(dpg.get_value(_TAG_PART_Z))
     placement.rotation = math.radians(float(dpg.get_value(_TAG_PART_ROT)))
+    placement.colorR = clamp_color_channel(dpg.get_value(_TAG_PART_R))
+    placement.colorG = clamp_color_channel(dpg.get_value(_TAG_PART_G))
+    placement.colorB = clamp_color_channel(dpg.get_value(_TAG_PART_B))
+    placement.colorA = clamp_color_channel(dpg.get_value(_TAG_PART_A))
     _redraw_canvas()
 
 
@@ -1136,6 +1192,7 @@ def _redraw_canvas() -> None:
             p2,
             p3,
             p4,
+            color=placement.clamped_color(),
             parent=_TAG_CANVAS,
         )
         if index == _SELECTED_PART_IDX:

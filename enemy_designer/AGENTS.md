@@ -69,6 +69,7 @@ Configurable in the enemy designer only:
 | `offsetX`, `offsetY` | Pixel offsets |
 | `offsetZ` | Z / draw order (also used for color calc in-game) |
 | `rotation` | **Radians** in files; UI may show degrees |
+| `colorR`, `colorG`, `colorB`, `colorA` | Integers **0–255**. Subtractive / multiplicative tint: each sprite channel is multiplied by `color / 255`. `(255, 255, 255, 255)` is unaltered; `(255, 0, 0, 255)` keeps only red and alpha. |
 
 Game limit: `MAX_ENEMY_PARTS` = **32**. Enforce in the UI.
 
@@ -135,10 +136,10 @@ picus
 1
 ```
 
-### `.enemy` (v2)
+### `.enemy` (v3)
 
 ```
-v2
+v3
 <width>
 <height>
 <partName>
@@ -146,13 +147,17 @@ v2
 <offsetY>
 <offsetZ>
 <rotation>
+<colorR>
+<colorG>
+<colorB>
+<colorA>
 <partName>
 ...
 ```
 
-`width` / `height` are game units (1 unit = 32 px). Then repeat the 5-line part block once per part, in draw/combine order. Rotation in **radians**. Part offsets in **pixels**. No enemy name inside the file — use the filename stem as the enemy id (e.g. `grunt.enemy`).
+`width` / `height` are game units (1 unit = 32 px). Then repeat the 9-line part block once per part, in draw/combine order. Rotation in **radians**. Part offsets in **pixels**. Color channels are integers 0–255 (subtractive tint). No enemy name inside the file — use the filename stem as the enemy id (e.g. `grunt.enemy`).
 
-Readers still accept **v1** (parts only; width/height default to `1`).
+Readers still accept **v2** (width/height + 5-line part blocks; color defaults to `255 255 255 255`) and **v1** (parts only; width/height default to `1`).
 
 ## UX requirements
 
@@ -167,7 +172,7 @@ Readers still accept **v1** (parts only; width/height default to `1`).
 
 1. Canvas preview of stacked part sprites at their offsets/rotations; respect **z** as draw order.
 2. Add part → pick from loaded `.part` library; place on canvas (drag to set x/y if practical).
-3. Per-selected-part inspectors: x, y, z, rotation (and which part definition).
+3. Per-selected-part inspectors: x, y, z, rotation, RGBA color (and which part definition).
 4. Live **final stats** panel using `combineStats`.
 5. Save/load `.enemy` under `enemies/`. Cap at 32 parts. Include width/height (game units).
 

@@ -38,6 +38,10 @@ class Part:
     stats: EnemyStats = field(default_factory=default_part_stats)
 
 
+def clamp_color_channel(value: int | float) -> int:
+    return max(0, min(255, int(value)))
+
+
 @dataclass
 class EnemyPartPlacement:
     """Placed part on an enemy (EnemyPart in C)."""
@@ -47,6 +51,20 @@ class EnemyPartPlacement:
     offsetY: float = 0.0
     offsetZ: float = 0.0
     rotation: float = 0.0  # radians in files
+    # Subtractive / multiplicative tint: sprite_channel * color / 255.
+    # (255, 255, 255, 255) leaves the sprite unchanged.
+    colorR: int = 255
+    colorG: int = 255
+    colorB: int = 255
+    colorA: int = 255
+
+    def clamped_color(self) -> tuple[int, int, int, int]:
+        return (
+            clamp_color_channel(self.colorR),
+            clamp_color_channel(self.colorG),
+            clamp_color_channel(self.colorB),
+            clamp_color_channel(self.colorA),
+        )
 
 
 # Match ../src/enemies.h
