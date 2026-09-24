@@ -7,7 +7,7 @@
 typedef struct Entity Entity;
 typedef struct GameState GameState;
 
-#define ENTITY_DATA_SIZE 1024
+#define ENTITY_DATA_SIZE 4089
 
 
 
@@ -104,8 +104,8 @@ struct GameState {
 
 
 World convertToWorld(GameState* state);
-GameState createNextFrame(GameState* currentState);
-GameState initEmptyGame();
+GameState* createNextFrame(GameState* currentState);
+GameState* initEmptyGame();
 EntityLight emptyLight();
 // world manipulation functions
 void addEntity(GameState* state, Entity entity, void* data, int dataSize);

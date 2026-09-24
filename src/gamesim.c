@@ -249,23 +249,12 @@ World convertToWorld(GameState* state) {
 }
 
 
-GameState createNextFrame(GameState* currentState) {
-    GameState nextFrame = initEmptyGame();
+GameState* createNextFrame(GameState* currentState) {
+    GameState* nextFrame = initEmptyGame();
     
-
-
-    // run updates
-
-
-
-
-
 
     // todo update here
-    nextFrame.map = currentState->map;
-
-
-    
+    nextFrame->map = currentState->map;
 
     { // update entities
         
@@ -286,18 +275,18 @@ GameState createNextFrame(GameState* currentState) {
         for (int i = 0; i < currentState->entities.count; ++i) {
             if (updateResults[i]) {
                 Entity* entity = &currentState->entities.values[i];
-                pushEntity(&nextFrame, entity);
+                pushEntity(nextFrame, entity);
             }
         }
     }
 
     { // update camera
-        nextFrame.camera = currentState->camera;
-        nextFrame.camera.screenShake = max(nextFrame.camera.screenShake * 0.5 , 0);
+        nextFrame->camera = currentState->camera;
+        nextFrame->camera.screenShake = max(nextFrame->camera.screenShake * 0.5 , 0);
     }
 
     { // update time
-        nextFrame.internalTimer = currentState->internalTimer + 1;
+        nextFrame->internalTimer = currentState->internalTimer + 1;
     }
 
 
@@ -306,28 +295,32 @@ GameState createNextFrame(GameState* currentState) {
 
 
 
-GameState initEmptyGame() {
-    return (GameState) {
-        .map = (GameMap) {
-            .length = 90.0f,
-            .width = 7.5f,
-            .ceilingHeight = 4.5f
-        },
-
-        .camera = (GameCamera) {
-            .distance = -9999.0f,
-            .screenShake = 0
-        },
-        .entities = (GameEntities){
-            .values = {0},
-            .count = 0
-        },
-        .additionalPlanes = (AdditionalPlanes) {
-            .values = {0},
-            .count = 0
-        },
-        .internalTimer = 0
+GameState* initEmptyGame() {
+    // init
+    GameState* output = malloc(sizeof(GameState));
+    
+    output->map = (GameMap) {
+        .length = 90.0f,
+        .width = 7.5f,
+        .ceilingHeight = 4.5f
     };
+
+    output->camera = (GameCamera) {
+        .distance = -9999.0f,
+        .screenShake = 0
+    };
+    output->entities = (GameEntities){
+        .values = {0},
+        .count = 0
+    };
+    output->additionalPlanes = (AdditionalPlanes) {
+        .values = {0},
+        .count = 0
+    };
+    output->internalTimer = 0;
+    
+    // return
+    return output;
 }
 
 

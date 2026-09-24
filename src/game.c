@@ -12,57 +12,48 @@
 
 int main(void)
 {
-	// setup window
+    printf("here\n");
+    printf("here\n");
+    printf("here\n");
+    printf("here\n");
+    printf("here\n");
+	
+    // setup window
     SetTraceLogLevel(LOG_WARNING); 
     const int screenWidth = 800;
     const int screenHeight = 400;
 
 
-
-
-
-
-    // test file reading
-    LoadedFile file = readFile("./resources/parts/test.part");
-
-    printf("Read file [length : %d ] \n", file.totalLines);
-    for (int i = 0; i < file.totalLines; ++i) {
-        printf("%s \n", file.lines[i]);
-    }
-
-    fileSkip(&file);
-    fileSkip(&file);
-    fileSkip(&file);
-    float res = fileNextF(&file);
-
-    printf("result %f \n", res);
-
-
-
-
-
-	
     InitTextureWindow(screenWidth, screenHeight, 1920, 1080, "empty project");	
 	
     UseShader("./resources/shaders/shaderVert.vs", "./resources/shaders/shaderFrag.fs");
     Use3DShader("./resources/shaders/shader3DVert.vs", "./resources/shaders/shader3DFrag.fs");
     SetTargetFPS(60);
 
+
+    initEnemies();
+
+
     // setup world
     WorldRenderingData renderingData = prepareWorldRenderingData();
-    GameState state = initEmptyGame();
-    player(&state, 0, 0, 0);
+    
+    GameState* state = initEmptyGame();
+
+
+    player(state, 0, 0, 0);
     playMusic("ambience", 1);
-    initEnemies();
     //dummy(&state, 20, 0, 0);
     //SwitchResolution(0, 0, true);
 
-    spawnEnemy(&state, (Vector3){50, 0, 0}, 0);
-    spawnEnemy(&state, (Vector3){50, 0, 1.5}, 0);
-    spawnEnemy(&state, (Vector3){50, 0, -1.5}, 0);
-    spawnEnemy(&state, (Vector3){55, 0, 0}, 0);
+    
+
+    spawnEnemy(state, (Vector3){50, 0, 0}, 0);
+    spawnEnemy(state, (Vector3){50, 0, 1.5}, 0);
+    spawnEnemy(state, (Vector3){50, 0, -1.5}, 0);
+    spawnEnemy(state, (Vector3){55, 0, 0}, 0);
     //spawnEnemy(&state, (Vector3){55, 0, 1}, 0);
     //spawnEnemy(&state, (Vector3){55, 0, -1}, 0);
+    
     
 
     HideCursor();
@@ -75,9 +66,13 @@ int main(void)
         if (IsKeyPressed(KEY_P)) {
             SwitchResolution(0, 0, true);
         }
-        GameState nextFrame = createNextFrame(&state);
-        World renderedWorld = convertToWorld(&state);
+        
+        GameState* nextFrame = createNextFrame(state);
+        World renderedWorld = convertToWorld(state);
+        
+        free(state);
         state = nextFrame;
+        
 
 		Begin3DMode();
         
