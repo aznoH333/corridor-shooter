@@ -1,0 +1,120 @@
+#include "fileReader.h"
+#include "stdio.h"
+#include "math.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Loading#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+LoadedFile readFile(char* filePath) {
+    LoadedFile file = {
+        .lines = {0},
+        .lineNumber = 0,
+        .totalLines = 0
+    };
+
+    // init file
+    FILE* cf = fopen(filePath, "r");
+
+    if (cf == NULL) {
+        printf("Invalid file path %s \n", filePath);
+        return;
+    }
+
+    // read file
+    int nextIndex = 0;
+    while(nextIndex < MAX_FILE_LINES) {
+        char* buffer = fgets(file.lines[nextIndex], LINE_LENGTH, cf);
+
+        // exit if eof
+        if (buffer == NULL) {
+            break;
+        }
+
+        // trim new line
+        for (int i = 0; i < MAX_FILE_LINES; ++i) {
+            char c = buffer[i];
+
+            if (c == '\n' || c == 0) {
+                buffer[i] = 0;
+                break;
+            }
+        }
+
+
+        // inc counter
+        nextIndex++;
+    }
+    file.totalLines = nextIndex;
+
+
+    // close and output
+    fclose(cf);
+    return file;
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Reading#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void fileSkip(LoadedFile* file) {
+    file->lineNumber++;
+}
+
+
+char* fileNext(LoadedFile* file) {
+    return file->lines[file->lineNumber++];
+}
+float fileNextF(LoadedFile* file) {
+    char* line = fileNext(file);
+    
+    // find . index
+    int dotIndex = -1;
+    int preDotLength = 0;
+    int postDotLength = 0;
+
+    for (int i = 0; i < LINE_LENGTH; ++i) {
+        char c = line[i];
+
+        // check if dot
+        if (c == '.') {
+            dotIndex = i;
+            preDotLength = i;
+        }
+
+        // reached end of line
+        if (c == 0) {
+            if (dotIndex == -1) {
+                preDotLength = i;
+            } else {
+                postDotLength = i - preDotLength - 1;
+            }
+            break;
+        }
+
+    }
+
+    // parse predot
+    float preDot = 0;
+    for (int i = 0; i < preDotLength; ++i) {
+        preDot += pow(10, preDotLength - i - 1) * (line[i] - '0');
+    }
+
+    // parse post dot
+    float postDot = 0;
+    if (dotIndex != -1) {
+        for (int i = 0; i < postDotLength; ++i) {
+            postDot += pow(10, - i - 1) * (line[dotIndex + i + 1] - '0');
+        } 
+    }
+    
+    
+    return preDot + postDot;
+}
+int fileNextI(LoadedFile* file) {
+    return fileNextF(file);
+}

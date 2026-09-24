@@ -7,7 +7,7 @@
 #include "gamesim.h"
 #include "entities.h"
 #include "enemies.h"
-
+#include "fileReader.h"
 
 
 int main(void)
@@ -16,6 +16,30 @@ int main(void)
     SetTraceLogLevel(LOG_WARNING); 
     const int screenWidth = 800;
     const int screenHeight = 400;
+
+
+
+
+
+
+    // test file reading
+    LoadedFile file = readFile("./resources/parts/test.part");
+
+    printf("Read file [length : %d ] \n", file.totalLines);
+    for (int i = 0; i < file.totalLines; ++i) {
+        printf("%s \n", file.lines[i]);
+    }
+
+    fileSkip(&file);
+    fileSkip(&file);
+    fileSkip(&file);
+    float res = fileNextF(&file);
+
+    printf("result %f \n", res);
+
+
+
+
 
 	
     InitTextureWindow(screenWidth, screenHeight, 1920, 1080, "empty project");	

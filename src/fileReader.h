@@ -1,0 +1,26 @@
+#ifndef FILE_READER
+#define FILE_READER
+
+
+#define MAX_FILE_LINES 256
+#define LINE_LENGTH 256
+
+typedef struct {
+    char lines[MAX_FILE_LINES][LINE_LENGTH];
+    int lineNumber;
+    int totalLines;
+} LoadedFile;
+
+// loading
+LoadedFile readFile(char* filePath);
+
+// reading
+void fileSkip(LoadedFile* file); // skips line
+char* fileNext(LoadedFile* file); // returns pointer to next char*
+float fileNextF(LoadedFile* file); // parses next as float
+int fileNextI(LoadedFile* file); // parses next as int
+
+
+
+
+#endif
