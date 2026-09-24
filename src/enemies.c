@@ -162,9 +162,16 @@ bool enemyUpdate(Entity* this, GameState* state) {
     { // drawing
         for (int i = 0; i < data->usedParts; ++i) {
             EnemyPart* part = &data->parts[i];
-            
+
+            Vector3 augh = (Vector3) {
+                    .x = this->x,// - (part->z * TEX_SIZE_TO_GAME), 
+                    .y = 2 - (part->y * TEX_SIZE_TO_GAME),//this->y, + i, 
+                    .z = this->z + (part->x * TEX_SIZE_TO_GAME)
+                };
+            printf("what %f\n", augh.y);
+
             addEntityPlane(state, 
-                (Vector3) {this->x, this->y + part->y, this->z + part->x}, 
+                augh, 
                 part->texture, 
                 part->textureSizeX,
                 part->textureSizeY, 
@@ -269,7 +276,6 @@ void loadPart(char* path, int index, struct dirent* dir) {
     stats.action =       fileNextF(&file);        // part action timer
     stats.actionMult =   fileNextF(&file);        // part action mult
 
-    printf("loaded enemy part [%s] \n", name);
     
 
     parts[index - 2] = (EnemyPartDefinition){
@@ -327,7 +333,6 @@ void loadEnemy(char* path, int index, struct dirent* dir) {
         int partIndex = -1;
         for ( int i = 0; i < usedEnemyParts; ++i ) {
             EnemyPartDefinition* part = &parts[i];
-
             bool found = true;
             for ( int j = 0; j < 256; j++ ) {
                 if (part->name[j] != partName[j]) {
@@ -342,7 +347,8 @@ void loadEnemy(char* path, int index, struct dirent* dir) {
             }
         }
         // couldn't find part
-        if (partIndex = -1 ) {
+        if (partIndex == -1 ) {
+            printf("couldn't find part with name %s \n", partName);
             // skip this entry
             for (int i = 0; i < 8; ++i) {
                 fileSkip(&file);
@@ -376,13 +382,15 @@ void loadEnemy(char* path, int index, struct dirent* dir) {
                 .g = g,
                 .b = b,
                 .a = a
-            }
+            },
+            .stats = part->stats
         };
 
     }
 
-    printf("loaded enemy definition for %s \n", dir->d_name);
     definition.usedParts = usedParts;
+    printf("loaded enemy definition for %s [parts:%d] \n", dir->d_name, definition.usedParts);
+
     enemies[usedEnemies++] = definition;
 }
 
@@ -396,112 +404,14 @@ void initEnemies() {
     // load parts
     doForEachFileInFolder("./resources/parts", &loadPart); 
     doForEachFileInFolder("./resources/enemies", &loadEnemy); 
-
-    
-
 }
 
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#Enemy definitions#
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-EnemyPart makeEnemyPart(
-    EnemyPartDefinition definition,
-    float x,
-    float y,
-    float z,
-    float rotation
-) {
-    return (EnemyPart) {
-        // visual
-        .texture = definition.texture,
-        .x = x,
-        .y = y,
-        .z = z,
-        .rotation = rotation,
-        .textureSizeX = definition.textureSizeX,
-        .textureSizeY = definition.textureSizeY,
-
-        // stats
-        .stats = definition.stats
-    };
-}
-
-
-
-void addEnemy(
-    EnemyDefinition def
-) {
-    enemies[usedEnemies++] = def;
-}
-
-/*
-void initEnemies() {
-    addEnemy(
-    (EnemyDefinition){ // debug enemy
-        .width = 1,
-        .height = 1,
-        .parts = { 
-            makeEnemyPart(
-                PART_DEBUG, // part
-                0,          // x offset
-                0,          // y offset
-                0,          // z offset
-                0           // rotation
-            ),
-            makeEnemyPart(
-                PART_DEBUG, // part
-                0,          // x offset
-                2,          // y offset
-                0,          // z offset
-                0           // rotation
-            )
-        },
-        .usedParts = 2,
-        
-    });
-}
-*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#Spawning functions#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-void genericGuy(GameState* state, Vector3 position) {
-    addEntity(state, (Entity){
-        .texture = noTexture(),
-        .x = position.x,
-        .y = position.y + 1,
-        .z = position.z,
-        .width = 1.0f,
-        .height = 1.0f,
-        .update = &enemyUpdate,
-        .light = emptyLight(),
-        .type = ENTITY_ENEMY,
-    }, &(EnemyData){
-        .actionTimer = 60,
-        .actionTimerMax = 60,
-        .movementDirection = (Vector3) {0},
-        .movementSpeed = 0.2f,
-        .movementVelocity = 0,
-        .deceleration = 0.01,
-        .health = 3,
-        .ai = ENEMY_AI_GRID_APPROACH,
-    },
-        sizeof(EnemyData)
-    );
-}
-*/
 
 
 EnemyStats combineStats(EnemyStats first, EnemyStats second) {
@@ -522,7 +432,7 @@ EnemyStats combineStats(EnemyStats first, EnemyStats second) {
 
 void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
     
-    EnemyDefinition definition = enemies[enemyIndex];
+    EnemyDefinition* definition = &enemies[enemyIndex];
 
     // combine stats
 
@@ -538,12 +448,13 @@ void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
     };
 
 
-    for (int i = 0; i < definition.usedParts; ++i) {
-        EnemyPart part = definition.parts[i];
+    for (int i = 0; i < definition->usedParts; ++i) {
+        EnemyPart* part = &definition->parts[i];
 
-        stats = combineStats(stats, part.stats);
+        stats = combineStats(stats, part->stats);
     }
 
+    printf("spawning enemy [id:%d] [health:%f] [speed:%f] [action:%f]\n",enemyIndex, stats.health, stats.speed, stats.action);
 
 
     // copy the parts array
@@ -557,23 +468,22 @@ void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
         .ai = ENEMY_AI_GRID_APPROACH,
         .stats = stats,
         .parts = {0},
-        .usedParts = definition.usedParts
+        .usedParts = definition->usedParts
     };
 
-    for (int i = 0; i < definition.usedParts; ++i) {
-        data.parts[i] = definition.parts[i];        
+    for (int i = 0; i < definition->usedParts; ++i) {
+        data.parts[i] = definition->parts[i];        
     }
-
 
 
     // spawn entity
     addEntity(state, (Entity){
-        .texture = noTexture(),
+        .texture = simpleTexture("picus", 32, 32),//noTexture(),
         .x = position.x,
-        .y = position.y + definition.height / 2,
+        .y = position.y + definition->height / 2,
         .z = position.z,
-        .width = definition.width,
-        .height = definition.height,
+        .width = definition->width,
+        .height = definition->height,
         .update = &enemyUpdate,
         .light = emptyLight(),
         .type = ENTITY_ENEMY,

@@ -68,8 +68,6 @@ EntityTexture rotatedTextureFull(char* texture, float width, float height, float
 void pushEntity(GameState* state, Entity* entity);
 
 
-// when you multiply a number by this constant you convert from texture coordinates (pixels) to game coordinates
-const float TEX_SIZE_TO_GAME = 0.03125f;
 
 
 const char* groundTexture = "metal_tiled_3";

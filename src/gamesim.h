@@ -9,6 +9,9 @@ typedef struct GameState GameState;
 
 #define ENTITY_DATA_SIZE 4089
 
+// when you multiply a number by this constant you convert from texture coordinates (pixels) to game coordinates
+#define TEX_SIZE_TO_GAME 0.03125f
+
 
 
 
@@ -121,6 +124,7 @@ void addEntityPlane(
     float pitch,
     float roll
 );
+
 
 // camera functions
 void addScreenShake(GameState* state, int ammount);
