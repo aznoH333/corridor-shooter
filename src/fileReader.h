@@ -1,6 +1,8 @@
 #ifndef FILE_READER
 #define FILE_READER
 
+#include "stdbool.h"
+
 
 #define MAX_FILE_LINES 256
 #define LINE_LENGTH 256
@@ -20,7 +22,7 @@ char* fileNext(LoadedFile* file); // returns pointer to next char*
 char* fileNextAlloc256(LoadedFile* file); // allocates 256 bytes and copies the next line to them
 float fileNextF(LoadedFile* file); // parses next as float
 int fileNextI(LoadedFile* file); // parses next as int
-
+bool fileHasNext(LoadedFile* file); // is eof?
 
 
 

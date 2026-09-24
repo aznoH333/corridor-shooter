@@ -32,6 +32,7 @@ typedef struct {
     float rotation;
     float textureSizeX;
     float textureSizeY;
+    Color color;
 
     // stats
     EnemyStats stats;

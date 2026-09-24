@@ -7,7 +7,7 @@
 typedef struct Entity Entity;
 typedef struct GameState GameState;
 
-#define ENTITY_DATA_SIZE 2048
+#define ENTITY_DATA_SIZE 1024
 
 
 

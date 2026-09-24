@@ -5,7 +5,7 @@
 #include "particles.h"
 #include "fileReader.h"
 #include "stdlib.h"
-
+#include "stdbool.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,7 +243,8 @@ typedef struct {
     EnemyStats stats;
 } EnemyPartDefinition;
 
-static EnemyPartDefinition parts[32];
+static EnemyPartDefinition parts[32] = {0};
+static int usedEnemyParts = 0;
 void loadPart(char* path, int index, struct dirent* dir) {
     // first two entries are . and .. (thanks whover designed that)    
     if (index < 2 || index > 32) {return;}
@@ -271,13 +272,15 @@ void loadPart(char* path, int index, struct dirent* dir) {
     printf("loaded enemy part [%s] \n", name);
     
 
-    parts[index] = (EnemyPartDefinition){
+    parts[index - 2] = (EnemyPartDefinition){
         .name = name,
         .texture = texture,
         .textureSizeX = textureSizeX,
         .textureSizeY = textureSizeY,
         .stats = stats
     };
+
+    usedEnemyParts = index - 2;
 
 }
 
@@ -299,7 +302,88 @@ static EnemyDefinition enemies[MAX_ENEMY_DEFINITIONS] = {0};
 static int usedEnemies = 0;
 
 void loadEnemy(char* path, int index, struct dirent* dir) {
+    // init file
+    if (index < 2 || index > MAX_ENEMY_DEFINITIONS) {return;}
+
+    char fullPath[128] = {0};// make path
+    sprintf(&fullPath, "%s/%s", path, dir->d_name);
+
+
+    LoadedFile file = readFile(fullPath);
+    EnemyDefinition definition = {0};
     
+    // read data from file
+                            fileSkip(&file);         // version number
+    definition.width =      fileNextF(&file);        // enemy width
+    definition.height =     fileNextF(&file);        // enemy height
+
+
+
+    // iterate parts
+    int usedParts = 0;
+    while(fileHasNext(&file)) {
+        // find referenced part by name
+        char* partName = fileNext(&file);
+        int partIndex = -1;
+        for ( int i = 0; i < usedEnemyParts; ++i ) {
+            EnemyPartDefinition* part = &parts[i];
+
+            bool found = true;
+            for ( int j = 0; j < 256; j++ ) {
+                if (part->name[j] != partName[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            // stop search
+            if (found) {
+                partIndex = i;
+                break;
+            }
+        }
+        // couldn't find part
+        if (partIndex = -1 ) {
+            // skip this entry
+            for (int i = 0; i < 8; ++i) {
+                fileSkip(&file);
+            }
+            
+            continue;
+        }
+
+        // read part
+        float offsetX      = fileNextF(&file);
+        float offsetY      = fileNextF(&file);
+        float offsetZ      = fileNextF(&file);
+        float rotation     = fileNextF(&file);
+        char r             = fileNextI(&file);
+        char g             = fileNextI(&file);
+        char b             = fileNextI(&file);
+        char a             = fileNextI(&file);
+
+        // build final part
+        EnemyPartDefinition* part = &parts[partIndex];
+        definition.parts[usedParts++] = (EnemyPart) {
+            .texture = part->texture,
+            .x = offsetX,
+            .y = offsetY,
+            .z = offsetZ,
+            .rotation = rotation,
+            .textureSizeX = part->textureSizeX,
+            .textureSizeY = part->textureSizeY,
+            .color = (Color) {
+                .r = r,
+                .g = g,
+                .b = b,
+                .a = a
+            }
+        };
+
+    }
+
+    printf("loaded enemy definition for %s \n", dir->d_name);
+    definition.usedParts = usedParts;
+    enemies[usedEnemies++] = definition;
 }
 
 
@@ -312,6 +396,8 @@ void initEnemies() {
     // load parts
     doForEachFileInFolder("./resources/parts", &loadPart); 
     doForEachFileInFolder("./resources/enemies", &loadEnemy); 
+
+    
 
 }
 

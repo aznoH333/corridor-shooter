@@ -136,3 +136,7 @@ float fileNextF(LoadedFile* file) {
 int fileNextI(LoadedFile* file) {
     return fileNextF(file);
 }
+
+bool fileHasNext(LoadedFile* file) {
+    return file->lineNumber < file->totalLines;
+}
