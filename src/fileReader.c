@@ -93,8 +93,15 @@ float fileNextF(LoadedFile* file) {
     int dotIndex = -1;
     int preDotLength = 0;
     int postDotLength = 0;
+    int sign = 1;
+    int readingIndexStart = 0;
 
-    for (int i = 0; i < LINE_LENGTH; ++i) {
+    if (line[0] == '-') {
+        sign = -1;
+        readingIndexStart = 1;
+    }
+
+    for (int i = readingIndexStart; i < LINE_LENGTH; ++i) {
         char c = line[i];
 
         // check if dot
@@ -117,7 +124,7 @@ float fileNextF(LoadedFile* file) {
 
     // parse predot
     float preDot = 0;
-    for (int i = 0; i < preDotLength; ++i) {
+    for (int i = readingIndexStart; i < preDotLength; ++i) {
         preDot += pow(10, preDotLength - i - 1) * (line[i] - '0');
     }
 
@@ -130,7 +137,7 @@ float fileNextF(LoadedFile* file) {
     }
     
     
-    return preDot + postDot;
+    return (preDot + postDot) * sign;
 }
 
 int fileNextI(LoadedFile* file) {

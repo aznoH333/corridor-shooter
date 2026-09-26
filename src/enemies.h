@@ -42,7 +42,8 @@ typedef struct {
 typedef enum {
     ENEMY_AI_GRID_APPROACH,
     ENEMY_AI_SHIELD_APPROACH,
-    ENEMY_AI_RANGER
+    ENEMY_AI_RANGER,
+    ENEMY_AI_NO_AI
 } EnemyAI;
 
 

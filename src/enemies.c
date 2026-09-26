@@ -163,19 +163,17 @@ bool enemyUpdate(Entity* this, GameState* state) {
         for (int i = 0; i < data->usedParts; ++i) {
             EnemyPart* part = &data->parts[i];
 
-            Vector3 augh = (Vector3) {
-                    .x = this->x,// - (part->z * TEX_SIZE_TO_GAME), 
-                    .y = 2 - (part->y * TEX_SIZE_TO_GAME),//this->y, + i, 
-                    .z = this->z + (part->x * TEX_SIZE_TO_GAME)
-                };
-            printf("what %f\n", augh.y);
 
             addEntityPlane(state, 
-                augh, 
+                (Vector3) {
+                    .x = this->x + (part->z), 
+                    .y = this->y + (part->y), 
+                    .z = this->z + (part->x)
+                }, 
                 part->texture, 
                 part->textureSizeX,
                 part->textureSizeY, 
-                WHITE,
+                part->color,
                 0,
                 QUARTER_ROTATION + part->rotation,
                 QUARTER_ROTATION
@@ -278,7 +276,7 @@ void loadPart(char* path, int index, struct dirent* dir) {
 
     
 
-    parts[index - 2] = (EnemyPartDefinition){
+    parts[usedEnemyParts] = (EnemyPartDefinition){
         .name = name,
         .texture = texture,
         .textureSizeX = textureSizeX,
@@ -286,7 +284,9 @@ void loadPart(char* path, int index, struct dirent* dir) {
         .stats = stats
     };
 
-    usedEnemyParts = index - 2;
+    usedEnemyParts++;
+
+    printf("Loaded enemy part [path:%s] [name:%s]\n", fullPath, name);
 
 }
 
@@ -334,6 +334,7 @@ void loadEnemy(char* path, int index, struct dirent* dir) {
         for ( int i = 0; i < usedEnemyParts; ++i ) {
             EnemyPartDefinition* part = &parts[i];
             bool found = true;
+
             for ( int j = 0; j < 256; j++ ) {
                 if (part->name[j] != partName[j]) {
                     found = false;
@@ -358,14 +359,15 @@ void loadEnemy(char* path, int index, struct dirent* dir) {
         }
 
         // read part
-        float offsetX      = fileNextF(&file);
-        float offsetY      = fileNextF(&file);
-        float offsetZ      = fileNextF(&file);
+        float offsetX      = fileNextF(&file) * TEX_SIZE_TO_GAME;
+        float offsetY      =-fileNextF(&file) * TEX_SIZE_TO_GAME;
+        float offsetZ      =-fileNextF(&file) * TEX_SIZE_TO_GAME * 0.5;
         float rotation     = fileNextF(&file);
-        char r             = fileNextI(&file);
-        char g             = fileNextI(&file);
-        char b             = fileNextI(&file);
-        char a             = fileNextI(&file);
+        float r            = fileNextF(&file);
+        float g            = fileNextF(&file);
+        float b            = fileNextF(&file);
+        float a            = fileNextF(&file);
+
 
         // build final part
         EnemyPartDefinition* part = &parts[partIndex];
@@ -465,7 +467,7 @@ void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
         .movementVelocity = 0,
         .deceleration = 0.01,
         .health = stats.health,
-        .ai = ENEMY_AI_GRID_APPROACH,
+        .ai = ENEMY_AI_NO_AI,
         .stats = stats,
         .parts = {0},
         .usedParts = definition->usedParts
@@ -478,7 +480,7 @@ void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
 
     // spawn entity
     addEntity(state, (Entity){
-        .texture = simpleTexture("picus", 32, 32),//noTexture(),
+        .texture = noTexture(),
         .x = position.x,
         .y = position.y + definition->height / 2,
         .z = position.z,

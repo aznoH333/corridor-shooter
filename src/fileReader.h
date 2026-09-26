@@ -4,7 +4,7 @@
 #include "stdbool.h"
 
 
-#define MAX_FILE_LINES 256
+#define MAX_FILE_LINES 512
 #define LINE_LENGTH 256
 
 typedef struct {
