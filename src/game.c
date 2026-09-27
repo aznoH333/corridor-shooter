@@ -50,9 +50,9 @@ int main(void)
     spawnEnemy(state, (Vector3){50, 0, 0}, 0);
     spawnEnemy(state, (Vector3){50, 0, 2}, 1);
     spawnEnemy(state, (Vector3){50, 0, -2}, 2);
-    spawnEnemy(state, (Vector3){55, 0, 3}, 3);
-    //spawnEnemy(&state, (Vector3){55, 0, 1}, 0);
-    //spawnEnemy(&state, (Vector3){55, 0, -1}, 0);
+    spawnEnemy(state, (Vector3){40, 0, -2}, 3);
+    spawnEnemy(state, (Vector3){40, 0, 0}, 4);
+    spawnEnemy(state, (Vector3){40, 0, 2}, 5);
     
     
 

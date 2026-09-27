@@ -88,7 +88,7 @@ typedef struct {
 } GameEntities;
 
 
-#define MAX_ADDITIONAL_PLANES 100
+#define MAX_ADDITIONAL_PLANES 1000
 typedef struct {
     Plane values[MAX_ADDITIONAL_PLANES];
     int count;

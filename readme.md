@@ -17,9 +17,9 @@ win not supported yet :(
 - [X] Fix shader not having a color depth buffer
 - [X] Gore bits
 - [X] fix invincible enemies
-- [ ] incendiary rounds effect
-- [ ] stun rounds effect
-- [ ] enemy armor system
+- [-] incendiary rounds effect
+- [-] stun rounds effect
+- [?] enemy armor system
 - [X] gun weight
 - [X] rework recoil to look more natural
 - [ ] customisable bullet trails
@@ -28,12 +28,13 @@ win not supported yet :(
 - [ ] spin up delay for the miniguns
 
 
-
-# high prio
-1. fix enemies being invincible
-2. enemy part system
-3. better player sprite
-4. some enemy sprites
+# high prio stuff
+- [ ] Rework enemy ais
+- [ ] Enemy attacks
+- [ ] Ranged enemy variants
+- [ ] Rebalance gun damage values to match the enemy stats
+- [ ] Health and dying
+- [ ] World gen?
 
 
 # notes
