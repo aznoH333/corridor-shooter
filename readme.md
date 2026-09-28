@@ -29,7 +29,7 @@ win not supported yet :(
 
 
 # high prio stuff
-- [ ] Rework enemy ais
+- [X] Rework enemy ais
 - [ ] Enemy attacks
 - [ ] Ranged enemy variants
 - [ ] Rebalance gun damage values to match the enemy stats
