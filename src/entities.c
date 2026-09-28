@@ -514,10 +514,10 @@ void player(GameState* state, float x, float y, float z){
     
     
     const int bulletType = 2;
-    const int bulletModifier = 1;
-    const int receiverType = 5;
-    const int receiverModifier = 3;
-    const int magazineType = 1;
+    const int bulletModifier = 0;
+    const int receiverType = 2;
+    const int receiverModifier = 0;
+    const int magazineType = 0;
     
     Gun gun = makeGun(bulletType, bulletModifier, receiverType, receiverModifier, magazineType);
 

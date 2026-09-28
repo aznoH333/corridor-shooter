@@ -39,12 +39,21 @@ typedef struct {
 } EnemyPart;
 
 
-typedef enum {
-    ENEMY_AI_GRID_APPROACH,
-    ENEMY_AI_SHIELD_APPROACH,
-    ENEMY_AI_RANGER,
-    ENEMY_AI_NO_AI
-} EnemyAI;
+typedef struct {
+    
+    // the closest distance to the player the enemy will try to keep (if the enemy is closer it will move back)
+    float attackDistMin; 
+    
+    // the longest distance from which the enemy will attack (the enemy won't attack unless they are atlest this close to the player)
+    float attackDistMax;
+    
+    // a randomized offset from the real travel point that the enemy will travel to
+    // if this is 0 then the enemy will travel exactly to where it wants to
+    // this makes the enemy movement seem more eratic and less robotic
+    float skittishness; 
+} EnemyAIValues;
+
+
 
 
 #define MAX_ENEMY_PARTS 32
@@ -54,8 +63,9 @@ typedef struct {
     Vector3 movementDirection;
     float movementVelocity;
     float deceleration;
+    float movementTimer;
     float health;
-    EnemyAI ai;
+    EnemyAIValues ai;
     EnemyStats stats;
     EnemyPart parts[MAX_ENEMY_PARTS];
     int usedParts;

@@ -127,7 +127,7 @@ GunElement bulletTypes[] = {
         .weight = 10,
         .weightMultiplier = 1,
 
-        .damage = 1.0,
+        .damage = 9.0,
         .damageMultiplier = 1.0,
 
         .projectiles = 1.0,
@@ -182,7 +182,7 @@ GunElement bulletTypes[] = {
         .weight = 20,
         .weightMultiplier = 1,
 
-        .damage = 0.6,
+        .damage = 5,
         .damageMultiplier = 1.0,
 
         .projectiles = 10.0,
@@ -237,7 +237,7 @@ GunElement bulletTypes[] = {
         .recoil = 0.05,
         .recoilMultiplier = 1.0,
 
-        .damage = 4,
+        .damage = 30,
         .damageMultiplier = 1.0,
 
         .projectiles = 1.0,

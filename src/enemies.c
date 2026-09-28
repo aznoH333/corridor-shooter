@@ -7,6 +7,23 @@
 #include "stdlib.h"
 #include "stdbool.h"
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#Enemy ai definition#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static EnemyAIValues enemyAis[] = {
+    { // debug
+        .attackDistMin = 2.5,
+        .attackDistMax = 4.0,
+        .skittishness = 0.5,
+    }
+};
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#Enemy base code#
@@ -17,131 +34,77 @@
 void moveEnemyInDirection(EnemyData* data, Vector3 direction, float velocity) {
     data->movementDirection = Vector3Normalize(direction);
     data->movementVelocity = velocity;
+    data->movementTimer = 1.0f;
+}
+
+void moveEnemyTowardPosition(Entity* this, EnemyData* data, Vector3 target) {
+    Vector3 dir = Vector3Subtract(
+        target,
+        (Vector3) {this->x, this->y, this->z}
+    );
+
+    float distance = Vector3Length(dir);
+
+    // I have no clue what causes the movement system to land at this equation.
+    // But it does.
+    float magicSpeedCalculationFormula = min(data->stats.speed, distance * (2*data->deceleration) / (1 + data->deceleration));
+
+
+    moveEnemyInDirection(data, dir, magicSpeedCalculationFormula);
 }
 
 void enemyShootInDirection(EnemyData* data, Vector3 direction) {
-    // This is intentionaly empty
+    // TODO : attacks
 }
 
 void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
-    // this entire function is just ai slop :(
     
+    // setup variables
     Entity* player = findEntityByType(state, this, ENTITY_PLAYER);
 
     if (player == NULL) {
-        moveEnemyInDirection(data, (Vector3){0, 0, 0}, 0);
         return;
     }
 
-    const float APPROACH_DISTANCE = 3.0f;
-    const float RANGER_DISTANCE = 7.0f;
-    const float Z_MARGIN = 0.35f;
-    const float WALL_MARGIN = 1.0f;
-    const float MIN_MOVE_DISTANCE = 0.01f;
-    float playerDistance = this->x - player->x;
-    float zDifference = player->z - this->z;
-    float halfMapWidth = state->map.width * 0.5f;
-    float halfEnemyWidth = this->width * 0.5f;
-    bool canMoveLeft = this->z - halfEnemyWidth - WALL_MARGIN > -halfMapWidth;
-    bool canMoveRight = this->z + halfEnemyWidth + WALL_MARGIN < halfMapWidth;
-    float zDirection = zDifference > 0 ? 1.0f : -1.0f;
-    Vector3 direction = {0};
-    float movementVelocity = data->stats.speed;
-    float maxMoveDistance = data->stats.speed;
-    float desiredMoveDistance = data->stats.speed;
-    bool shouldLimitMoveDistance = false;
+    Vector3 thisPos = (Vector3) { this->x, this->y, this->z };
+    Vector3 playerPos = (Vector3) { player->x, this->y, player->z };
 
-    if (data->deceleration > 0) {
-        float stepCount = ceilf(data->stats.speed / data->deceleration);
-        maxMoveDistance = stepCount * data->stats.speed - data->deceleration * stepCount * (stepCount - 1.0f) * 0.5f;
-        desiredMoveDistance = maxMoveDistance;
-    }
 
-    if (fabsf(zDifference) <= Z_MARGIN) {
-        zDirection = canMoveLeft && (!canMoveRight || GetRandomValue(0, 1) == 0) ? -1.0f : 1.0f;
-    }
+    // calculate desired move point
+    Vector3 dirToPlayer = Vector3Subtract(
+        playerPos,
+        thisPos
+    );
 
-    if (zDirection < 0 && !canMoveLeft) {
-        zDirection = canMoveRight ? 1.0f : 0.0f;
-    } else if (zDirection > 0 && !canMoveRight) {
-        zDirection = canMoveLeft ? -1.0f : 0.0f;
-    }
+    float distToPlayer = Vector3Length(dirToPlayer);
+    float desiredDist = data->ai.attackDistMin + ((data->ai.attackDistMax - data->ai.attackDistMin) * 0.5);
 
-    switch (data->ai) {
-        case ENEMY_AI_GRID_APPROACH:
-            if (playerDistance > APPROACH_DISTANCE) {
-                if (GetRandomValue(1, 100) <= 80) {
-                    direction = (Vector3){-1, 0, 0};
-                    desiredMoveDistance = playerDistance - APPROACH_DISTANCE;
-                    shouldLimitMoveDistance = true;
-                } else {
-                    direction = (Vector3){0, 0, zDirection};
-                }
-            } else {
-                if (fabsf(zDifference) > Z_MARGIN) {
-                    direction = (Vector3){0, 0, zDirection};
-                    desiredMoveDistance = fabsf(zDifference);
-                    shouldLimitMoveDistance = true;
-                }
-            }
-            break;
 
-        case ENEMY_AI_SHIELD_APPROACH:
-            if (playerDistance > APPROACH_DISTANCE && fabsf(zDifference) <= Z_MARGIN) {
-                direction = (Vector3){-1, 0, 0};
-                desiredMoveDistance = playerDistance - APPROACH_DISTANCE;
-                shouldLimitMoveDistance = true;
-            } else {
-                if (fabsf(zDifference) > Z_MARGIN) {
-                    direction = (Vector3){0, 0, zDirection};
-                    desiredMoveDistance = fabsf(zDifference);
-                    shouldLimitMoveDistance = true;
-                }
-            }
-            break;
 
-        case ENEMY_AI_RANGER:
-            if (playerDistance > RANGER_DISTANCE + Z_MARGIN) {
-                direction = (Vector3){-1, 0, 0};
-                desiredMoveDistance = playerDistance - RANGER_DISTANCE;
-                shouldLimitMoveDistance = true;
-            } else if (playerDistance < RANGER_DISTANCE - Z_MARGIN) {
-                direction = (Vector3){1, 0, 0};
-                desiredMoveDistance = RANGER_DISTANCE - playerDistance;
-                shouldLimitMoveDistance = true;
-            } else {
-                direction = (Vector3){0, 0, zDirection};
-            }
-            break;
-    }
+    Vector3 desiredMovePoint = Vector3Add(
+        playerPos,
+        Vector3Scale(Vector3Normalize(dirToPlayer), -desiredDist)
+    );
 
-    if (shouldLimitMoveDistance) {
-        if (desiredMoveDistance <= MIN_MOVE_DISTANCE) {
-            direction = (Vector3){0};
-            movementVelocity = 0;
-        } else if (desiredMoveDistance < maxMoveDistance && data->deceleration > 0) {
-            float lowVelocity = 0;
-            float highVelocity = data->stats.speed;
+    Vector3 finalMovePoint = desiredMovePoint;
+    
 
-            for (int i = 0; i < 12; ++i) {
-                float testVelocity = (lowVelocity + highVelocity) * 0.5f;
-                float stepCount = ceilf(testVelocity / data->deceleration);
-                float moveDistance = stepCount * testVelocity - data->deceleration * stepCount * (stepCount - 1.0f) * 0.5f;
+    // calculate skittishness
+    Vector3 randomDir = Vector3Normalize((Vector3) {randomFloat(-1, 1), 0, randomFloat(-1, 1)});
+    Vector3 skittishnessOffset = Vector3Scale(randomDir, data->ai.skittishness);
 
-                if (moveDistance > desiredMoveDistance) {
-                    highVelocity = testVelocity;
-                } else {
-                    lowVelocity = testVelocity;
-                }
-            }
+    finalMovePoint = Vector3Add(finalMovePoint, skittishnessOffset);
 
-            movementVelocity = lowVelocity;
-        } else if (data->deceleration <= 0) {
-            movementVelocity = min(data->stats.speed, desiredMoveDistance);
-        }
-    }
 
-    moveEnemyInDirection(data, direction, movementVelocity);
+
+    // move to point
+    moveEnemyTowardPosition(
+        this,
+        data, 
+        finalMovePoint
+    );
+
+    // moveEnemyInDirection(data, direction, movementVelocity);
 
 }
 
@@ -193,8 +156,10 @@ bool enemyUpdate(Entity* this, GameState* state) {
     }
 
     { // moving
-        Vector3 next = Vector3Add((Vector3){.x = this->x, .y = this->y, .z = this->z}, Vector3Scale(data->movementDirection, data->movementVelocity));
-        data->movementVelocity = approachNumber(data->movementVelocity, 0, data->deceleration);
+        Vector3 next = Vector3Add((Vector3){.x = this->x, .y = this->y, .z = this->z}, Vector3Scale(data->movementDirection, data->movementVelocity * data->movementTimer));
+        
+        data->movementTimer = approachNumber(data->movementTimer, 0, data->deceleration);
+        //data->movementVelocity = approachNumber(data->movementVelocity, 0, data->deceleration);
 
         Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
 
@@ -465,9 +430,10 @@ void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
         .actionTimer = stats.action,
         .movementDirection = (Vector3) {0},
         .movementVelocity = 0,
-        .deceleration = 0.01,
+        .deceleration = 0.05,
+        .movementTimer = 0,
         .health = stats.health,
-        .ai = ENEMY_AI_NO_AI,
+        .ai = enemyAis[0],
         .stats = stats,
         .parts = {0},
         .usedParts = definition->usedParts

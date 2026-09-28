@@ -34,7 +34,14 @@ win not supported yet :(
 - [ ] Ranged enemy variants
 - [ ] Rebalance gun damage values to match the enemy stats
 - [ ] Health and dying
-- [ ] World gen?
+
+
+# long term goals
+- [ ] World gen
+- [ ] Hud
+- [ ] Level continuity
+- [ ] Menu + ui
+- [ ] Some way to get guns
 
 
 # notes

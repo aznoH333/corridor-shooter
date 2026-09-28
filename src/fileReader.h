@@ -2,6 +2,7 @@
 #define FILE_READER
 
 #include "stdbool.h"
+#include "stdlib.h"
 
 
 #define MAX_FILE_LINES 512
