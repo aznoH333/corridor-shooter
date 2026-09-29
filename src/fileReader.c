@@ -21,7 +21,7 @@ LoadedFile readFile(char* filePath) {
 
     if (cf == NULL) {
         printf("Invalid file path %s \n", filePath);
-        return;
+        return (LoadedFile){0};
     }
 
     // read file

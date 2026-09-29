@@ -1,7 +1,8 @@
 #include "utils.h"
 #include "stdbool.h"
 #include "string.h"
-
+#include "raylib.h"
+#include "rlgl.h"
 
 // -------------------------------------------------------------------------------------
 // Hashmap
