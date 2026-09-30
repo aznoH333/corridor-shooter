@@ -50,8 +50,6 @@ vec3 applyPointLight() {
 }
 
 
-
-
 void main()
 {
 
