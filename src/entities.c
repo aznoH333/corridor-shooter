@@ -499,10 +499,10 @@ bool playerUpdate(Entity* this, GameState* state) {
     { // hud
 
         // draw ammo
-        insertNumberInString(data->hud.ammoCounter, 0, 2, data->ammo); // worlds shitties sprintf
+        insertNumberInString(data->hud.ammoCounter, 0, 2, data->ammo); // worlds shittiest sprintf
         insertNumberInString(data->hud.ammoCounter, 4, 6, data->gun.magazineSize); 
 
-        drawText(data->hud.ammoCounter, 1550, 1000, 80, WHITE);
+        drawText(data->hud.ammoCounter, 1450, 900, 80, WHITE);
     }
 
 

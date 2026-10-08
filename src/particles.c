@@ -424,7 +424,7 @@ void blood(GameState* state, Vector3 position, Vector3 direction, float speed){
 
 
 void bloodSplash(GameState* state, Vector3 origin, float amount){
-    int count = ((int)min(pow(amount, 2), 50) + GetRandomValue(0, 5));
+    int count = ((int)min(pow(ceil(amount / 10.0f), 2), 50) + GetRandomValue(0, 5));
     
     
     float speedMin = 0.05;

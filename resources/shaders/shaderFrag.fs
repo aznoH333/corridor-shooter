@@ -7,8 +7,8 @@ uniform sampler2D texture0; // raylib default texture uniform name
 
 out vec4 finalColor;
 
-const float RENDER_WIDTH = 600.0;
-const float RENDER_HEIGHT = 400.0;
+const float RENDER_WIDTH = 400.0;
+const float RENDER_HEIGHT = 200.0;
 
 vec2 pixelizeTexCoord(vec2 texCoord)
 {
@@ -17,71 +17,81 @@ vec2 pixelizeTexCoord(vec2 texCoord)
 }
 
 
-float adjustForContrast(float value) {
-    // base version
-    //return 1 - pow(1 - pow(value, 2), 2);
-
-    //return 1 - pow(1 - pow(value, 4), 4);
-
-
-    // test
-    
-    return 
-    max(
-        1 - pow(1 - pow(value, 4), 4),
-        0 //value
-    );
-
-}
-
 
 void main()
 {
     
 	
-    vec2 pixelTexCoord = fragTexCoord;//pixelizeTexCoord(fragTexCoord);
-	vec4 tex = texture(texture0, pixelTexCoord);
-    vec4 color = tex * fragColor;
-
-
-    // increase contrast
-    // this exaggerates the bright colors and makes dark colors darker
-    //float colorValue = max(color.r, max(color.b, color.g));//(color.r + color.g + color.b) / 3;
-    //float adjustedR = adjustForContrast(color.r);
-    //float adjustedG = adjustForContrast(color.g);
-    //float adjustedB = adjustForContrast(color.b);
-    //float contrastValue = adjustForContrast(colorValue);
     
-    float smallestColorVal = min(color.r, min(color.g, color.b));
-    float largestColorVal = max(color.r, max(color.g, color.b));
     
-    // how close is the color to being "white" (dist of largest to smallest color)
-    float whiteness = 1 - (largestColorVal - smallestColorVal);
+    
+    
+    
+    
+    // normal rendering
+    //vec2 pixelTexCoord = pixelizeTexCoord(fragTexCoord);
+	//vec4 tex = texture(texture0, pixelTexCoord);    
+    //vec4 color = tex * fragColor;
 
-    // adjust for brightness
-    // float brightness = largestColorVal; 
+
     
 
-    float poo = whiteness;
-    color = vec4(
-        poo, //max(adjustedR, color.r), 
-        poo, //max(adjustedG, color.g), 
-        poo, //max(adjustedB, color.b), 
-    1.0);
 
-    //color = vec4(contrastValue, contrastValue, contrastValue, 1.0);
+    // chromatic aberation
+    vec2 center = vec2(0.5, 0.5);
+
+    float chromaFactor = ((length(fragTexCoord - center)) * 0.05);
+    // chromaFactor = 1 - pow(1 - pow(chromaFactor, 4), 4);
+    chromaFactor = 1 - chromaFactor;
+
+    vec2 pixelTexCoord = pixelizeTexCoord(fragTexCoord);
+    vec2 rTexCoord = (fragTexCoord - center) * chromaFactor * 0.98 + center;
+    vec2 gTexCoord = (fragTexCoord - center) * chromaFactor + center;
+    vec2 bTexCoord = (fragTexCoord - center) * chromaFactor * 0.99 +  center;
+
+
+    vec4 rTex = texture(texture0, pixelizeTexCoord(rTexCoord));
+    vec4 bTex = texture(texture0, pixelizeTexCoord(gTexCoord));
+    vec4 gTex = texture(texture0, pixelizeTexCoord(bTexCoord));
+
+    vec4 color = vec4(rTex.r, gTex.g, bTex.b, 1.0) * fragColor;
+
+    
+
+    // crt
+    vec2 coord = pixelizeTexCoord(fragTexCoord);
+    float crtValue = 1 - (abs(sin(coord.y * 200.0)) * 0.1);
+
+    color.r *= crtValue;
+    color.g *= crtValue;
+    color.b *= crtValue;
+
+
+    // black borders
+    float blackness = 1 - length(center - pixelizeTexCoord(fragTexCoord));
+
+    color.r *= blackness;
+    color.g *= blackness;
+    color.b *= blackness;
+    
 
 
 
     // color tint
- //   const vec4 tint = vec4(0.44, 0.26, 0.08, 1.0);
- //   const float tintStrength = 0.05;
- //   color = vec4(
- //       mix(color.r, tint.r, tintStrength),
- //       mix(color.g, tint.g, tintStrength),
- //       mix(color.g, tint.b, tintStrength),
- //       1.0
- //   );
+    
+    // green 25 147 82 vec4(0.10, 0.58, 0.32, 1.0)
+    // brown vec4(0.44, 0.26, 0.08, 1.0)
+    // bright red vec4(1.0, 0.0, 0.0, 1.0)
+    // black ? vec(0.0, 0.0, 0.0, 1.0)
+
+    const vec4 tint = vec4(0.0, 0.0, 0.0, 1.0);
+    const float tintStrength = 0.05;
+    color = vec4(
+        mix(color.r, tint.r, tintStrength),
+        mix(color.g, tint.g, tintStrength),
+        mix(color.b, tint.b, tintStrength),
+        1.0
+    );
 
 
 
