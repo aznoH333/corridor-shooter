@@ -36,6 +36,15 @@ EntityTexture noTexture() {
     };
 }
 
+EntityTexture simpleColoredTexture(char* texture, float width, float height, Color color) {
+    EntityTexture t = simpleTexture(texture, width, height);
+
+    t.color = color;
+
+    return t;
+}
+
+
 
 EntityTexture rotatedTexture(char* texture, float width, float height, float rotation) {
     EntityTexture t = simpleTexture(texture, width, height);

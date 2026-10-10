@@ -21,20 +21,10 @@ vec2 pixelizeTexCoord(vec2 texCoord)
 void main()
 {
     
-	
-    
-    
-    
-    
-    
-    
     // normal rendering
     //vec2 pixelTexCoord = pixelizeTexCoord(fragTexCoord);
 	//vec4 tex = texture(texture0, pixelTexCoord);    
     //vec4 color = tex * fragColor;
-
-
-    
 
 
     // chromatic aberation
@@ -82,7 +72,7 @@ void main()
     // green 25 147 82 vec4(0.10, 0.58, 0.32, 1.0)
     // brown vec4(0.44, 0.26, 0.08, 1.0)
     // bright red vec4(1.0, 0.0, 0.0, 1.0)
-    // black ? vec(0.0, 0.0, 0.0, 1.0)
+    // black ? vec4(0.0, 0.0, 0.0, 1.0)
 
     const vec4 tint = vec4(0.0, 0.0, 0.0, 1.0);
     const float tintStrength = 0.05;

@@ -6,6 +6,7 @@
 #include "fileReader.h"
 #include "stdlib.h"
 #include "stdbool.h"
+#include "entities.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,6 +19,7 @@ static EnemyAIValues enemyAis[] = {
         .attackDistMin = 2.5,
         .attackDistMax = 4.0,
         .skittishness = 0.5,
+        .attackChance = 0.85,
     }
 };
 
@@ -53,10 +55,6 @@ void moveEnemyTowardPosition(Entity* this, EnemyData* data, Vector3 target) {
     moveEnemyInDirection(data, dir, magicSpeedCalculationFormula);
 }
 
-void enemyShootInDirection(EnemyData* data, Vector3 direction) {
-    // TODO : attacks
-}
-
 void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
     
     // setup variables
@@ -80,31 +78,61 @@ void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
     float desiredDist = data->ai.attackDistMin + ((data->ai.attackDistMax - data->ai.attackDistMin) * 0.5);
 
 
-
-    Vector3 desiredMovePoint = Vector3Add(
-        playerPos,
-        Vector3Scale(Vector3Normalize(dirToPlayer), -desiredDist)
-    );
-
-    Vector3 finalMovePoint = desiredMovePoint;
+    // check if should attack
+    if (
+        distToPlayer < data->ai.attackDistMax && 
+        distToPlayer > data->ai.attackDistMin && 
+        randomChance(data->ai.attackChance)) 
+    { // attack code
     
-
-    // calculate skittishness
-    Vector3 randomDir = Vector3Normalize((Vector3) {randomFloat(-1, 1), 0, randomFloat(-1, 1)});
-    Vector3 skittishnessOffset = Vector3Scale(randomDir, data->ai.skittishness);
-
-    finalMovePoint = Vector3Add(finalMovePoint, skittishnessOffset);
+        // calculate direction
+        Vector3 attackDirection = dirToPlayer;
 
 
+        // set projectile data
+        ProjectileInitData pData = (ProjectileInitData){
+            .velocity = 0.3,
+            .maxDistanceTraveled = 3,
+            .lightRadius = 0,
+            .damage = 1,
+            .texture = simpleTexture("enemy_claw_attack_0001", 23, 22),
+            .targetType = ENTITY_PLAYER,
+            .fadeParticleCount = 2,
+            .fadeParticleDistance = 0.1f,
+        };
+        
+        // spawn projectile
+        projectile(
+            state,
+            thisPos,
+            attackDirection,
+            pData
+        );
+    
+    
+    } else { // movement code
+        Vector3 desiredMovePoint = Vector3Add(
+            playerPos,
+            Vector3Scale(Vector3Normalize(dirToPlayer), -desiredDist)
+        );
 
-    // move to point
-    moveEnemyTowardPosition(
-        this,
-        data, 
-        finalMovePoint
-    );
+        Vector3 finalMovePoint = desiredMovePoint;
+        
 
-    // moveEnemyInDirection(data, direction, movementVelocity);
+        // calculate skittishness
+        Vector3 randomDir = Vector3Normalize((Vector3) {randomFloat(-1, 1), 0, randomFloat(-1, 1)});
+        Vector3 skittishnessOffset = Vector3Scale(randomDir, data->ai.skittishness);
+
+        finalMovePoint = Vector3Add(finalMovePoint, skittishnessOffset);
+
+
+        // move to point
+        moveEnemyTowardPosition(
+            this,
+            data, 
+            finalMovePoint
+        );
+    }
 
 }
 

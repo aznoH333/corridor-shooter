@@ -30,6 +30,7 @@ typedef struct {
 
 EntityTexture noTexture();
 EntityTexture simpleTexture(char* texture, float width, float height);
+EntityTexture simpleColoredTexture(char* texture, float width, float height, Color color);
 EntityTexture rotatedTexture(char* texture, float width, float height, float rotation);
 EntityTexture rotatedTextureFull(char* texture, float width, float height, float yaw, float pitch, float roll);
 

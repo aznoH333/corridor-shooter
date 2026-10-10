@@ -9,26 +9,24 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#Bullet#
+//#Projectile#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef struct {
-    float velocity;
+    ProjectileInitData initData;
     float distanceTraveled;
-    float maxDistanceTraveled;
     Vector3 direction;
-    float lightRadius;
     int internalTimer;
-    float damage;
-} BulletData;
+} ProjectileData;
 
-bool bulletUpdate(Entity* this, GameState* state) {
-    BulletData* data = (BulletData*) &this->data;
+bool projectileUpdate(Entity* this, GameState* state) {
+    ProjectileData* data = (ProjectileData*) &this->data;
+    ProjectileInitData* iData = &data->initData;
 
     Vector3 direction = Vector3Normalize(data->direction);
 
 
-    Vector3 next = (Vector3) {this->x + direction.x * data->velocity, this->y + direction.y * data->velocity, this->z + direction.z * data->velocity};
+    Vector3 next = (Vector3) {this->x + direction.x * iData->velocity, this->y + direction.y * iData->velocity, this->z + direction.z * iData->velocity};
 
 
 
@@ -44,16 +42,16 @@ bool bulletUpdate(Entity* this, GameState* state) {
 
 
     // enemy collisions
-    Entity* collidedEnemy = getCollidingEntityByType(state, this, ENTITY_ENEMY);
+    Entity* collidedEnemy = getCollidingEntityByType(state, this, iData->targetType);
 
-    if (collidedEnemy != NULL) {
+    if (collidedEnemy != NULL && iData->targetType == ENTITY_ENEMY) {
         
         EnemyData* enemyData = (EnemyData*)(&collidedEnemy->data);
         
         bloodPuff(state, (Vector3){this->x, this->y, this->z});
         playSound("flesh_impact_fast", 0.3, 0.3);
 
-        enemyTakeDamage(collidedEnemy, enemyData, state, (Vector3){this->x, this->y, this->z}, data->damage);
+        enemyTakeDamage(collidedEnemy, enemyData, state, (Vector3){this->x, this->y, this->z}, iData->damage);
 
         return false;
     }
@@ -61,21 +59,21 @@ bool bulletUpdate(Entity* this, GameState* state) {
 
     // distance
     data->distanceTraveled += 
-        fabs(direction.x) * data->velocity + 
-        fabs(direction.y) * data->velocity + 
-        fabs(direction.z) * data->velocity;
+        fabs(direction.x) * iData->velocity + 
+        fabs(direction.y) * iData->velocity + 
+        fabs(direction.z) * iData->velocity;
 
-    if (data->distanceTraveled > data->maxDistanceTraveled) {
+    if (data->distanceTraveled > iData->maxDistanceTraveled) {
         return false;
     }
-    this->light.radius = data->lightRadius * (1 - (data->distanceTraveled / data->maxDistanceTraveled));
+    this->light.radius = iData->lightRadius * (1 - (data->distanceTraveled / iData->maxDistanceTraveled));
 
 
     // spawn fade particles
     if (data->internalTimer > 0) {
         Vector3 particlePosition = {this->x, this->y, this->z};
     
-        for (int i = 1; i < 5; ++i) {
+        for (int i = 1; i < iData->fadeParticleCount; ++i) {
             addEntityPlane(state, 
                 particlePosition, 
                 this->texture.texture, 
@@ -87,9 +85,9 @@ bool bulletUpdate(Entity* this, GameState* state) {
                 QUARTER_ROTATION
             );
 
-            particlePosition.x -= data->direction.x * (i * 0.05f);
-            particlePosition.y -= data->direction.y * (i * 0.05f);
-            particlePosition.z -= data->direction.z * (i * 0.05f);
+            particlePosition.x -= direction.x * (i * iData->fadeParticleDistance);
+            particlePosition.y -= direction.y * (i * iData->fadeParticleDistance);
+            particlePosition.z -= direction.z * (i * iData->fadeParticleDistance);
 
         }
     }
@@ -106,32 +104,26 @@ bool bulletUpdate(Entity* this, GameState* state) {
 }
 
 
-void bullet(GameState* state, float x, float y, float z, float velocity, Vector3 direction, float damage, Color color) {
+void projectile(GameState* state, Vector3 position, Vector3 direction, ProjectileInitData data) {
     
-    EntityTexture texture = simpleTexture("bullet_2", 2, 2);
-    texture.color = color;
+    EntityTexture texture = data.texture;
     
     addEntity(state, (Entity) {
         .texture = texture,
-        .x = x,
-        .y = y,
-        .z = z,
+        .x = position.x,
+        .y = position.y,
+        .z = position.z,
         .width = 0.1f,
         .height = 0.1f,
-        .update = &bulletUpdate,
+        .update = &projectileUpdate,
         .light = emptyLight(),
         .type = ENTITY_BULLET,
-        
-
-    }, &(BulletData){
-        .velocity = velocity,
+    }, &(ProjectileData){
+        .initData = data,
         .distanceTraveled = 0,
         .direction = direction,
-        .maxDistanceTraveled = 20,
-        .lightRadius = 5,
         .internalTimer = 0,
-        .damage = damage,
-    }, sizeof(BulletData));
+    }, sizeof(ProjectileData));
 }
 
 
@@ -398,7 +390,18 @@ bool playerUpdate(Entity* this, GameState* state) {
                     direction = Vector3Add(direction, Vector3Scale(spreadVector, spreadMultiplier));
 
 
-                    bullet(state, this->x, this->y, this->z, data->gun.bulletVelocity, direction, data->gun.damage, data->gun.bulletColor);
+                    ProjectileInitData pData = (ProjectileInitData){
+                        .velocity = data->gun.bulletVelocity,
+                        .maxDistanceTraveled = 20,
+                        .lightRadius = 5,
+                        .damage = data->gun.damage,
+                        .texture = simpleColoredTexture("bullet_2", 2, 2, data->gun.bulletColor),
+                        .targetType = ENTITY_ENEMY,
+                        .fadeParticleCount = 5,
+                        .fadeParticleDistance = 0.05f,
+                    };
+
+                    projectile(state, (Vector3){this->x, this->y, this->z}, direction, pData);
                 }
 
                 // add recoil

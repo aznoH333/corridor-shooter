@@ -51,6 +51,10 @@ typedef struct {
     // if this is 0 then the enemy will travel exactly to where it wants to
     // this makes the enemy movement seem more eratic and less robotic
     float skittishness; 
+
+    // a chance that the enemy will attack
+    // if the roll fails the enemy moves instead
+    float attackChance;
 } EnemyAIValues;
 
 
