@@ -92,13 +92,17 @@ void enemyAiDecision(Entity* this, EnemyData* data, GameState* state) {
         // set projectile data
         ProjectileInitData pData = (ProjectileInitData){
             .velocity = 0.3,
-            .maxDistanceTraveled = 3,
+            .maxDistanceTraveled = 2,
             .lightRadius = 0,
-            .damage = 1,
+            .damage = 10,
             .texture = simpleTexture("enemy_claw_attack_0001", 23, 22),
             .targetType = ENTITY_PLAYER,
-            .fadeParticleCount = 2,
-            .fadeParticleDistance = 0.1f,
+            .trailParticleCount = 2,
+            .trailParticleDistance = 0.1f,
+            .fadeInTime = 3,
+            .fadeOutTime = 10,
+            .collideWithTerrain = false,
+            .deceleration = 0.01f,
         };
         
         // spawn projectile

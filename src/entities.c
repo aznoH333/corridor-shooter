@@ -12,11 +12,19 @@
 //#Projectile#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// predeclare take damage function so that it can be referenced by the projectile update
+void playerTakeDamage(Entity* player, float damage, GameState* state);
+
 typedef struct {
     ProjectileInitData initData;
     float distanceTraveled;
     Vector3 direction;
     int internalTimer;
+    int fadeOutTimer;
+    bool despawning;
+    bool hitTarget;
+    float velocity;
 } ProjectileData;
 
 bool projectileUpdate(Entity* this, GameState* state) {
@@ -26,45 +34,67 @@ bool projectileUpdate(Entity* this, GameState* state) {
     Vector3 direction = Vector3Normalize(data->direction);
 
 
-    Vector3 next = (Vector3) {this->x + direction.x * iData->velocity, this->y + direction.y * iData->velocity, this->z + direction.z * iData->velocity};
+    Vector3 next = (Vector3) {this->x + direction.x * data->velocity, this->y + direction.y * data->velocity, this->z + direction.z * data->velocity};
 
 
 
-    // wall collisions
-    Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
+    
+    if (data->hitTarget == false) 
+    {   // collision detection
 
-    if (Vector3Length(collisions) > 0.1f) {
-        smokePuff(state, (Vector3){this->x, this->y, this->z});
-        playSound("impact_stone", 2, 0.3);
-        
-        return false;
+        // wall collisions
+        Vector3 collisions = checkWorldCollision(next.x, next.y, next.z, this->width, this->height, &state->map);
+
+        if (Vector3Length(collisions) > 0.1f && iData->collideWithTerrain) {
+            smokePuff(state, (Vector3){this->x, this->y, this->z});
+            playSound("impact_stone", 2, 0.3);
+            
+            data->despawning = true;
+            data->hitTarget = true;
+        }
+
+
+        // entity collisions
+        Entity* collidedEnemy = getCollidingEntityByType(state, this, iData->targetType);
+
+        if (collidedEnemy != NULL) 
+        { 
+            switch (iData->targetType) {
+
+                case ENTITY_ENEMY: // enemy collision handling 
+                    EnemyData* enemyData = (EnemyData*)(&collidedEnemy->data);
+            
+                    bloodPuff(state, (Vector3){this->x, this->y, this->z});
+                    playSound("flesh_impact_fast", 0.3, 0.3);
+
+                    enemyTakeDamage(collidedEnemy, enemyData, state, (Vector3){this->x, this->y, this->z}, iData->damage);
+                    data->despawning = true;
+                    data->hitTarget = true;
+                break;
+                
+                case ENTITY_PLAYER: // player collision handling
+                    playerTakeDamage(collidedEnemy, iData->damage, state);
+                    data->despawning = true;
+                    data->hitTarget = true;
+                break;
+                    
+
+            }
+        }
+
+
     }
+    
 
 
-    // enemy collisions
-    Entity* collidedEnemy = getCollidingEntityByType(state, this, iData->targetType);
-
-    if (collidedEnemy != NULL && iData->targetType == ENTITY_ENEMY) {
-        
-        EnemyData* enemyData = (EnemyData*)(&collidedEnemy->data);
-        
-        bloodPuff(state, (Vector3){this->x, this->y, this->z});
-        playSound("flesh_impact_fast", 0.3, 0.3);
-
-        enemyTakeDamage(collidedEnemy, enemyData, state, (Vector3){this->x, this->y, this->z}, iData->damage);
-
-        return false;
-    }
-
+    
 
     // distance
-    data->distanceTraveled += 
-        fabs(direction.x) * iData->velocity + 
-        fabs(direction.y) * iData->velocity + 
-        fabs(direction.z) * iData->velocity;
+    data->distanceTraveled += data->velocity;
+    data->velocity = max(0, data->velocity - iData->deceleration);
 
     if (data->distanceTraveled > iData->maxDistanceTraveled) {
-        return false;
+        data->despawning = true;
     }
     this->light.radius = iData->lightRadius * (1 - (data->distanceTraveled / iData->maxDistanceTraveled));
 
@@ -73,7 +103,7 @@ bool projectileUpdate(Entity* this, GameState* state) {
     if (data->internalTimer > 0) {
         Vector3 particlePosition = {this->x, this->y, this->z};
     
-        for (int i = 1; i < iData->fadeParticleCount; ++i) {
+        for (int i = 1; i < iData->trailParticleCount; ++i) {
             addEntityPlane(state, 
                 particlePosition, 
                 this->texture.texture, 
@@ -85,22 +115,38 @@ bool projectileUpdate(Entity* this, GameState* state) {
                 QUARTER_ROTATION
             );
 
-            particlePosition.x -= direction.x * (i * iData->fadeParticleDistance);
-            particlePosition.y -= direction.y * (i * iData->fadeParticleDistance);
-            particlePosition.z -= direction.z * (i * iData->fadeParticleDistance);
+            particlePosition.x -= direction.x * (i * iData->trailParticleDistance);
+            particlePosition.y -= direction.y * (i * iData->trailParticleDistance);
+            particlePosition.z -= direction.z * (i * iData->trailParticleDistance);
 
         }
     }
     
 
-    // update
+
+    // update position
     this->x = next.x;
     this->y = next.y;
     this->z = next.z;
     data->internalTimer++;
-    
 
-    return true;
+
+
+    // update colors
+    float fadeInPercentage = min(1, data->internalTimer / max(iData->fadeInTime, 1));
+    float fadeOutPercentage = (data->fadeOutTimer / max(iData->fadeOutTime, 1));;
+
+    if (data->despawning) {
+        data->fadeOutTimer--;
+    }
+
+    float fadePercentage = min(fadeInPercentage, fadeOutPercentage);
+
+    this->texture.color.a = 255 * fadePercentage;
+
+
+
+    return (data->fadeOutTimer > 0 || data->despawning == false);
 }
 
 
@@ -123,6 +169,10 @@ void projectile(GameState* state, Vector3 position, Vector3 direction, Projectil
         .distanceTraveled = 0,
         .direction = direction,
         .internalTimer = 0,
+        .fadeOutTimer = max(data.fadeOutTime, 1),
+        .despawning = false,
+        .hitTarget = false,
+        .velocity = data.velocity,
     }, sizeof(ProjectileData));
 }
 
@@ -140,6 +190,7 @@ void projectile(GameState* state, Vector3 position, Vector3 direction, Projectil
 // if they are stored just on the stack they will sometimes get overwritten and contain garbage
 typedef struct { 
     char ammoCounter[8]; // "xxx/xxx"
+    char healthCounter[3]; // "xxx"
 } Hud;
 
 
@@ -152,6 +203,7 @@ typedef struct {
     int ammo;
     int reloadTimer;
     Gun gun;
+    float health;
     Hud hud;
 
 
@@ -174,6 +226,19 @@ static Vector3 getPlayerInput(void) {
 
     return input;
 }
+
+void playerTakeDamage(Entity* this, float damage, GameState* state) {
+    PlayerData* data = (PlayerData*) &this->data;
+
+    data->health = max(data->health - damage ,0);
+
+    bloodSplash(
+        state,
+        (Vector3) {this->x, this->y, this->z},
+        damage
+    );
+}
+
 
 bool playerUpdate(Entity* this, GameState* state) {
     PlayerData* data = (PlayerData*) &this->data;
@@ -397,8 +462,12 @@ bool playerUpdate(Entity* this, GameState* state) {
                         .damage = data->gun.damage,
                         .texture = simpleColoredTexture("bullet_2", 2, 2, data->gun.bulletColor),
                         .targetType = ENTITY_ENEMY,
-                        .fadeParticleCount = 5,
-                        .fadeParticleDistance = 0.05f,
+                        .trailParticleCount = 5,
+                        .trailParticleDistance = 0.05f,
+                        .fadeInTime = 0,
+                        .fadeOutTime = 0,
+                        .collideWithTerrain = true,
+                        .deceleration = 0,
                     };
 
                     projectile(state, (Vector3){this->x, this->y, this->z}, direction, pData);
@@ -506,6 +575,11 @@ bool playerUpdate(Entity* this, GameState* state) {
         insertNumberInString(data->hud.ammoCounter, 4, 6, data->gun.magazineSize); 
 
         drawText(data->hud.ammoCounter, 1450, 900, 80, WHITE);
+
+
+        // draw health
+        insertNumberInString(data->hud.healthCounter, 0, 2, data->health);
+        drawText(data->hud.healthCounter, 200, 900, 80, WHITE);
     }
 
 
@@ -549,8 +623,10 @@ void player(GameState* state, float x, float y, float z){
         .gunCooldown = 0,
         .gun = gun,
         .ammo = gun.magazineSize,
+        .health = 100,
         .hud = (Hud) {
-            .ammoCounter = "xxx/xxx"
+            .ammoCounter = "xxx/xxx",
+            .healthCounter = "xxx",
         },
         .aimLocation = (Vector2) {.x = 400, .y = 400}
         

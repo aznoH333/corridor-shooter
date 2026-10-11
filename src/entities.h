@@ -11,8 +11,12 @@ typedef struct {
     float damage;
     EntityTexture texture;
     EntityType targetType;
-    int fadeParticleCount;
-    float fadeParticleDistance;
+    int trailParticleCount;
+    float trailParticleDistance;
+    int fadeInTime;
+    int fadeOutTime;
+    bool collideWithTerrain;
+    float deceleration;
 } ProjectileInitData;
 
 
