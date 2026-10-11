@@ -30,11 +30,11 @@ win not supported yet :(
 
 # high prio stuff
 - [X] Rework enemy ais
-- [ ] Enemy attacks
+- [X] Enemy attacks
 - [ ] Ranged enemy variants
 - [ ] Rebalance gun damage values to match the enemy stats
 - [ ] Health and dying
-
+- [ ] UI system
 
 # long term goals
 - [ ] World gen
