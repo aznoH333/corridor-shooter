@@ -229,6 +229,28 @@ void stopMusic() {
 	currentMusic = 0;
 }
 
+// -------------------------------------------------------------------------------------
+// Rectangle drawing
+// -------------------------------------------------------------------------------------
+
+typedef struct {
+    Color color;
+    float x;
+    float y;
+    float width;
+    float height;
+} RectangleArgument;
+
+GenArrayDefinition(RectangleArgument, 100, RectangleArgumentArray)
+RectangleArgumentArray rectangleQueue = ArrayNew(RectangleArgumentArray);
+
+void rect(float x, float y, float width, float height, Color color) {
+    RectangleArgument arg = { .x = x, .y = y, .width = width, .height = height, .color = color };
+    
+    ArrayPush(rectangleQueue, arg);
+}
+
+
 
 // -------------------------------------------------------------------------------------
 // Texture drawing
@@ -245,16 +267,7 @@ typedef struct {
 	Color color;
 } DrawArguments;
 
-void drawSpriteFromArguments(DrawArguments* arguments) {
-	DrawTexturePro(
-		*arguments->texture,
-		arguments->source,
-		arguments->destination,
-		arguments->origin,
-		arguments->rotation,
-		arguments->color
-	);
-}
+
 
 
 GenArrayDefinition(DrawArguments, MAX_TEXTURES_PER_LAYER,DrawArgumentArray)
@@ -389,13 +402,29 @@ void RenderQueued2D() {
 		for (unsigned int i = 0; i < layer->count; i++) {
 			DrawArguments* args = &ArrayGet((*layer), i);
 
-			drawSpriteFromArguments(args);
+			DrawTexturePro(
+                *args->texture,
+                args->source,
+                args->destination,
+                args->origin,
+                args->rotation,
+                args->color
+            );
 
 		}
 
 		layer->count = 0;
 	}
 	
+
+    // draw rects
+    for (unsigned int i = 0; i < rectangleQueue.count; i++) {
+        RectangleArgument* args = &ArrayGet(rectangleQueue, i);
+
+        DrawRectangle(args->x, args->y, args->width, args->height, args->color);     
+    }
+    rectangleQueue.count = 0;
+
 	// render text
 	for (unsigned int i = 0; i < textQueue.count; i++) {
 		TextArguments* args = &ArrayGet(textQueue, i);

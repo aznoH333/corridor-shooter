@@ -6,6 +6,7 @@
 #include "particles.h"
 #include "gun.h"
 #include "enemies.h"
+#include "ui.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,7 +191,7 @@ void projectile(GameState* state, Vector3 position, Vector3 direction, Projectil
 // if they are stored just on the stack they will sometimes get overwritten and contain garbage
 typedef struct { 
     char ammoCounter[8]; // "xxx/xxx"
-    char healthCounter[3]; // "xxx"
+    char stimCounter[3]; // "xx"
 } Hud;
 
 
@@ -210,6 +211,14 @@ typedef struct {
     // aiming
     Vector2 aimLocation;
 
+    // stim packs
+    int stimCount;
+    int stimDuration;
+    int hurtDuration;
+
+    // shader stuff
+    int screenTintLocation;
+
 } PlayerData;
 
 
@@ -227,16 +236,25 @@ static Vector3 getPlayerInput(void) {
     return input;
 }
 
+
+#define HURT_MAX 30
+
 void playerTakeDamage(Entity* this, float damage, GameState* state) {
     PlayerData* data = (PlayerData*) &this->data;
 
-    data->health = max(data->health - damage ,0);
+    data->health = max(data->health - damage,0);
+    data->hurtDuration = HURT_MAX;
 
     bloodSplash(
         state,
         (Vector3) {this->x, this->y, this->z},
         damage
     );
+}
+
+
+void foo() {
+    printf("clicked ui button :) \n");
 }
 
 
@@ -543,7 +561,6 @@ bool playerUpdate(Entity* this, GameState* state) {
 
         if (data->reloadTimer == 20) {
             playSound("reload_finish_alt", 1.25, 1);
-
         }
 
 
@@ -558,13 +575,76 @@ bool playerUpdate(Entity* this, GameState* state) {
     }
 
 
+
+    const float MAX_STIM = 120;
+    { // stim packs
+        
+        
+        if (IsKeyPressed(KEY_F) && data->stimCount > 0 && data->stimDuration == 0) {
+            data->stimCount--;
+            data->stimDuration = MAX_STIM;
+        }
+
+
+        if (data->stimDuration > 0) {
+            data->stimDuration--;
+            float stimPercentage = (float)data->stimDuration / MAX_STIM;
+
+            data->health = min(data->health + stimPercentage * 1.3, 100);
+        }
+
+        
+    }
+
+    { // hurt timer
+        if (data->hurtDuration > 0) { data->hurtDuration--; }
+    }
+
+
+    { // shader screen tint
+
+        // setup initial value
+        float finalColor[4];
+        finalColor[0] = 0; // r
+        finalColor[1] = 0; // g
+        finalColor[2] = 0; // b
+        finalColor[3] = 0; // effect strenght
+
+        
+        if (data->stimDuration > 0) { // stim
+
+            const Vector3 stimScreenColor = (Vector3) {0.46, 0.82, 0.14};
+            
+            finalColor[0] = stimScreenColor.x;
+            finalColor[1] = stimScreenColor.y;
+            finalColor[2] = stimScreenColor.z;
+            finalColor[3] = (float)data->stimDuration / MAX_STIM * 0.3;
+
+        } else if (data->hurtDuration > 0) { // hurt
+            const Vector3 hurtScreenColor = (Vector3) {0.46, 0.0, 0.0};
+            
+            finalColor[0] = hurtScreenColor.x;
+            finalColor[1] = hurtScreenColor.y;
+            finalColor[2] = hurtScreenColor.z;
+            finalColor[3] = (float)data->hurtDuration / HURT_MAX * 0.3;
+        }
+        
+        
+        // apply uniform value
+        SetShaderValue(*GetShader(), data->screenTintLocation, finalColor, SHADER_UNIFORM_VEC4);
+
+    }
+
+
     { // debug
         
         if (IsKeyPressed(KEY_U)) {
             //bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
             goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
         }
-        
+    
+        uiBox(100, 100, 200, 200, BLUE);
+        button(100, 400, 200, 100, "poop", &foo);
     }
 
 
@@ -574,12 +654,31 @@ bool playerUpdate(Entity* this, GameState* state) {
         insertNumberInString(data->hud.ammoCounter, 0, 2, data->ammo); // worlds shittiest sprintf
         insertNumberInString(data->hud.ammoCounter, 4, 6, data->gun.magazineSize); 
 
-        drawText(data->hud.ammoCounter, 1450, 900, 80, WHITE);
+        drawText(data->hud.ammoCounter, 1560, 900, 50, WHITE);
+
+        bar(1360, 950, 400, data->ammo, data->gun.magazineSize);
+        sprMain("icons_0003", 1800, 965, 4, 4, false, false, 0, WHITE, 0);
+
+
 
 
         // draw health
-        insertNumberInString(data->hud.healthCounter, 0, 2, data->health);
-        drawText(data->hud.healthCounter, 200, 900, 80, WHITE);
+        sprMain("icons_0001", 130, 965, 4, 4, false, false, 0, WHITE, 0);
+        bar(160, 950, 400, data->health, 100);
+
+        // draw stims
+        sprMain("icons_0004", 140, 912, 5, 5, false, false, 0, WHITE, 0);
+        insertNumberInString(data->hud.stimCounter, 1, 1, data->stimCount);
+        drawText(data->hud.stimCounter, 190, 890, 50, WHITE);
+
+
+
+
+        // reload bar
+        if (data->reloadTimer != 0) {
+            bar(810, 950, 300, data->gun.reloadTime - data->reloadTimer, data->gun.reloadTime);
+        }
+
     }
 
 
@@ -597,6 +696,13 @@ void player(GameState* state, float x, float y, float z){
     const int magazineType = 0;
     
     Gun gun = makeGun(bulletType, bulletModifier, receiverType, receiverModifier, magazineType);
+
+
+
+
+    // shader stuff
+    Shader* shader = GetShader();
+    int screenTintLocation = GetShaderLocation(*shader, "screenTint");
 
     addEntity(state, (Entity) {
         .texture = simpleTexture("player_2_0003", 15, 28),
@@ -626,9 +732,16 @@ void player(GameState* state, float x, float y, float z){
         .health = 100,
         .hud = (Hud) {
             .ammoCounter = "xxx/xxx",
-            .healthCounter = "xxx",
+            .stimCounter = "xx",
         },
-        .aimLocation = (Vector2) {.x = 400, .y = 400}
+        .aimLocation = (Vector2) {.x = 400, .y = 400},
+
+        .stimCount = 4,
+        .stimDuration = 0,
+        .hurtDuration = 0,
+
+        // shader stuff
+        .screenTintLocation = screenTintLocation
         
     }, sizeof(PlayerData));
 }

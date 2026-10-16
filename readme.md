@@ -33,12 +33,12 @@ win not supported yet :(
 - [X] Enemy attacks
 - [ ] Ranged enemy variants
 - [ ] Rebalance gun damage values to match the enemy stats
-- [ ] Health and dying
+- [X] Health and dying
 - [ ] UI system
 
 # long term goals
 - [ ] World gen
-- [ ] Hud
+- [X] Hud
 - [ ] Level continuity
 - [ ] Menu + ui
 - [ ] Some way to get guns
@@ -48,3 +48,10 @@ win not supported yet :(
 - get rid of unimplemented bullet variats 🤔. Can always get back to that later.
 - should focus more on gameplay mechanics instead of minor details
 - 2 ish bullet types and maybe a receiver and the weapon system can be considered "done"
+
+
+
+
+
+
+

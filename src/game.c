@@ -9,7 +9,6 @@
 #include "enemies.h"
 #include "fileReader.h"
 
-
 int main(void)
 {
     printf("here\n");
@@ -44,8 +43,6 @@ int main(void)
     playMusic("ambience", 1);
     //dummy(&state, 20, 0, 0);
     //SwitchResolution(0, 0, true);
-
-    
 
     spawnEnemy(state, (Vector3){50, 0, 0}, 0);
     spawnEnemy(state, (Vector3){50, 0, 2}, 1);

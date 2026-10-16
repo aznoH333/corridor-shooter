@@ -4,11 +4,14 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 
 uniform sampler2D texture0; // raylib default texture uniform name
+uniform vec4 screenTint = vec4(0, 0, 0, 0);
+
+
 
 out vec4 finalColor;
 
-const float RENDER_WIDTH = 400.0;
-const float RENDER_HEIGHT = 200.0;
+const float RENDER_WIDTH = 480.0;
+const float RENDER_HEIGHT = 270.0;
 
 vec2 pixelizeTexCoord(vec2 texCoord)
 {
@@ -34,10 +37,10 @@ void main()
     // chromaFactor = 1 - pow(1 - pow(chromaFactor, 4), 4);
     chromaFactor = 1 - chromaFactor;
 
-    vec2 pixelTexCoord = pixelizeTexCoord(fragTexCoord);
-    vec2 rTexCoord = (fragTexCoord - center) * chromaFactor * 0.98 + center;
-    vec2 gTexCoord = (fragTexCoord - center) * chromaFactor + center;
-    vec2 bTexCoord = (fragTexCoord - center) * chromaFactor * 0.99 +  center;
+    vec2 pixelTexCoord = fragTexCoord;
+    vec2 rTexCoord = (pixelTexCoord - center) * chromaFactor * 0.98 + center;
+    vec2 gTexCoord = (pixelTexCoord - center) * chromaFactor + center;
+    vec2 bTexCoord = (pixelTexCoord - center) * chromaFactor * 0.99 +  center;
 
 
     vec4 rTex = texture(texture0, pixelizeTexCoord(rTexCoord));
@@ -67,19 +70,23 @@ void main()
 
 
 
-    // color tint
-    
-    // green 25 147 82 vec4(0.10, 0.58, 0.32, 1.0)
-    // brown vec4(0.44, 0.26, 0.08, 1.0)
-    // bright red vec4(1.0, 0.0, 0.0, 1.0)
-    // black ? vec4(0.0, 0.0, 0.0, 1.0)
-
+    // black tint
     const vec4 tint = vec4(0.0, 0.0, 0.0, 1.0);
     const float tintStrength = 0.05;
     color = vec4(
         mix(color.r, tint.r, tintStrength),
         mix(color.g, tint.g, tintStrength),
         mix(color.b, tint.b, tintStrength),
+        1.0
+    );
+
+    // color tint
+
+    // game controlled screen tint
+    color = vec4(
+        mix(color.r, screenTint.r, screenTint.a),
+        mix(color.g, screenTint.g, screenTint.a),
+        mix(color.b, screenTint.b, screenTint.a),
         1.0
     );
 

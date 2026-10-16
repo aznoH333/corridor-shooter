@@ -31,7 +31,7 @@
 // -------------------------------------------------------------------------------------
 unsigned long hashString(char* name);
 
-#define HASH_MAP_SIZE 2000
+#define HASH_MAP_SIZE 3433
 #define GenHashmapDefinition(type, hashMapStructName) typedef struct { 	\
 	type elements[HASH_MAP_SIZE];										\
 } hashMapStructName;
@@ -91,6 +91,7 @@ Shader* Get3DShader();
 void sprMain(char* spriteName, float x, float y, float width, float height, bool flipX, bool flipY, float rotation, Color color, int layer);
 void spr(char* spriteName, float x, float y, int layer);
 void sprFRC(char* spriteName, float x, float y, bool flipX, bool flipY, float rotation, Color color, int layer);
+void rect(float x, float y, float width, float height, Color color);
 
 // -------------------------------------------------------------------------------------
 // 3D Rendering utils
