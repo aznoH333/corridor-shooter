@@ -396,6 +396,14 @@ void InitTextureWindow(int newWindowWidth, int newWindowHeight, int newWorldWidt
 
 
 void RenderQueued2D() {
+    // draw rects
+    for (unsigned int i = 0; i < rectangleQueue.count; i++) {
+        RectangleArgument* args = &ArrayGet(rectangleQueue, i);
+
+        DrawRectangle(args->x, args->y, args->width, args->height, args->color);     
+    }
+    
+    
     // draw queued sprites
 	for (int layerIndex = 0; layerIndex < MAX_TEXTURE_LAYERS; layerIndex++) {
 		DrawArgumentArray* layer = &drawQueue[layerIndex];
@@ -417,12 +425,7 @@ void RenderQueued2D() {
 	}
 	
 
-    // draw rects
-    for (unsigned int i = 0; i < rectangleQueue.count; i++) {
-        RectangleArgument* args = &ArrayGet(rectangleQueue, i);
-
-        DrawRectangle(args->x, args->y, args->width, args->height, args->color);     
-    }
+    
     rectangleQueue.count = 0;
 
 	// render text

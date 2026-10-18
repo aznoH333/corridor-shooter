@@ -6,7 +6,6 @@
 #include "particles.h"
 #include "gun.h"
 #include "enemies.h"
-#include "ui.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -253,9 +252,6 @@ void playerTakeDamage(Entity* this, float damage, GameState* state) {
 }
 
 
-void foo() {
-    printf("clicked ui button :) \n");
-}
 
 
 bool playerUpdate(Entity* this, GameState* state) {
@@ -643,16 +639,33 @@ bool playerUpdate(Entity* this, GameState* state) {
             goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
         }
     
-        uiBox(100, 100, 200, 200, BLUE);
-        button(100, 400, 200, 100, "poop", &foo);
     }
 
 
     { // hud
+        // ammo counter
+        //insertNumberInString(data->hud.ammoCounter, 0, 2, data->ammo); // worlds shittiest sprintf
+        //insertNumberInString(data->hud.ammoCounter, 4, 6, data->gun.magazineSize); 
+        // stim counter
+        //insertNumberInString(data->hud.stimCounter, 1, 1, data->stimCount);
 
+
+
+
+        UIValues* values = &state->metaState.uiValues;
+
+        // update values
+        values->playerHealth = data->health;
+        values->playerHealthMax = 100;
+        values->playerAmmo = data->ammo;
+        values->playerAmmoMax = data->gun.magazineSize;
+        values->playerStimCount = data->stimCount;
+        values->playerReloadPercentage = ((float)data->gun.reloadTime - data->reloadTimer) / data->gun.reloadTime;
+
+
+        /*
         // draw ammo
-        insertNumberInString(data->hud.ammoCounter, 0, 2, data->ammo); // worlds shittiest sprintf
-        insertNumberInString(data->hud.ammoCounter, 4, 6, data->gun.magazineSize); 
+        
 
         drawText(data->hud.ammoCounter, 1560, 900, 50, WHITE);
 
@@ -678,7 +691,7 @@ bool playerUpdate(Entity* this, GameState* state) {
         if (data->reloadTimer != 0) {
             bar(810, 950, 300, data->gun.reloadTime - data->reloadTimer, data->gun.reloadTime);
         }
-
+        */
     }
 
 

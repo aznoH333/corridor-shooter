@@ -41,8 +41,6 @@ int main(void)
 
     player(state, 0, 0, 0);
     playMusic("ambience", 1);
-    //dummy(&state, 20, 0, 0);
-    //SwitchResolution(0, 0, true);
 
     spawnEnemy(state, (Vector3){50, 0, 0}, 0);
     spawnEnemy(state, (Vector3){50, 0, 2}, 1);
@@ -56,6 +54,7 @@ int main(void)
     HideCursor();
 
 	// Main game loop
+    SetExitKey(0);
     while (!WindowShouldClose())
 	{
 

@@ -5,6 +5,153 @@
 #include "string.h"
 #include "stdbool.h"
 #include "stdlib.h"
+#include "ui.h"
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#UI state and meta game state functions#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#define UI_STATES_COUNT 3
+static UIState uiStates[UI_STATES_COUNT] = {
+    {
+        .name = GAME,
+        .allowEntityUpdates = true,
+        .drawMouseCursor = false,
+    },
+    {
+        .name = GAME_PAUSED,
+        .allowEntityUpdates = false,
+        .drawMouseCursor = true,
+    },
+    {
+        .name = MAIN_MENU,
+        .allowEntityUpdates = true,
+        .drawMouseCursor = true,
+    }
+};
+
+
+void switchGameState(GameState* state, UIStateName newState) {
+    for (int i = 0; i < UI_STATES_COUNT; ++i) {
+        if (uiStates[i].name == newState) {
+            state->metaState.state = uiStates[i];
+        }
+    }
+}
+
+void updatePlayerReference(GameState* state, Entity* player) {
+    state->metaState.playerEntity = player;
+}
+
+Entity* getPlayerReference(GameState* state) {
+    return state->metaState.playerEntity;
+}
+
+
+
+void pauseGame() {
+
+}
+
+// meta upadte handling
+static char ammoCounter[8] = "xxx/xxx";
+static char stimCounter[3] = "xx";
+
+
+
+
+void updateMetaState(GameState* state) { // used to draw ui elements
+    // draw mouse
+    if (state->metaState.state.drawMouseCursor) {
+        Vector2 mousePos = getMousePosition();
+        
+        
+        sprMain("icons_0001", mousePos.x, mousePos.y, 4, 4, false, false, 0, WHITE, 7);
+
+    }
+    
+    
+    // do update
+    switch (state->metaState.state.name) {
+
+        case MAIN_MENU: {
+            drawText("Main menu placeholder", 850, 600, 60, WHITE);
+
+            if (boolButton(860, 700, 200, 70, "play")) {
+                switchGameState(state, GAME);
+            }
+            
+            if (boolButton(860, 820, 200, 70, "exit")) {
+                CloseWindow(); // quit game
+            }
+
+
+
+            break;
+        }
+
+        case GAME_PAUSED: {
+            drawText("Paused", 850, 600, 60, WHITE);
+
+            if (boolButton(860, 700, 200, 70, "resume")) {
+                switchGameState(state, GAME);
+            }
+            
+            if (boolButton(860, 820, 200, 70, "quit")) {
+                switchGameState(state, MAIN_MENU);
+            }
+
+            break;
+        }
+
+        case GAME: { 
+            // draw player hud
+            UIValues* values = &state->metaState.uiValues;
+
+            // draw ammo
+            insertNumberInString(&ammoCounter, 0, 2, values->playerAmmo); // worlds shittiest sprintf
+            insertNumberInString(&ammoCounter, 4, 6, values->playerAmmoMax); 
+            
+            drawText(ammoCounter, 1560, 900, 50, WHITE);
+            bar(1360, 950, 400, values->playerAmmo, values->playerAmmoMax);
+            sprMain("icons_0003", 1800, 965, 4, 4, false, false, 0, WHITE, 0);
+            
+
+            // draw health
+            sprMain("icons_0001", 130, 965, 4, 4, false, false, 0, WHITE, 0);
+            bar(160, 950, 400, values->playerHealth, values->playerHealthMax);
+
+
+            // draw stims
+            sprMain("icons_0004", 140, 912, 5, 5, false, false, 0, WHITE, 0);
+            insertNumberInString(stimCounter, 1, 1, values->playerStimCount);
+            drawText(stimCounter, 190, 890, 50, WHITE);
+            
+
+
+            // reload bar
+            if (values->playerReloadPercentage < 1) {
+                bar(810, 950, 300, values->playerReloadPercentage, 1.0);
+            }
+
+
+
+            // pausing the game
+            if (IsKeyPressed(KEY_O)) {
+                switchGameState(state, GAME_PAUSED);
+            }
+            
+            break;
+        }
+
+
+    }
+
+}
 
 
 
@@ -72,8 +219,6 @@ EntityTexture rotatedTextureFull(char* texture, float width, float height, float
 //#Rendering logic#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 void pushEntity(GameState* state, Entity* entity);
 
 
@@ -255,7 +400,11 @@ World convertToWorld(GameState* state) {
     return world;
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#World updating#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GameState* createNextFrame(GameState* currentState) {
     GameState* nextFrame = initEmptyGame();
     
@@ -265,26 +414,37 @@ GameState* createNextFrame(GameState* currentState) {
 
     { // update entities
         
-        bool updateResults[MAX_ENTITIES] = {0};
+        if (currentState->metaState.state.allowEntityUpdates) {
+            bool updateResults[MAX_ENTITIES] = {0};
         
         
-        for (int i = 0; i < currentState->entities.count; ++i) {
-            Entity* entity = &currentState->entities.values[i];
-            
-            // we have to cull entities in a later loop otherwise weird update order related bugs happen when an entity attempts to modify an older entity
-            bool result = entity->update(entity, currentState);
+            for (int i = 0; i < currentState->entities.count; ++i) {
+                Entity* entity = &currentState->entities.values[i];
+                
+                // we have to cull entities in a later loop otherwise weird update order related bugs happen when an entity attempts to modify an older entity
+                bool result = entity->update(entity, currentState);
 
 
-            updateResults[i] = result;
-            
-        }
+                updateResults[i] = result;
+                
+            }
 
-        for (int i = 0; i < currentState->entities.count; ++i) {
-            if (updateResults[i]) {
+            for (int i = 0; i < currentState->entities.count; ++i) {
+                if (updateResults[i]) {
+                    Entity* entity = &currentState->entities.values[i];
+                    pushEntity(nextFrame, entity);
+                }
+            }
+        } else {
+            // skip update checking logic if entities cant update
+            for (int i = 0; i < currentState->entities.count; ++i) {    
                 Entity* entity = &currentState->entities.values[i];
                 pushEntity(nextFrame, entity);
             }
+            
         }
+        
+        
     }
 
     { // update camera
@@ -294,6 +454,12 @@ GameState* createNextFrame(GameState* currentState) {
 
     { // update time
         nextFrame->internalTimer = currentState->internalTimer + 1;
+    }
+
+    { // update ui
+        nextFrame->metaState = currentState->metaState;
+        updateMetaState(nextFrame);
+
     }
 
 
@@ -324,6 +490,11 @@ GameState* initEmptyGame() {
         .values = {0},
         .count = 0
     };
+    output->metaState = (GameMetaState) {
+        .state = uiStates[0], // game state
+        .playerEntity = NULL,
+        .uiValues = {0},
+    };
     output->internalTimer = 0;
     
     // return
@@ -331,7 +502,11 @@ GameState* initEmptyGame() {
 }
 
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#World manipulation#
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void pushEntity(GameState* state, Entity* entity) {
     if (state->entities.count >= MAX_ENTITIES) {
         return;

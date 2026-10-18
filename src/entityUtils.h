@@ -14,6 +14,5 @@ Entity* findEntityByType(GameState* state, Entity* source, EntityType type);
 Vector3 getMouseHit(GameState* state, Vector2 screenPos);
 
 
-void insertNumberInString(char* string, int start, int end, int number);
 
 #endif

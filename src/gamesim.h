@@ -96,12 +96,43 @@ typedef struct {
 } AdditionalPlanes;
 
 
+// ui states
+typedef enum {
+    MAIN_MENU,
+    GAME_PAUSED,
+    GAME,
+} UIStateName;
+
+typedef struct {
+    UIStateName name;
+    bool allowEntityUpdates;
+    bool drawMouseCursor;
+} UIState;
+
+typedef struct {
+    // game ui
+    float playerHealth;
+    float playerHealthMax;
+    float playerAmmo;
+    float playerAmmoMax;
+    float playerReloadPercentage;
+    int playerStimCount;
+} UIValues;
+
+typedef struct {
+    UIState state;
+    UIValues uiValues;
+    Entity* playerEntity;
+} GameMetaState;
+
+
 struct GameState {
     GameMap map;
     GameCamera camera;
     GameEntities entities;
     AdditionalPlanes additionalPlanes;
     int internalTimer;
+    GameMetaState metaState;
 };
 
 
@@ -129,6 +160,11 @@ void addEntityPlane(
 
 // camera functions
 void addScreenShake(GameState* state, int ammount);
+
+// ui state and meta state functions
+void switchGameState(GameState* state, UIStateName newState);
+void updatePlayerReference(GameState* state, Entity* player);
+Entity* getPlayerReference(GameState* state);
 
 
 #endif
