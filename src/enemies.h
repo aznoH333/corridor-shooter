@@ -76,7 +76,7 @@ typedef struct {
 } EnemyData;
 
 
-void spawnEnemy(GameState* state, Vector3 position, int enemyIndex);
+void spawnEnemy(GameState* state, Vector3 position, char* enemyName);
 void enemyTakeDamage(Entity* this, EnemyData* data, GameState* state, Vector3 point, float damage);
 void initEnemies();
 

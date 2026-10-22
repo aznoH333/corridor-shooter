@@ -76,9 +76,10 @@ PIXELS_PER_GAME_UNIT = 32
 
 @dataclass
 class Enemy:
-    """Enemy composition. Filename stem is the id."""
+    """Enemy composition. Filename stem is used as the on-disk id."""
 
     name: str = ""
+    ai: int = 0  # index into the game's enemy AI array
     width: float = 1.0  # game units
     height: float = 1.0  # game units
     parts: list[EnemyPartPlacement] = field(default_factory=list)

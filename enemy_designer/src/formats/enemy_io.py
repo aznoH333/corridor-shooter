@@ -1,4 +1,4 @@
-"""Read/write .enemy files (v1 / v2 / v3)."""
+"""Read/write .enemy files (v1 / v2 / v3 / v4)."""
 
 from __future__ import annotations
 
@@ -6,8 +6,9 @@ from pathlib import Path
 
 from src.models import Enemy, EnemyPartPlacement, MAX_ENEMY_PARTS, clamp_color_channel
 
-ENEMY_FORMAT_VERSION = "v3"
+ENEMY_FORMAT_VERSION = "v4"
 _DEFAULT_COLOR = (255, 255, 255, 255)
+_DEFAULT_AI = 0
 
 
 def load_enemy(path: Path) -> Enemy:
@@ -16,14 +17,35 @@ def load_enemy(path: Path) -> Enemy:
         raise ValueError(f"Empty .enemy file: {path}")
 
     version = lines[0]
+    if version == "v4":
+        return _load_v4(path, lines)
     if version == "v3":
         return _load_sized(path, lines, part_stride=9)
     if version == "v2":
         return _load_sized(path, lines, part_stride=5)
     if version == "v1":
         parts = _parse_parts(path, lines[1:], stride=5)
-        return Enemy(name=path.stem, width=1.0, height=1.0, parts=parts)
+        return Enemy(
+            name=path.stem,
+            ai=_DEFAULT_AI,
+            width=1.0,
+            height=1.0,
+            parts=parts,
+        )
     raise ValueError(f"Unsupported .enemy version '{version}' in {path}")
+
+
+def _load_v4(path: Path, lines: list[str]) -> Enemy:
+    if len(lines) < 5:
+        raise ValueError(f"Truncated v4 .enemy file: {path}")
+    name = lines[1]
+    if not name:
+        name = path.stem
+    ai = int(lines[2])
+    width = float(lines[3])
+    height = float(lines[4])
+    parts = _parse_parts(path, lines[5:], stride=9)
+    return Enemy(name=name, ai=ai, width=width, height=height, parts=parts)
 
 
 def _load_sized(path: Path, lines: list[str], *, part_stride: int) -> Enemy:
@@ -32,7 +54,13 @@ def _load_sized(path: Path, lines: list[str], *, part_stride: int) -> Enemy:
     width = float(lines[1])
     height = float(lines[2])
     parts = _parse_parts(path, lines[3:], stride=part_stride)
-    return Enemy(name=path.stem, width=width, height=height, parts=parts)
+    return Enemy(
+        name=path.stem,
+        ai=_DEFAULT_AI,
+        width=width,
+        height=height,
+        parts=parts,
+    )
 
 
 def _parse_parts(path: Path, body: list[str], *, stride: int) -> list[EnemyPartPlacement]:
@@ -77,6 +105,8 @@ def save_enemy(enemy: Enemy, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         ENEMY_FORMAT_VERSION,
+        enemy.name,
+        str(int(enemy.ai)),
         _fmt(enemy.width),
         _fmt(enemy.height),
     ]

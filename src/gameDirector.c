@@ -46,7 +46,7 @@ void updateGameDirector(GameState* state) {
 
         // do action
         // temporary placeholder
-        spawnEnemy(state, (Vector3){nextPoint + spawnDist, 0, 0}, 0);
+        spawnEnemy(state, (Vector3){nextPoint + spawnDist, 0, 0}, "small_1");
 
         printf("reached point %f, debug [reached:%d] \n", nextPoint, state->gameDirector.reached);
 

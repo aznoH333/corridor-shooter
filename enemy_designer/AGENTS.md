@@ -79,9 +79,9 @@ Game limit: `MAX_ENEMY_PARTS` = **32**. Enforce in the UI.
 
 `EnemyDefinition.width` / `height` are authored in **game units** (not pixels). **1 game unit = 32 pixels**. Part offsets remain in pixels and may be placed outside the enemy bounds; the canvas shows a blue rectangle for the enemy size.
 
-### AI (game-side, not in export yet)
+### AI
 
-Game also has `EnemyAI` (`GRID_APPROACH`, `SHIELD_APPROACH`, `RANGER`). Not included in the `.enemy` format yet.
+`ai` is an integer index into the game's enemy AI table (authored in the enemy designer as **enemy ai id**).
 
 ## Combined stats (must match C exactly)
 
@@ -136,10 +136,12 @@ picus
 1
 ```
 
-### `.enemy` (v3)
+### `.enemy` (v4)
 
 ```
-v3
+v4
+<name>
+<ai>
 <width>
 <height>
 <partName>
@@ -155,9 +157,11 @@ v3
 ...
 ```
 
-`width` / `height` are game units (1 unit = 32 px). Then repeat the 9-line part block once per part, in draw/combine order. Rotation in **radians**. Part offsets in **pixels**. Color channels are integers 0–255 (subtractive tint). No enemy name inside the file — use the filename stem as the enemy id (e.g. `grunt.enemy`).
+`name` is the enemy name string. `ai` is an integer index into the game's enemy AI array. `width` / `height` are game units (1 unit = 32 px). Then repeat the 9-line part block once per part, in draw/combine order. Rotation in **radians**. Part offsets in **pixels**. Color channels are integers 0–255 (subtractive tint).
 
-Readers still accept **v2** (width/height + 5-line part blocks; color defaults to `255 255 255 255`) and **v1** (parts only; width/height default to `1`).
+Readers still accept **v3** (width/height + colored parts; name = filename stem, ai = `0`), **v2** (width/height + 5-line part blocks; color defaults to `255 255 255 255`), and **v1** (parts only; width/height default to `1`).
+
+See `formats.md` for the full format reference.
 
 ## UX requirements
 

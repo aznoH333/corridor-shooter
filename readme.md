@@ -57,10 +57,13 @@ win not supported yet :(
 # super short term goals
 [X] add clear state function
 [X] wire menu transitions to clear the state
-[ ] make a system that spawn enemies when the player walks past a certain point
+[X] make a system that spawn enemies when the player walks past a certain point
 [ ] make enemies indexed by their names
 [ ] make an enemy table that ties enemies to difficulity
 [ ] wire the enemy difficulity table into the spawn system
-
+[ ] make gd able to spawn groups of enemies
+[ ] make gd periodically spawn enemy patrols
+[ ] make a function that assesses how good the player is doing (health+resources = some score)
+[ ] make gd scale based on player score
 
 

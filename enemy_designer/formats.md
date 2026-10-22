@@ -2,12 +2,12 @@
 
 Enemy Designer writes plain UTF-8 text. One value per line. No blank lines. Floats are decimal strings (`1`, `0.2`, `1.5`). Integers are decimal with no suffix.
 
-The filename stem is the id. The file body does not store a separate enemy id.
+For older `.enemy` files, the filename stem is the id. From **v4** onward the enemy name is stored in the file (after the version line); the designer still uses the filename stem when renaming/saving on disk.
 
 | Kind | Extension | Current version | Directory |
 | --- | --- | --- | --- |
 | Part definition | `.part` | `v1` | `parts/` |
-| Enemy composition | `.enemy` | `v3` | `enemies/` |
+| Enemy composition | `.enemy` | `v4` | `enemies/` |
 
 Writers always emit the current version. Readers keep older `.enemy` versions.
 
@@ -73,12 +73,14 @@ picus
 
 ---
 
-## `.enemy` (v3)
+## `.enemy` (v4)
 
 Current write format.
 
 ```
-v3
+v4
+<name>
+<ai>
 <width>
 <height>
 <partName>
@@ -98,9 +100,11 @@ Header, then one **9-line** block per placed part, in draw / combine-stats order
 
 | Line | Field | Type | Notes |
 | --- | --- | --- | --- |
-| 1 | version | string | `v3` |
-| 2 | `width` | float | Enemy size in game units |
-| 3 | `height` | float | Enemy size in game units |
+| 1 | version | string | `v4` |
+| 2 | `name` | string | Enemy display / logical name |
+| 3 | `ai` | int | Index into the game's enemy AI array |
+| 4 | `width` | float | Enemy size in game units |
+| 5 | `height` | float | Enemy size in game units |
 | then, per part | `partName` | string | Must match a `.part` `name` |
 | | `offsetX` | float | Pixel offset |
 | | `offsetY` | float | Pixel offset |
@@ -110,8 +114,6 @@ Header, then one **9-line** block per placed part, in draw / combine-stats order
 | | `colorG` | int | `0`–`255` |
 | | `colorB` | int | `0`–`255` |
 | | `colorA` | int | `0`–`255` |
-
-There is no enemy name in the file. `grunt.enemy` is the enemy `grunt`.
 
 Parts may sit outside the width/height box. The designer draws that box in pixels as `width * 32` by `height * 32`.
 
@@ -130,7 +132,9 @@ Channels are integers `0`–`255`. Tint is subtractive / multiplicative:
 Example:
 
 ```
-v3
+v4
+grunt
+0
 1.5
 1.5
 body
@@ -159,6 +163,18 @@ arm
 
 Readers still accept these. Missing fields use the defaults below.
 
+### v3
+
+```
+v3
+<width>
+<height>
+<partName>
+...
+```
+
+Same part blocks as v4 (9 lines, with color). No name / AI in file: name defaults to the filename stem, AI defaults to `0`.
+
 ### v2
 
 ```
@@ -173,7 +189,7 @@ v2
 ...
 ```
 
-Same as v3, but each part is **5 lines** (no color). Loaded color defaults to `255 255 255 255`.
+Same as v3, but each part is **5 lines** (no color). Loaded color defaults to `255 255 255 255`. Name = filename stem, AI = `0`.
 
 ### v1
 
@@ -187,4 +203,4 @@ v1
 ...
 ```
 
-No width/height. Loaded size defaults to `1` × `1` game units. Color defaults to `255 255 255 255`.
+No width/height. Loaded size defaults to `1` × `1` game units. Color defaults to `255 255 255 255`. Name = filename stem, AI = `0`.

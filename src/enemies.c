@@ -292,12 +292,15 @@ void loadPart(char* path, int index, struct dirent* dir) {
 //#Enemy definitions#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define ED_NAME_LENGTH 256
+
 typedef struct {
     float width;
     float height;
-
     EnemyPart parts[MAX_ENEMY_PARTS];
     int usedParts;
+    char name[ED_NAME_LENGTH];
+    int aiIndex;
 } EnemyDefinition;
 
 #define MAX_ENEMY_DEFINITIONS 20
@@ -317,6 +320,16 @@ void loadEnemy(char* path, int index, struct dirent* dir) {
     
     // read data from file
                             fileSkip(&file);         // version number
+    // name
+    char* name =            fileNextAlloc256(&file);
+    for (int i = 0; i < ED_NAME_LENGTH; ++i) {
+        definition.name[i] = name[i];
+    }
+    free(name);
+
+    // ai
+    definition.aiIndex =    fileNextI(&file);
+    // width / height
     definition.width =      fileNextF(&file);        // enemy width
     definition.height =     fileNextF(&file);        // enemy height
 
@@ -429,9 +442,36 @@ EnemyStats combineStats(EnemyStats first, EnemyStats second) {
 
 
 
-void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
+void spawnEnemy(GameState* state, Vector3 position, char* enemyName){
+    EnemyDefinition* definition = NULL;
     
-    EnemyDefinition* definition = &enemies[enemyIndex];
+    // find definition by name
+    for ( int i = 0; i < usedEnemies; ++i ) {
+        // compare name
+        EnemyDefinition* def = &enemies[i];
+        bool found = true;
+        
+        for ( int j = 0; j < ED_NAME_LENGTH; ++j) {
+            if (enemyName[j] != def->name[j]) {
+                found = false;
+                break;
+            }
+            else if (enemyName[j] == 0) {
+                break; // reached terminator
+            }
+        }
+
+        if (found) {
+            definition = def;
+            break;
+        }
+    }
+
+    if (definition == NULL) {
+        printf("failed to find enemy with name %s \n", enemyName);
+        return;
+    }
+
 
     // combine stats
 
@@ -453,7 +493,7 @@ void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
         stats = combineStats(stats, part->stats);
     }
 
-    printf("spawning enemy [id:%d] [health:%f] [speed:%f] [action:%f]\n",enemyIndex, stats.health, stats.speed, stats.action);
+    printf("spawning enemy [id:%s] [health:%f] [speed:%f] [action:%f]\n",enemyName, stats.health, stats.speed, stats.action);
 
 
     // copy the parts array
@@ -465,7 +505,7 @@ void spawnEnemy(GameState* state, Vector3 position, int enemyIndex){
         .deceleration = 0.05,
         .movementTimer = 0,
         .health = stats.health,
-        .ai = enemyAis[0],
+        .ai = enemyAis[definition->aiIndex],
         .stats = stats,
         .parts = {0},
         .usedParts = definition->usedParts
