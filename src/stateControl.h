@@ -31,5 +31,8 @@ void unpauseGame(GameState* state);
 // quits the window
 void quitGame(GameState* state);
 
+// kills all entities. resets camera and world
+void clearGameState(GameState* state);
+
 
 #endif

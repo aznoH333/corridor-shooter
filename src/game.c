@@ -33,18 +33,7 @@ int main(void)
     
     GameState* state = initEmptyGame();
 
-    /*
-    player(state, 0, 0, 0);
-    playMusic("ambience", 1);
 
-    spawnEnemy(state, (Vector3){50, 0, 0}, 0);
-    spawnEnemy(state, (Vector3){50, 0, 2}, 1);
-    spawnEnemy(state, (Vector3){50, 0, -2}, 2);
-    spawnEnemy(state, (Vector3){40, 0, -2}, 3);
-    spawnEnemy(state, (Vector3){40, 0, 0}, 4);
-    spawnEnemy(state, (Vector3){40, 0, 2}, 5);
-    */
-    
 
     HideCursor();
 

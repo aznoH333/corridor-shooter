@@ -122,7 +122,7 @@ typedef struct {
 typedef struct {
     UIState state;
     UIValues uiValues;
-    Entity* playerEntity;
+    Entity playerEntity; // we store the current player here so we can transition him safely through the levels
     bool shouldWindowLive;
 } GameMetaState;
 

@@ -6,6 +6,7 @@
 // initializes new main menu screen
 void goToMainMenu(GameState* state) {
 
+    clearGameState(state);
     switchGameState(state, MAIN_MENU);
 
 
@@ -13,7 +14,7 @@ void goToMainMenu(GameState* state) {
 
 // initialuzes new game (no unlocks)
 void createNewCharacter(GameState* state) {
-    // empty for now
+    initNewPlayerInstance(state);
 }
 
 // opens gear select screen for the current character
@@ -28,6 +29,9 @@ void goToMapScreen(GameState* state) {
 
 // prepares a level
 void generateNewLevel(GameState* state) {
+    clearGameState(state);
+    
+    
     // temporary generation
     player(state, 0, 0, 0);
 
@@ -62,4 +66,12 @@ void unpauseGame(GameState* state) {
 // quits the window
 void quitGame(GameState* state) {
     state->metaState.shouldWindowLive = false; // TODO do more stuff here later
+}
+
+
+
+// kills all entities. resets camera and world
+void clearGameState(GameState* state) {
+    state->entities.count = 0;
+    state->camera.distance = -999; // lol
 }

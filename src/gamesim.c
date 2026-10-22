@@ -45,11 +45,17 @@ void switchGameState(GameState* state, UIStateName newState) {
 }
 
 void updatePlayerReference(GameState* state, Entity* player) {
-    state->metaState.playerEntity = player;
+    // copy player data to the state
+    char* entityPtr = (char*)player;
+    char* target = (char*) &state->metaState.playerEntity;
+    for (int i = 0; i < sizeof(Entity); ++i) {
+        target[i] = entityPtr[i];
+    }
+    
 }
 
 Entity* getPlayerReference(GameState* state) {
-    return state->metaState.playerEntity;
+    return &state->metaState.playerEntity;
 }
 
 
@@ -78,9 +84,8 @@ void updateMetaState(GameState* state) { // used to draw ui elements
             drawText("Main menu placeholder", 850, 600, 60, WHITE);
 
             if (boolButton(860, 700, 200, 70, "play")) {
-                //createNewCharacter(state);
+                createNewCharacter(state);
                 goToGame(state);
-                
                 generateNewLevel(state);
 
                 printf("cam:%f\n",state->camera.distance);

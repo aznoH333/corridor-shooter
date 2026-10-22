@@ -20,7 +20,8 @@ typedef struct {
 } ProjectileInitData;
 
 
-void player(GameState* state, float x, float y, float z);
+void initNewPlayerInstance(GameState* state); // creates a new player. stores him in the state memmory
+void player(GameState* state, float x, float y, float z); // places the player from memmory in the world
 void dummy(GameCamera* state, float x, float y, float z);
 void projectile(GameState* state, Vector3 position, Vector3 direction, ProjectileInitData data);
 

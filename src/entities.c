@@ -651,9 +651,9 @@ bool playerUpdate(Entity* this, GameState* state) {
 }
 
 
-void player(GameState* state, float x, float y, float z){
-    
-    
+void initNewPlayerInstance(GameState* state) {
+
+    // init gun
     const int bulletType = 0;
     const int bulletModifier = 0;
     const int receiverType = 3;
@@ -668,13 +668,13 @@ void player(GameState* state, float x, float y, float z){
     // shader stuff
     Shader* shader = GetShader();
     int screenTintLocation = GetShaderLocation(*shader, "screenTint");
-    // set camera pos
 
-    addEntity(state, (Entity) {
+    // init player entity
+    Entity player = (Entity) {
         .texture = simpleTexture("player_2_0003", 15, 28),
-        .x = x,
-        .y = y + 0.5f,
-        .z = z,
+        .x = 0,
+        .y = 0.5f,
+        .z = 0,
         .width = 1.0f,
         .height = 1.0f,
         .update = &playerUpdate,
@@ -687,7 +687,10 @@ void player(GameState* state, float x, float y, float z){
         },
         .type = ENTITY_PLAYER
 
-    }, &(PlayerData){
+    };
+
+    // init player specific data
+    PlayerData pData = (PlayerData){
         .velocity = (Vector3) {0, 0, 0},
         .speed = 0.1f,
 
@@ -707,9 +710,34 @@ void player(GameState* state, float x, float y, float z){
         .hurtDuration = 0,
 
         // shader stuff
-        .screenTintLocation = screenTintLocation
-        
-    }, sizeof(PlayerData));
+        .screenTintLocation = screenTintLocation  
+    };
+
+    // copy player specific data into the entity
+    char* source = (char*) &pData;
+    for ( int i = 0; i < sizeof(PlayerData); ++i ) {
+        player.data[i] = source[i];
+    }
+
+    // store player to state
+    updatePlayerReference(state, &player);
+
+}
+
+
+void player(GameState* state, float x, float y, float z){
+    
+    // load from reference
+    Entity* player = getPlayerReference(state);
+    
+    // set coords
+    player->x = x;
+    player->y = y + 0.5f;
+    player->z = z;
+
+    // set camera pos
+    state->camera.distance = x - state->map.width * 0.66f;
+    addEntity(state, *player, &player->data, sizeof(PlayerData));
 }
 
 
