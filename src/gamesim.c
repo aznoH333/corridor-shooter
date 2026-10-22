@@ -87,8 +87,6 @@ void updateMetaState(GameState* state) { // used to draw ui elements
                 createNewCharacter(state);
                 goToGame(state);
                 generateNewLevel(state);
-
-                printf("cam:%f\n",state->camera.distance);
             }
             
             if (boolButton(860, 820, 200, 70, "exit")) {
@@ -406,7 +404,7 @@ World convertToWorld(GameState* state) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#World updating#
+//#World updating & init#
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GameState* createNextFrame(GameState* currentState) {
@@ -460,11 +458,17 @@ GameState* createNextFrame(GameState* currentState) {
         nextFrame->internalTimer = currentState->internalTimer + 1;
     }
 
+    { // game director
+        nextFrame->gameDirector = currentState->gameDirector;
+    }
+
     { // update ui
         nextFrame->metaState = currentState->metaState;
         updateMetaState(nextFrame);
 
     }
+
+    
 
 
     return nextFrame;
@@ -501,6 +505,12 @@ GameState* initEmptyGame() {
         .shouldWindowLive = true,
     };
     output->internalTimer = 0;
+
+    output->gameDirector = (GameDirector){ // init empty
+        .gdPoints = {0},
+        .pointsUsed = 0,
+        .reached = 0,
+    }; 
     
     // return
     return output;

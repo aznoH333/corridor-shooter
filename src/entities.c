@@ -6,6 +6,7 @@
 #include "particles.h"
 #include "gun.h"
 #include "enemies.h"
+#include "gameDirector.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -326,6 +327,7 @@ bool playerUpdate(Entity* this, GameState* state) {
     { // move camera
         float playerCamValue = this->x - state->map.width * 0.66f;
         state->camera.distance = max(state->camera.distance, playerCamValue);
+        updateGameDirector(state);
     }
 
 

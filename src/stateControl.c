@@ -1,15 +1,13 @@
 #include "stateControl.h"
 #include "entities.h"
 #include "enemies.h"
+#include "gameDirector.h"
 
 
 // initializes new main menu screen
 void goToMainMenu(GameState* state) {
-
     clearGameState(state);
     switchGameState(state, MAIN_MENU);
-
-
 }
 
 // initialuzes new game (no unlocks)
@@ -30,17 +28,9 @@ void goToMapScreen(GameState* state) {
 // prepares a level
 void generateNewLevel(GameState* state) {
     clearGameState(state);
-    
-    
-    // temporary generation
     player(state, 0, 0, 0);
+    initNewGameDirector(state);
 
-    spawnEnemy(state, (Vector3){50, 0, 0}, 0);
-    spawnEnemy(state, (Vector3){50, 0, 2}, 1);
-    spawnEnemy(state, (Vector3){50, 0, -2}, 2);
-    spawnEnemy(state, (Vector3){40, 0, -2}, 3);
-    spawnEnemy(state, (Vector3){40, 0, 0}, 4);
-    spawnEnemy(state, (Vector3){40, 0, 2}, 5);
 }
 
 // starts the game (gameplay part)
