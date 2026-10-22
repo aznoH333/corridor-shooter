@@ -632,25 +632,7 @@ bool playerUpdate(Entity* this, GameState* state) {
     }
 
 
-    { // debug
-        
-        if (IsKeyPressed(KEY_U)) {
-            //bloodSplash(state, (Vector3){this->x, this->y, this->z}, 4);
-            goreExplosion(state, (Vector3){this->x, this->y, this->z}, 10);
-        }
-    
-    }
-
-
     { // hud
-        // ammo counter
-        //insertNumberInString(data->hud.ammoCounter, 0, 2, data->ammo); // worlds shittiest sprintf
-        //insertNumberInString(data->hud.ammoCounter, 4, 6, data->gun.magazineSize); 
-        // stim counter
-        //insertNumberInString(data->hud.stimCounter, 1, 1, data->stimCount);
-
-
-
 
         UIValues* values = &state->metaState.uiValues;
 
@@ -662,38 +644,8 @@ bool playerUpdate(Entity* this, GameState* state) {
         values->playerStimCount = data->stimCount;
         values->playerReloadPercentage = ((float)data->gun.reloadTime - data->reloadTimer) / data->gun.reloadTime;
 
-
-        /*
-        // draw ammo
-        
-
-        drawText(data->hud.ammoCounter, 1560, 900, 50, WHITE);
-
-        bar(1360, 950, 400, data->ammo, data->gun.magazineSize);
-        sprMain("icons_0003", 1800, 965, 4, 4, false, false, 0, WHITE, 0);
-
-
-
-
-        // draw health
-        sprMain("icons_0001", 130, 965, 4, 4, false, false, 0, WHITE, 0);
-        bar(160, 950, 400, data->health, 100);
-
-        // draw stims
-        sprMain("icons_0004", 140, 912, 5, 5, false, false, 0, WHITE, 0);
-        insertNumberInString(data->hud.stimCounter, 1, 1, data->stimCount);
-        drawText(data->hud.stimCounter, 190, 890, 50, WHITE);
-
-
-
-
-        // reload bar
-        if (data->reloadTimer != 0) {
-            bar(810, 950, 300, data->gun.reloadTime - data->reloadTimer, data->gun.reloadTime);
-        }
-        */
     }
-
+    
 
     return true;
 }
@@ -716,6 +668,7 @@ void player(GameState* state, float x, float y, float z){
     // shader stuff
     Shader* shader = GetShader();
     int screenTintLocation = GetShaderLocation(*shader, "screenTint");
+    // set camera pos
 
     addEntity(state, (Entity) {
         .texture = simpleTexture("player_2_0003", 15, 28),

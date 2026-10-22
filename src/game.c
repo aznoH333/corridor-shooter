@@ -8,15 +8,10 @@
 #include "entities.h"
 #include "enemies.h"
 #include "fileReader.h"
+#include "stateControl.h"
 
 int main(void)
 {
-    printf("here\n");
-    printf("here\n");
-    printf("here\n");
-    printf("here\n");
-    printf("here\n");
-	
     // setup window
     SetTraceLogLevel(LOG_WARNING); 
     const int screenWidth = 800;
@@ -38,7 +33,7 @@ int main(void)
     
     GameState* state = initEmptyGame();
 
-
+    /*
     player(state, 0, 0, 0);
     playMusic("ambience", 1);
 
@@ -48,14 +43,20 @@ int main(void)
     spawnEnemy(state, (Vector3){40, 0, -2}, 3);
     spawnEnemy(state, (Vector3){40, 0, 0}, 4);
     spawnEnemy(state, (Vector3){40, 0, 2}, 5);
-    
+    */
     
 
     HideCursor();
 
+
+
+    
+    goToMainMenu(state);
+
+
 	// Main game loop
     SetExitKey(0);
-    while (!WindowShouldClose())
+    while (state->metaState.shouldWindowLive)
 	{
 
         // temporary fullscreen hack

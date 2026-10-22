@@ -1,7 +1,7 @@
 # Makefile
 
 CC = gcc
-CFLAGS = -Wall -Wextra -O2
+CFLAGS = -Wall -Wextra -O2 -Werror=implicit-function-declaration
 LDFLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 SRCDIR := ./src

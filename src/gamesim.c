@@ -6,7 +6,7 @@
 #include "stdbool.h"
 #include "stdlib.h"
 #include "ui.h"
-
+#include "stateControl.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,6 +39,7 @@ void switchGameState(GameState* state, UIStateName newState) {
     for (int i = 0; i < UI_STATES_COUNT; ++i) {
         if (uiStates[i].name == newState) {
             state->metaState.state = uiStates[i];
+            break;
         }
     }
 }
@@ -52,10 +53,6 @@ Entity* getPlayerReference(GameState* state) {
 }
 
 
-
-void pauseGame() {
-
-}
 
 // meta upadte handling
 static char ammoCounter[8] = "xxx/xxx";
@@ -77,19 +74,21 @@ void updateMetaState(GameState* state) { // used to draw ui elements
     
     // do update
     switch (state->metaState.state.name) {
-
         case MAIN_MENU: {
             drawText("Main menu placeholder", 850, 600, 60, WHITE);
 
             if (boolButton(860, 700, 200, 70, "play")) {
-                switchGameState(state, GAME);
+                //createNewCharacter(state);
+                goToGame(state);
+                
+                generateNewLevel(state);
+
+                printf("cam:%f\n",state->camera.distance);
             }
             
             if (boolButton(860, 820, 200, 70, "exit")) {
-                CloseWindow(); // quit game
+                quitGame(state);
             }
-
-
 
             break;
         }
@@ -98,11 +97,11 @@ void updateMetaState(GameState* state) { // used to draw ui elements
             drawText("Paused", 850, 600, 60, WHITE);
 
             if (boolButton(860, 700, 200, 70, "resume")) {
-                switchGameState(state, GAME);
+                unpauseGame(state);
             }
             
             if (boolButton(860, 820, 200, 70, "quit")) {
-                switchGameState(state, MAIN_MENU);
+                goToMainMenu(state);
             }
 
             break;
@@ -141,8 +140,8 @@ void updateMetaState(GameState* state) { // used to draw ui elements
 
 
             // pausing the game
-            if (IsKeyPressed(KEY_O)) {
-                switchGameState(state, GAME_PAUSED);
+            if (IsKeyPressed(KEY_ESCAPE)) {
+                pauseGame(state);
             }
             
             break;
@@ -494,6 +493,7 @@ GameState* initEmptyGame() {
         .state = uiStates[0], // game state
         .playerEntity = NULL,
         .uiValues = {0},
+        .shouldWindowLive = true,
     };
     output->internalTimer = 0;
     

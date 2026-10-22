@@ -123,6 +123,7 @@ typedef struct {
     UIState state;
     UIValues uiValues;
     Entity* playerEntity;
+    bool shouldWindowLive;
 } GameMetaState;
 
 
