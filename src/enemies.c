@@ -301,6 +301,7 @@ typedef struct {
     int usedParts;
     char name[ED_NAME_LENGTH];
     int aiIndex;
+    float difficulty;
 } EnemyDefinition;
 
 #define MAX_ENEMY_DEFINITIONS 20
@@ -329,6 +330,7 @@ void loadEnemy(char* path, int index, struct dirent* dir) {
 
     // ai
     definition.aiIndex =    fileNextI(&file);
+    definition.difficulty = fileNextF(&file);        // difficulty
     // width / height
     definition.width =      fileNextF(&file);        // enemy width
     definition.height =     fileNextF(&file);        // enemy height
@@ -442,39 +444,10 @@ EnemyStats combineStats(EnemyStats first, EnemyStats second) {
 
 
 
-void spawnEnemy(GameState* state, Vector3 position, char* enemyName){
-    EnemyDefinition* definition = NULL;
+
+void spawnEnemyFromDef(GameState* state, Vector3 position, EnemyDefinition* definition) {
     
-    // find definition by name
-    for ( int i = 0; i < usedEnemies; ++i ) {
-        // compare name
-        EnemyDefinition* def = &enemies[i];
-        bool found = true;
-        
-        for ( int j = 0; j < ED_NAME_LENGTH; ++j) {
-            if (enemyName[j] != def->name[j]) {
-                found = false;
-                break;
-            }
-            else if (enemyName[j] == 0) {
-                break; // reached terminator
-            }
-        }
-
-        if (found) {
-            definition = def;
-            break;
-        }
-    }
-
-    if (definition == NULL) {
-        printf("failed to find enemy with name %s \n", enemyName);
-        return;
-    }
-
-
     // combine stats
-
     EnemyStats stats = { // init empty
         .health = 0,
         .healthMult = 0,
@@ -493,7 +466,7 @@ void spawnEnemy(GameState* state, Vector3 position, char* enemyName){
         stats = combineStats(stats, part->stats);
     }
 
-    printf("spawning enemy [id:%s] [health:%f] [speed:%f] [action:%f]\n",enemyName, stats.health, stats.speed, stats.action);
+    printf("spawning enemy [id:%s] [health:%f] [speed:%f] [action:%f]\n",definition->name, stats.health, stats.speed, stats.action);
 
 
     // copy the parts array
@@ -531,3 +504,71 @@ void spawnEnemy(GameState* state, Vector3 position, char* enemyName){
         sizeof(EnemyData)
     );
 }
+
+
+void spawnEnemy(GameState* state, Vector3 position, char* enemyName){
+    EnemyDefinition* definition = NULL;
+    
+    // find definition by name
+    for ( int i = 0; i < usedEnemies; ++i ) {
+        // compare name
+        EnemyDefinition* def = &enemies[i];
+        bool found = true;
+        
+        for ( int j = 0; j < ED_NAME_LENGTH; ++j) {
+            if (enemyName[j] != def->name[j]) {
+                found = false;
+                break;
+            }
+            else if (enemyName[j] == 0) {
+                break; // reached terminator
+            }
+        }
+
+        if (found) {
+            definition = def;
+            break;
+        }
+    }
+
+    if (definition == NULL) {
+        printf("failed to find enemy with name %s \n", enemyName);
+        return;
+    }
+
+
+    spawnEnemyFromDef(state, position, definition);
+}
+
+
+
+void spawnEnemyForDiff(GameState* state, Vector3 position, float diff) {
+    EnemyDefinition* definition = &enemies[0]; // fallback to small guy if no enemies within diff exist
+
+    EnemyDefinition* availableDefs[8];
+    int usedDefs = 0;
+
+    const float ENEMY_DIFF_DIST = 0.7f;
+    // find available enemies
+
+    for ( int i = 0; i < usedEnemies; ++i ) {
+
+        EnemyDefinition* def = &enemies[i];
+
+        if (fabs(def->difficulty - diff) < ENEMY_DIFF_DIST) {
+            availableDefs[usedDefs] = def;
+            usedDefs++;
+            
+            if (usedDefs >= 8) {
+                break;
+            }
+        }
+    }
+
+    // pick random from list
+    if (usedDefs > 0) {
+        definition = availableDefs[GetRandomValue(0, usedDefs - 1)];
+    }
+    spawnEnemyFromDef(state, position, definition);
+}
+

@@ -136,12 +136,13 @@ picus
 1
 ```
 
-### `.enemy` (v4)
+### `.enemy` (v5)
 
 ```
-v4
+v5
 <name>
 <ai>
+<difficulty>
 <width>
 <height>
 <partName>
@@ -157,9 +158,9 @@ v4
 ...
 ```
 
-`name` is the enemy name string. `ai` is an integer index into the game's enemy AI array. `width` / `height` are game units (1 unit = 32 px). Then repeat the 9-line part block once per part, in draw/combine order. Rotation in **radians**. Part offsets in **pixels**. Color channels are integers 0–255 (subtractive tint).
+`name` is the enemy name string. `ai` is an integer index into the game's enemy AI array. `difficulty` is a float. `width` / `height` are game units (1 unit = 32 px). Then repeat the 9-line part block once per part, in draw/combine order. Rotation in **radians**. Part offsets in **pixels**. Color channels are integers 0–255 (subtractive tint).
 
-Readers still accept **v3** (width/height + colored parts; name = filename stem, ai = `0`), **v2** (width/height + 5-line part blocks; color defaults to `255 255 255 255`), and **v1** (parts only; width/height default to `1`).
+Readers still accept **v4** (no difficulty; defaults to `0`), **v3** (width/height + colored parts; name = filename stem, ai/difficulty = `0`), **v2** (width/height + 5-line part blocks; color defaults to `255 255 255 255`), and **v1** (parts only; width/height default to `1`).
 
 See `formats.md` for the full format reference.
 

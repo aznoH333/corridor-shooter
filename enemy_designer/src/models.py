@@ -80,6 +80,7 @@ class Enemy:
 
     name: str = ""
     ai: int = 0  # index into the game's enemy AI array
+    difficulty: float = 0.0
     width: float = 1.0  # game units
     height: float = 1.0  # game units
     parts: list[EnemyPartPlacement] = field(default_factory=list)

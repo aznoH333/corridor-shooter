@@ -37,6 +37,7 @@ _TAG_FORM = "enemy_form"
 _TAG_EMPTY = "enemy_empty_hint"
 _TAG_NAME = "enemy_name"
 _TAG_AI = "enemy_ai"
+_TAG_DIFFICULTY = "enemy_difficulty"
 _TAG_WIDTH = "enemy_width"
 _TAG_HEIGHT = "enemy_height"
 _TAG_SHIFT_X = "enemy_shift_x"
@@ -136,6 +137,14 @@ def build_enemy_designer(*, parent: int | str) -> None:
                     min_value=0,
                     min_clamped=True,
                     callback=_on_ai_edited,
+                )
+                dpg.add_input_float(
+                    label="difficulty",
+                    tag=_TAG_DIFFICULTY,
+                    width=140,
+                    default_value=0.0,
+                    format="%.3g",
+                    callback=_on_difficulty_edited,
                 )
                 dpg.add_input_float(
                     label="Width (units)",
@@ -383,6 +392,7 @@ def _on_duplicate() -> None:
     clone = Enemy(
         name=new_name,
         ai=enemy.ai,
+        difficulty=enemy.difficulty,
         width=enemy.width,
         height=enemy.height,
         parts=deepcopy(enemy.parts),
@@ -482,6 +492,7 @@ def _select_enemy(name: str) -> None:
     _SUPPRESS_EDIT = True
     dpg.set_value(_TAG_NAME, enemy.name)
     dpg.set_value(_TAG_AI, int(enemy.ai))
+    dpg.set_value(_TAG_DIFFICULTY, float(enemy.difficulty))
     dpg.set_value(_TAG_WIDTH, enemy.width)
     dpg.set_value(_TAG_HEIGHT, enemy.height)
     _SUPPRESS_EDIT = False
@@ -596,6 +607,15 @@ def _on_ai_edited(_sender, _app_data, _user_data) -> None:
     if enemy is None:
         return
     enemy.ai = max(0, int(dpg.get_value(_TAG_AI)))
+
+
+def _on_difficulty_edited(_sender, _app_data, _user_data) -> None:
+    if _SUPPRESS_EDIT:
+        return
+    enemy = _current_enemy()
+    if enemy is None:
+        return
+    enemy.difficulty = float(dpg.get_value(_TAG_DIFFICULTY))
 
 
 def _build_confirm_window() -> None:
@@ -860,6 +880,7 @@ def _on_save() -> None:
         return
 
     enemy.ai = max(0, int(dpg.get_value(_TAG_AI)))
+    enemy.difficulty = float(dpg.get_value(_TAG_DIFFICULTY))
     enemy.width = max(0.01, float(dpg.get_value(_TAG_WIDTH)))
     enemy.height = max(0.01, float(dpg.get_value(_TAG_HEIGHT)))
 

@@ -77,6 +77,7 @@ typedef struct {
 
 
 void spawnEnemy(GameState* state, Vector3 position, char* enemyName);
+void spawnEnemyForDiff(GameState* state, Vector3 position, float diff); // spawns an enemy based on input difficulty. picks the enemy based on diff - enemy difficulty
 void enemyTakeDamage(Entity* this, EnemyData* data, GameState* state, Vector3 point, float damage);
 void initEnemies();
 

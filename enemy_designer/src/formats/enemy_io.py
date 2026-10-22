@@ -1,4 +1,4 @@
-"""Read/write .enemy files (v1 / v2 / v3 / v4)."""
+"""Read/write .enemy files (v1 / v2 / v3 / v4 / v5)."""
 
 from __future__ import annotations
 
@@ -6,9 +6,10 @@ from pathlib import Path
 
 from src.models import Enemy, EnemyPartPlacement, MAX_ENEMY_PARTS, clamp_color_channel
 
-ENEMY_FORMAT_VERSION = "v4"
+ENEMY_FORMAT_VERSION = "v5"
 _DEFAULT_COLOR = (255, 255, 255, 255)
 _DEFAULT_AI = 0
+_DEFAULT_DIFFICULTY = 0.0
 
 
 def load_enemy(path: Path) -> Enemy:
@@ -17,6 +18,8 @@ def load_enemy(path: Path) -> Enemy:
         raise ValueError(f"Empty .enemy file: {path}")
 
     version = lines[0]
+    if version == "v5":
+        return _load_v5(path, lines)
     if version == "v4":
         return _load_v4(path, lines)
     if version == "v3":
@@ -28,6 +31,7 @@ def load_enemy(path: Path) -> Enemy:
         return Enemy(
             name=path.stem,
             ai=_DEFAULT_AI,
+            difficulty=_DEFAULT_DIFFICULTY,
             width=1.0,
             height=1.0,
             parts=parts,
@@ -35,17 +39,41 @@ def load_enemy(path: Path) -> Enemy:
     raise ValueError(f"Unsupported .enemy version '{version}' in {path}")
 
 
+def _load_v5(path: Path, lines: list[str]) -> Enemy:
+    if len(lines) < 6:
+        raise ValueError(f"Truncated v5 .enemy file: {path}")
+    name = lines[1] or path.stem
+    ai = int(lines[2])
+    difficulty = float(lines[3])
+    width = float(lines[4])
+    height = float(lines[5])
+    parts = _parse_parts(path, lines[6:], stride=9)
+    return Enemy(
+        name=name,
+        ai=ai,
+        difficulty=difficulty,
+        width=width,
+        height=height,
+        parts=parts,
+    )
+
+
 def _load_v4(path: Path, lines: list[str]) -> Enemy:
     if len(lines) < 5:
         raise ValueError(f"Truncated v4 .enemy file: {path}")
-    name = lines[1]
-    if not name:
-        name = path.stem
+    name = lines[1] or path.stem
     ai = int(lines[2])
     width = float(lines[3])
     height = float(lines[4])
     parts = _parse_parts(path, lines[5:], stride=9)
-    return Enemy(name=name, ai=ai, width=width, height=height, parts=parts)
+    return Enemy(
+        name=name,
+        ai=ai,
+        difficulty=_DEFAULT_DIFFICULTY,
+        width=width,
+        height=height,
+        parts=parts,
+    )
 
 
 def _load_sized(path: Path, lines: list[str], *, part_stride: int) -> Enemy:
@@ -57,6 +85,7 @@ def _load_sized(path: Path, lines: list[str], *, part_stride: int) -> Enemy:
     return Enemy(
         name=path.stem,
         ai=_DEFAULT_AI,
+        difficulty=_DEFAULT_DIFFICULTY,
         width=width,
         height=height,
         parts=parts,
@@ -107,6 +136,7 @@ def save_enemy(enemy: Enemy, path: Path) -> None:
         ENEMY_FORMAT_VERSION,
         enemy.name,
         str(int(enemy.ai)),
+        _fmt(enemy.difficulty),
         _fmt(enemy.width),
         _fmt(enemy.height),
     ]
