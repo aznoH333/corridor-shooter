@@ -24,10 +24,10 @@ $ make mac
 
 
 # super short term goals
-[ ] remove level end
+[X] remove level end
 [ ] change collision detection
 [ ] rewrite level to move with camera
 [ ] make enemies block player.
 [ ] make player block enemies
-
+[ ] change enemy spawning logic
 

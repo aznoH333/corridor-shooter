@@ -12,12 +12,6 @@ Vector3 checkWorldCollision(float x, float y, float z, float width, float height
     float halfMapWidth = map->width * 0.5f;
     float halfHeight = height * 0.5;
 
-    if (x - halfWidth < -10) {
-        collisionDirection.x = -1;
-    } else if (x + halfWidth > map->length) {
-        collisionDirection.x = 1;
-    }
-
     if (z - halfWidth < -halfMapWidth) {
         collisionDirection.z = -1;
     } else if (z + halfWidth > halfMapWidth) {
@@ -49,8 +43,6 @@ Vector3 getClosestWorldPosition(GameMap* map, Vector3 position) {
         {position.z,      -halfMapWidth,         position.x,         position.y, -halfMapWidth},
         {position.y,                  0,         position.x,                  0,    position.z},
         {position.y, map->ceilingHeight,         position.x, map->ceilingHeight,    position.z},
-        {position.x,                -10,                -10,         position.y,    position.z},
-        {position.x,        map->length,        map->length,         position.y,    position.z},
     };
 
     for (int i = 0; i < 6; ++i) {
@@ -199,7 +191,7 @@ Vector3 getMouseHit(GameState* state, Vector2 screenPos) {
     Vector3 closestHit = Vector3Add(mouseRay.position, Vector3Scale(mouseRay.direction, MOUSE_HIT_MAX_DISTANCE));
 
     float minX = -10.0f;
-    float maxX = state->map.length;
+    float maxX = state->camera.distance + 300.0f;
     float minY = 0.0f;
     float maxY = state->map.ceilingHeight;
     float halfMapWidth = state->map.width * 0.5f;

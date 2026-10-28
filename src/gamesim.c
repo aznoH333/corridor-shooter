@@ -239,11 +239,13 @@ World convertToWorld(GameState* state) {
     // draw map
     {
         GameMap* map = &state->map;
-        for (int i = 0; i < (int)ceil(map->length / map->width); ++i ) {
+        for (int i = 0; i < 6; ++i ) {
+            float worldOffset = state->camera.distance - fmod(state->camera.distance, map->width);
+            
             // floor
             pushPlane(&world, (Plane) {
                 .texture = groundTexture,
-                .x = i * map->width + map->width * 0.5,
+                .x = i * map->width + map->width * 0.5 + worldOffset,
                 .y = 0,
                 .z = 0,
                 .yaw = 0,
@@ -258,7 +260,7 @@ World convertToWorld(GameState* state) {
             // ceiling
             pushPlane(&world, (Plane) {
                 .texture = ceilingTexture,
-                .x = i * map->width + map->width * 0.5,
+                .x = i * map->width + map->width * 0.5 + worldOffset,
                 .y = map->ceilingHeight,
                 .z = 0,
                 .yaw = 0,
@@ -273,7 +275,7 @@ World convertToWorld(GameState* state) {
             // walls
             pushPlane(&world, (Plane) {
                 .texture = wallTexture,
-                .x = i * map->width + map->width * 0.5,
+                .x = i * map->width + map->width * 0.5 + worldOffset,
                 .y = map->width / 2.0f,
                 .z = map->width / 2.0f,
                 .yaw = HALF_ROTATION,
@@ -287,7 +289,7 @@ World convertToWorld(GameState* state) {
 
             pushPlane(&world, (Plane) {
                 .texture = wallTexture,
-                .x = i * map->width + map->width * 0.5,
+                .x = i * map->width + map->width * 0.5 + worldOffset,
                 .y = map->width / 2.0f,
                 .z = -map->width / 2.0f,
                 .yaw = 0,
@@ -299,21 +301,7 @@ World convertToWorld(GameState* state) {
                 .enableDepthMask = true,
             });
         }
-        
-        // draw backwall
-        pushPlane(&world, (Plane) {
-            .texture = wallTexture,
-            .x = map->length,
-            .y = map->width / 2.0f,
-            .z = 0,
-            .yaw = 0,
-            .pitch = QUARTER_ROTATION,
-            .roll = QUARTER_ROTATION,
-            .width = map->width,
-            .height = map->width,
-            .color = WHITE,
-            .enableDepthMask = true,
-        });
+       
     }
     
     // draw entities
@@ -481,7 +469,6 @@ GameState* initEmptyGame() {
     GameState* output = malloc(sizeof(GameState));
     
     output->map = (GameMap) {
-        .length = 90.0f,
         .width = 7.5f,
         .ceilingHeight = 4.5f
     };

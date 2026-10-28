@@ -7,7 +7,7 @@
 
 void initNewGameDirector(GameState* state) {
     // init new distances
-    float levelLength = state->map.length;
+    float levelLength = 90;//state->map.length;
 
 
     // how many interaction points does the game director get?
@@ -59,7 +59,7 @@ void updateGameDirector(GameState* state) {
     // check dist
     float dist = state->camera.distance;
 
-    if (state->gameDirector.reached >= state->gameDirector.pointsUsed || dist + GD_SPAWN_DIST > state->map.length) {
+    if (state->gameDirector.reached >= state->gameDirector.pointsUsed) {
         
         return;
     }
