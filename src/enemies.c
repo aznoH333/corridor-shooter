@@ -208,6 +208,12 @@ bool enemyUpdate(Entity* this, GameState* state) {
         this->y = next.y;
         this->z = next.z;
 
+
+        float w = this->width * 0.5;
+        if (collisions.z > 0.5) {
+            this->z = 0; // TODO r
+        }
+
     }
 
 

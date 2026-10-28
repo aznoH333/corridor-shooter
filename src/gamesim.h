@@ -19,6 +19,7 @@ typedef struct {
     float gdPoints[GD_MAX_POINTS];
     int reached;
     int pointsUsed;
+    int patrolTimer;
 } GameDirector;
 
 
